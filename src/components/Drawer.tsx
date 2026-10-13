@@ -133,7 +133,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
   return (
     <>
       <div className="flex flex-wrap gap-1.5">
-        <Badge variant="secondary">{site.kind === "regen" ? "Regeneration plant" : "Treatment plant"}</Badge>
+        <Badge variant="secondary">{site.kind === "regen" ? "Water recycling plant" : "Treatment plant"}</Badge>
         {(site.kind === "regen" || supply?.reuseReady) && <Badge>Reuse-ready</Badge>}
         {site.kind === "wwtp" && <Badge variant="outline" className="capitalize">{site.level}</Badge>}
         {siteTenders.map((t) => (
@@ -155,7 +155,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
             info={<SourceInfo id="eea" quality={supply.actualQuality} note={supply.actualQuality === "assumption" ? "No EEA match: design flow × 0.6." : `EEA code ${supply.eeaCode}`} date="2022" />}
             v={<span className="inline-flex items-center gap-1.5"><QualityBadge q={supply.actualQuality} />{fmt.format(supply.actualFlow)}</span>}
           />
-          <Row k="Utilisation" v={supply.utilisation != null ? `${fmt.format(supply.utilisation * 100)}%` : "–"} />
+          <Row k="How full the plant runs" v={supply.utilisation != null ? `${fmt.format(supply.utilisation * 100)}%` : "–"} />
           <Row k="Already reused" info={<SourceInfo id="regen" />} v={fmt.format(supply.alreadyReused)} />
           <Row k="Available reclaimed" v={<span className="font-medium">{fmt.format(supply.availableReclaimed)}</span>} />
           {supply.suspect && <p className="mt-1.5 text-[11px] text-destructive">Suspect value: {supply.suspect}. Excluded from costs.</p>}
@@ -348,7 +348,7 @@ function ComarcaDetail({ comarca }: { comarca: string }) {
       </Section>
       <Section title="Summary">
         <Row k="Treatment plants" v={fmt.format(agg.plants)} />
-        <Row k="Regeneration plants" info={<SourceInfo id="regen" />} v={fmt.format(agg.regens)} />
+        <Row k="Water recycling plants" info={<SourceInfo id="regen" />} v={fmt.format(agg.regens)} />
         <Row k="Treated outflow" info={<SourceInfo id="eea" />} v={`${fmt1.format(agg.actual / 1e6)} Mm³/yr`} />
         <Row k="Reused" v={`${agg.actual > 0 ? fmt.format((agg.reused / agg.actual) * 100) : 0}%`} />
         <Row k="Companies in plant municipalities" v={fmt.format(agg.companies)} />

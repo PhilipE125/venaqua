@@ -39,7 +39,7 @@ export async function fetchWwtps(): Promise<SourceResult<Plant>> {
     features.push({
       id: `wwtp-${r.codi_sistema || r.sistema}`,
       kind: "wwtp",
-      name: `EDAR ${titleCase(r.sistema)}`,
+      name: `${titleCase(r.sistema)} treatment plant`,
       lat,
       lon,
       municipi: r.municipi ?? "",

@@ -79,10 +79,10 @@ function LayersTab() {
         <span className="flex items-center gap-1.5"><Dot color={LEVEL_COLORS.primary} />Primary</span>
         <span className="flex items-center gap-1.5"><Dot color={LEVEL_COLORS.secondary} />Secondary</span>
         <span className="flex items-center gap-1.5"><Dot color={LEVEL_COLORS.tertiary} />Tertiary (N/P removal)</span>
-        <span>Size = actual outflow; ring = reuse by use</span>
+        <span>Bigger circle = more water treated. Ring = recycled water already used.</span>
       </LayerRow>
-      <LayerRow k="regen" title="Regeneration plants" q={r.isLoading || !r.data ? { ...r, isLoading: !r.isError } : r} count={r.data?.features.length}>
-        <span className="flex items-center gap-1.5"><Dot color={REGEN_COLOR} ring />Reuse-ready</span>
+      <LayerRow k="regen" title="Water recycling plants" q={r.isLoading || !r.data ? { ...r, isLoading: !r.isError } : r} count={r.data?.features.length}>
+        <span className="flex items-center gap-1.5"><Dot color={REGEN_COLOR} ring />Ready to supply recycled water</span>
       </LayerRow>
       <LayerRow k="companies" title="Companies" q={c} count={c.data?.features.length}>
         {SECTORS.map((s) => (

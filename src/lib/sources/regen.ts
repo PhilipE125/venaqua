@@ -61,7 +61,7 @@ export async function fetchRegen(wwtps: Plant[]): Promise<SourceResult<RegenPlan
     features.push({
       id: `regen-${normalize(r.era).replace(/\W+/g, "-")}`,
       kind: "regen",
-      name: `ERA ${titleCase(r.era)}`,
+      name: `${titleCase(r.era)} water recycling plant`,
       lat: coords[0],
       lon: coords[1],
       municipi: muni,
