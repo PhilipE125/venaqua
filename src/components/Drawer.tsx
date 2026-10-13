@@ -509,7 +509,7 @@ function RegionDetail() {
 export function AnalysisWorkspace() {
   const { selection, select, maxKm } = useApp();
   const { siteById, companyById, matches } = useMatches();
-  const { save, setContact } = useWorkspace();
+  const { save, setContact, user } = useWorkspace();
   const [tab, setTab] = useState("overview");
   const [summary, setSummary] = useState<OpportunitySnapshot | null>(null);
   const [saving, setSaving] = useState(false);
