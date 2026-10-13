@@ -27,4 +27,4 @@
 - [x] Rename visible app branding, contact drafts, exported briefs and page metadata to Venaqua
 
 # Pitch deck
-- [ ] Standalone 2-slide .pptx pitch deck (market + financials) delivered as a file, not in-app
+- [x] Standalone 2-slide .pptx pitch deck delivered to Files (Venaqua-pitch-deck.pptx); in-app deck route removed
