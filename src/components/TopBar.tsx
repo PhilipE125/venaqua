@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Droplets, FolderOpen, MessageCircle, Moon, Search, Settings2, Sparkles, Sun } from "lucide-react";
+import { ArrowLeft, Droplets, FolderOpen, MessageCircle, Moon, Search, Settings2, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/lib/state";
 import { useWorkspace } from "@/lib/workspace";
