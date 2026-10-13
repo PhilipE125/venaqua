@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import { LANDSCAPE } from "@/lib/landscape";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -105,6 +106,9 @@ function LayersTab() {
         <p>Solid = measured · dashed = modelled · dotted or hollow = assumption or potential.</p>
         <p className="mt-1">Companies: hollow = potential, grey = water-intensive, black = confirmed.</p>
       </div>
+      <LayerRow k="clusters" title="Shared pipe clusters" q={{ isLoading: false, isError: false, error: null, dataUpdatedAt: 0 }}>
+        <span>Groups of 3+ companies that could share one pipe (our estimate)</span>
+      </LayerRow>
       <TenderList />
     </div>
   );
@@ -202,6 +206,44 @@ function OpportunitiesTab() {
   );
 }
 
+function LandscapeBox() {
+  return (
+    <>
+      <div className="rounded-sm border p-3">
+        <p className="label-caps mb-1.5">Known gaps in public data</p>
+        <ul className="list-disc space-y-1 pl-4 text-muted-foreground">
+          {LANDSCAPE.gaps.map((g) => <li key={g}>{g}</li>)}
+        </ul>
+      </div>
+      <div className="rounded-sm border p-3">
+        <p className="label-caps mb-1.5">Who else works on this</p>
+        <p className="mb-2 text-[11px] text-muted-foreground">{LANDSCAPE.note}</p>
+        <table className="w-full">
+          <tbody>
+            {LANDSCAPE.questions.map((q) => (
+              <tr key={q.who} className="border-t align-top">
+                <td className="py-1.5 pr-2">{q.who}</td>
+                <td className="tnum py-1.5 text-right">{q.players} players</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="label-caps mb-1 mt-3">What they already do</p>
+        <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 gap-y-0.5">
+          {LANDSCAPE.capabilities.map((c) => (
+            <Fragment key={c.name}>
+              <span>{c.name}</span>
+              <span className="tnum text-right">{c.players} of {LANDSCAPE.total}</span>
+              <span className="text-right text-muted-foreground">{c.ours}</span>
+            </Fragment>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">Fewest players do shared clusters and future stress, so Reuse Match adds most there.</p>
+      </div>
+    </>
+  );
+}
+
 function DataQualityTab() {
   const w = useWwtps();
   const e = useEea();
@@ -273,6 +315,7 @@ function DataQualityTab() {
           })}
         </tbody>
       </table>
+      <LandscapeBox />
       <div className="rounded-sm border bg-muted/50 p-3">
         <p className="label-caps mb-1.5">Opportunity score</p>
         <p className="font-mono text-[11px] leading-relaxed">score = min(supply, demand) × (1 + stress) / (1 + distance_km)</p>
