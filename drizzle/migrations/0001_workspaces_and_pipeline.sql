@@ -1,0 +1,10 @@
+CREATE TABLE public.workspaces (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL UNIQUE DEFAULT auth.uid(), name text NOT NULL CHECK (length(name) BETWEEN 1 AND 200), full_name text NOT NULL DEFAULT '' CHECK (length(full_name) <= 100), role text NOT NULL DEFAULT '' CHECK (length(role) <= 100), goal text NOT NULL DEFAULT '' CHECK (length(goal) <= 100), plan text NOT NULL DEFAULT 'Free Explorer', onboarding jsonb NOT NULL DEFAULT '{}'::jsonb, created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE ON public.workspaces TO authenticated;
+GRANT ALL ON public.workspaces TO service_role;
+ALTER TABLE public.workspaces ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Owners read workspace" ON public.workspaces FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "Owners create free workspace" ON public.workspaces FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid() AND plan = 'Free Explorer');
+CREATE POLICY "Owners update workspace" ON public.workspaces FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid() AND plan = 'Free Explorer');
+ALTER TABLE public.reuse_projects ADD COLUMN next_action text NOT NULL DEFAULT '', ADD COLUMN confidence text NOT NULL DEFAULT '', ADD COLUMN blocker text NOT NULL DEFAULT '', ADD COLUMN assumptions jsonb NOT NULL DEFAULT '[]'::jsonb, ADD COLUMN evidence jsonb NOT NULL DEFAULT '[]'::jsonb, ADD COLUMN comments jsonb NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE public.reuse_projects ALTER COLUMN stage SET DEFAULT 'Sourcing';
+UPDATE public.reuse_projects SET stage = 'Sourcing' WHERE stage NOT IN ('Sourcing','Screened','Validate supply','Validate demand','Route and cost check','Engineering review','Advanced','Paused','Declined');
