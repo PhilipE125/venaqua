@@ -116,7 +116,6 @@ function Landing() {
           <nav className="hidden items-center gap-5 text-sm text-muted-foreground md:flex">
             <a className="transition-colors hover:text-foreground" href="/#how">How it works</a>
             <a className="transition-colors hover:text-foreground" href="/#teams">For teams</a>
-            <Link className="transition-colors hover:text-foreground" to="/pricing">Pricing</Link>
           </nav>
         </div>
         <div className="flex items-center gap-2">
