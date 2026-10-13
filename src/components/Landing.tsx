@@ -1,8 +1,10 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { useCompanies, useMatches, useWwtps } from "@/lib/queries";
-import { sectorById } from "@/lib/sectors";
+import { useMemo, useState } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { fmt, useCompanies, useMatches, useWwtps } from "@/lib/queries";
+import { normalize, sectorById } from "@/lib/sectors";
 import { useApp } from "@/lib/state";
 
 const QUESTIONS = [
@@ -57,27 +59,38 @@ export function Landing() {
 export function CompanySearch() {
   const { searchOpen, setSearchOpen, select } = useApp();
   const c = useCompanies();
+  const [q, setQ] = useState("");
+  const results = useMemo(() => {
+    const k = normalize(q);
+    if (k.length < 2) return [];
+    return (c.data?.features ?? []).filter((x) => normalize(`${x.name} ${x.municipi}`).includes(k)).slice(0, 40);
+  }, [q, c.data]);
   return (
-    <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
-      <CommandInput placeholder="Search a company or municipality…" />
-      <CommandList>
-        <CommandEmpty>No company found.</CommandEmpty>
-        <CommandGroup heading="Companies">
-          {(c.data?.features ?? []).slice(0, 15000).map((x) => (
-            <CommandItem
-              key={x.id}
-              value={`${x.name} ${x.municipi} ${x.id}`}
-              onSelect={() => {
-                setSearchOpen(false);
-                select({ kind: "company", id: x.id });
-              }}
-            >
-              <span className="truncate">{x.name}</span>
-              <span className="ml-auto shrink-0 text-xs text-muted-foreground">{x.municipi} · {sectorById[x.sector].label}</span>
-            </CommandItem>
+    <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+      <DialogContent className="max-w-lg gap-0 p-0">
+        <DialogTitle className="sr-only">Find a company</DialogTitle>
+        <div className="border-b p-3">
+          <Input autoFocus placeholder="Search a company or municipality…" value={q} onChange={(e) => setQ(e.target.value)} className="h-9 text-sm" />
+        </div>
+        <ul className="max-h-[360px] overflow-y-auto p-1.5">
+          {q.length >= 2 && results.length === 0 && <li className="px-2 py-3 text-xs text-muted-foreground">No company found.</li>}
+          {q.length < 2 && <li className="px-2 py-3 text-xs text-muted-foreground">{c.isLoading ? "Loading companies…" : `Type at least two letters. ${fmt.format(c.data?.features.length ?? 0)} companies.`}</li>}
+          {results.map((x) => (
+            <li key={x.id}>
+              <button
+                className="flex w-full items-baseline gap-2 rounded-sm px-2 py-2 text-left text-sm hover:bg-accent"
+                onClick={() => {
+                  setSearchOpen(false);
+                  select({ kind: "company", id: x.id });
+                }}
+              >
+                <span className="truncate">{x.name}</span>
+                <span className="ml-auto shrink-0 text-xs text-muted-foreground">{x.municipi} · {sectorById[x.sector].label}</span>
+              </button>
+            </li>
           ))}
-        </CommandGroup>
-      </CommandList>
-    </CommandDialog>
+        </ul>
+      </DialogContent>
+    </Dialog>
   );
 }

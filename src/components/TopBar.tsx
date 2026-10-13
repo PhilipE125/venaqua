@@ -1,4 +1,4 @@
-import { Moon, Settings2, Sparkles, Sun } from "lucide-react";
+import { HelpCircle, Moon, Search, Settings2, Sparkles, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -6,7 +6,7 @@ import { useApp } from "@/lib/state";
 import { SettingsDialog } from "./SettingsDialog";
 
 export function TopBar() {
-  const { dark, setDark } = useApp();
+  const { dark, setDark, setSearchOpen, setLanding } = useApp();
   return (
     <header className="panel flex h-12 shrink-0 items-center justify-between border-x-0 border-t-0 px-4">
       <div className="flex items-center gap-5">
@@ -24,6 +24,12 @@ export function TopBar() {
         </Select>
       </div>
       <div className="flex items-center gap-1">
+        <Button variant="outline" size="sm" className="h-8 w-56 justify-start gap-1.5 text-xs text-muted-foreground" onClick={() => setSearchOpen(true)}>
+          <Search className="h-3.5 w-3.5" /> Find a company
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => setLanding(true)}>
+          <HelpCircle className="h-3.5 w-3.5" /> Questions
+        </Button>
         <Tooltip>
           <TooltipTrigger asChild>
             <span>
