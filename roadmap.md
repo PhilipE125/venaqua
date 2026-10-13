@@ -10,10 +10,12 @@
 - [x] C landscape + known gaps
 
 # Current redesign
-- [ ] Calm map-first controls, broad search and practical smaller-screen layout
-- [ ] Opportunity decision workspace with economics, route, evidence and contact
-- [ ] Persistent project shortlist and feasibility brief workflow
-- [ ] Expand to Spain with Catalonia detail preserved; exclude Germany as requested
-- [ ] Regional stress and tariff files (blocked on verified source data if not supplied)
-- [ ] Verify existing question flows and project/contact actions
-- [ ] Provide a prompt separating detailed plant/company analysis from the map without applying that change yet
+- [x] Calm map-first controls, broad search and practical smaller-screen layout
+- [x] Opportunity decision workspace with economics, route, evidence and contact
+- [x] Private project shortlist, notes, activity and indicative feasibility brief workflow implemented
+- [x] Spain-wide EEA treatment plants and existing IED companies; Catalonia overlay preserved; Germany excluded
+- [ ] National basin stress, regional tariffs and visible-region-only loading (verified regional files not supplied)
+- [x] Browser-checked search, economics, project route, evidence and contact fields; 32 regression tests pass
+- [ ] Signed-in saving, notes and download end-to-end check (no auth users; test signup blocked; needs an active account)
+- [ ] Document uploads and actual colleague access (not implemented in this pass)
+- [x] Provided prompt separating detailed plant/company analysis from the map; not applied
