@@ -200,3 +200,9 @@
 .slide-caption { font-size: 24px; line-height: 1.25; }
 .slide-kicker { font-size: 22px; line-height: 1.1; letter-spacing: 0.12em; text-transform: uppercase; }
 .slide-chrome, .slide-footer { font-size: 20px; line-height: 1.15; }
+
+/* Landing page: faded live map behind the hero */
+.landing-map > div:first-child { opacity: 0.5; }
+.landing-map .map-legend,
+.landing-map .panel { display: none !important; }
+.landing-map .maplibregl-ctrl { display: none !important; }
