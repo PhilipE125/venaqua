@@ -56,8 +56,11 @@ function ringIcon(g: RegenPlant, annual: number): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect x="2" y="2" width="12" height="12" fill="#1a1a1a" stroke="#ffffff" stroke-width="2"/></svg>')}`;
-// Opening view per region: Spain, Catalonia, Germany (Berlin-Brandenburg is the German pilot).
-const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 13.5, latitude: 52.45, zoom: 8 } } as const;
+// Opening view per region: all of Spain, Catalonia, all of Germany.
+const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 10.4, latitude: 51.2, zoom: 5.6 } } as const;
+// Circles shrink when zoomed out to a whole country, so dense areas (Ruhr, Madrid) stay readable.
+// radiusScale is a GPU uniform: changing it does not rebuild any per-point attributes.
+const zoomScale = (zoom: number) => Math.round(Math.min(1, Math.max(0.35, 2 ** ((zoom - 8) / 2))) * 20) / 20;
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
 export default function MapView() {
@@ -72,6 +75,7 @@ export default function MapView() {
   const res = useReservoirs();
   const { matches, siteById, companyById } = useMatches();
   const setHover = useRef<(h: Hover) => void>(() => {});
+  const [scale, setScale] = useState(() => zoomScale((camera ?? VIEWS[region]).zoom));
   // Fly to the region when it changes; on first mount keep a saved camera (e.g. coming back from /analysis).
   const firstRun = useRef(true);
   useEffect(() => {
@@ -194,6 +198,7 @@ export default function MapView() {
         getPosition: (d) => [d.lon, d.lat],
         getRadius: (d) => (arcCompanyIds.has(d.id) || selection?.id === d.id ? 4.5 : 2.8),
         radiusUnits: "pixels",
+        radiusScale: Math.max(0.7, scale),
         stroked: true,
         lineWidthMinPixels: 1,
         getLineColor: (d) => {
@@ -217,6 +222,7 @@ export default function MapView() {
         getPosition: (d) => [d.lon, d.lat],
         getRadius: plantRadius,
         radiusUnits: "pixels",
+        radiusScale: scale,
         radiusMaxPixels: 26,
         // Solid fill = measured actual flow (EEA); hollow = assumption.
         getFillColor: (d) => [...LEVEL_COLORS[d.level], d.supply?.actualQuality === "measured" ? (selection?.id === d.id ? 255 : 180) : 40] as [number, number, number, number],
@@ -234,6 +240,7 @@ export default function MapView() {
         getIcon: (d) => ({ url: d.icon, id: d.g.id, width: 64, height: 64 }),
         getSize: (d) => Math.min(26, plantRadius(d.plant)) * 2 + 10,
         sizeUnits: "pixels",
+        sizeScale: scale,
         pickable: true,
       }),
     layers.regen &&
@@ -267,6 +274,7 @@ export default function MapView() {
       <Map
         ref={mapRef}
         onMoveEnd={e => setCamera(e.viewState)}
+        onZoom={e => setScale(zoomScale(e.viewState.zoom))}
         initialViewState={camera ?? VIEWS[region]}
         mapStyle={
           dark

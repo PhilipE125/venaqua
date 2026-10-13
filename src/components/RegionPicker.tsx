@@ -12,6 +12,7 @@ type Country = Area & { subareas: Area[] };
 /** Add countries and their sub-areas here as coverage grows. */
 export const COUNTRIES: Country[] = [
   { id: "es", name: "Spain", subareas: [{ id: "cat", name: "Catalonia" }] },
+  { id: "de", name: "Germany", subareas: [] },
 ];
 
 function labelFor(region: Region) {
@@ -28,7 +29,7 @@ export function RegionPicker() {
   const prefetch = usePrefetchRegion();
   const [open, setOpen] = useState(false);
   const pick = (r: Region) => { setRegion(r); setOpen(false); };
-  return <Popover open={open} onOpenChange={o => { setOpen(o); if (o) prefetch("es"); }}>
+  return <Popover open={open} onOpenChange={o => { setOpen(o); if (o) COUNTRIES.forEach(c => prefetch(c.id)); }}>
     <PopoverTrigger asChild>
       <button className="flex h-8 items-center gap-1.5 rounded-md bg-muted px-2.5 text-xs" aria-label="Choose area">
         <MapPin className="h-3.5 w-3.5 text-primary" />{labelFor(region)}<ChevronDown className="h-3.5 w-3.5 opacity-60" />
