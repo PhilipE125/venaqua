@@ -11,8 +11,8 @@ const kinds: Kind[] = ["company", "wwtp", "regen", "region", "comarca"];
 
 export const Route = createFileRoute("/analysis")({
   validateSearch: (search: Record<string, unknown>): { kind: Kind; id: string } => ({
-    kind: kinds.includes(search.kind as Kind) ? search.kind as Kind : "company",
-    id: typeof search.id === "string" ? search.id : "",
+    kind: kinds.includes(search['kind'] as Kind) ? search['kind'] as Kind : "company",
+    id: typeof search['id'] === "string" ? search['id'] : "",
   }),
   head: () => ({ meta: [
     { title: "Opportunity analysis · Reuse Match" },
