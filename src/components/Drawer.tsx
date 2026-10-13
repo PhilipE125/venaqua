@@ -1,5 +1,6 @@
 import { ArrowRight, BookmarkPlus, ChevronDown, Download, MessageCircle, X } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -505,7 +506,7 @@ function RegionDetail() {
   );
 }
 
-export function Drawer() {
+export function AnalysisWorkspace() {
   const { selection, select, maxKm } = useApp();
   const { siteById, companyById, matches } = useMatches();
   const { save, setContact } = useWorkspace();
@@ -541,14 +542,14 @@ export function Drawer() {
   const sourceIds: SourceId[] = company ? [...(company.sources.includes("aca") ? ["companies" as const] : []), ...(company.sources.includes("eea") ? ["ied" as const] : []), "demand", "costs", "meteo"] : ["wwtp", "eea", "regen", "costs"];
   async function shortlist() { setSaving(true); try { if (await save(snapshot)) { toast.success("Saved to Projects"); setTab("route"); } } catch (e) { toast.error(e instanceof Error ? e.message : "Could not save project"); } finally { setSaving(false); } }
   return (
-    <aside className="panel opportunity-drawer flex flex-col rounded-lg animate-in slide-in-from-right-4 fade-in" aria-label="Opportunity workspace">
+    <section className="mx-auto flex w-full max-w-5xl flex-col px-4 pb-12 sm:px-8" aria-label="Opportunity analysis">
       <div className="flex items-start justify-between gap-2 px-6 pt-5 pb-3">
         <div><p className="mb-2 text-[11px] text-muted-foreground">Evaluate a project</p><h2 className="text-lg font-semibold leading-snug">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{location}</p></div>
-        <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close">
-          <X className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" asChild aria-label="Back to map">
+          <Link to="/" resetScroll={false}><X className="h-4 w-4" /></Link>
         </Button>
       </div>
-      <div className="px-6 pb-4"><div className="mb-3 flex flex-wrap gap-2"><Badge variant="outline" className="border-warning/40 text-warning">Needs validation</Badge><Badge variant="secondary">{company ? "Estimated demand" : site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow" : "Our estimate"}</Badge></div><div className="flex gap-2"><Button className="flex-1" size="sm" disabled={saving} onClick={shortlist}><BookmarkPlus />{saving ? "Saving…" : "Evaluate project"}<ArrowRight /></Button><Button size="sm" variant="outline" aria-label="Contact Reuse Match team" onClick={() => setContact(name ?? "")}><MessageCircle /></Button></div></div>
+      <div className="sticky top-16 z-20 bg-background px-6 py-4"><div className="mb-3 flex flex-wrap gap-2"><Badge variant="outline" className="border-warning/40 text-warning">Needs validation</Badge><Badge variant="secondary">{company ? "Estimated demand" : site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow" : "Our estimate"}</Badge></div><div className="flex gap-2"><Button className="flex-1" size="sm" disabled={saving} onClick={shortlist}><BookmarkPlus />{saving ? "Saving…" : "Save project"}<ArrowRight /></Button><Button size="sm" variant="outline" aria-label="Contact team" onClick={() => setContact(name ?? "")}><MessageCircle />Contact team</Button></div></div>
       <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col"><TabsList className="mx-6 grid shrink-0 grid-cols-4"><TabsTrigger value="overview">Overview</TabsTrigger><TabsTrigger value="economics">Economics</TabsTrigger><TabsTrigger value="route">Project route</TabsTrigger><TabsTrigger value="evidence">Evidence</TabsTrigger></TabsList><div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
         <TabsContent value="overview" className="mt-0">{body}{site && <div className="mt-5 border-l-2 border-primary pl-3"><p className="label-caps">Recommended next step</p><p className="mt-1 text-sm">{base.nextAction}</p></div>}</TabsContent>
         <TabsContent value="economics" className="mt-0">{company ? <CompanyDetail company={company} view="economics" onSummary={setSummary} /> : <><h3 className="text-xl font-semibold">Start with a buyer.</h3><p className="mt-3 text-sm text-muted-foreground">Connection economics depend on each buyer's demand, tariff, water quality and route. Select a potential buyer from the overview to compare mains water, a connection and on-site reuse.</p><Button className="mt-5" variant="outline" onClick={() => setTab("overview")}>View potential buyers<ArrowRight /></Button></>}</TabsContent>
@@ -556,6 +557,27 @@ export function Drawer() {
         <TabsContent value="evidence" className="mt-0"><h3 className="text-xl font-semibold">What supports this opportunity?</h3><p className="my-3 text-sm text-muted-foreground">Public records are evidence of infrastructure, not confirmed spare capacity or buyer commitment.</p>{sourceIds.map(id => <div key={id} className="border-b py-4"><div className="flex items-center justify-between gap-3"><a className="text-sm font-medium hover:text-primary" href={META[id].url} target="_blank" rel="noreferrer">{META[id].name}</a><QualityBadge q={META[id].quality} /></div><p className="mt-1 text-xs text-muted-foreground">{META[id].publisher} · {id === "eea" ? "2022 records" : id === "ied" ? "2024 records" : site?.year ? `${site.year} records` : META[id].updateFrequency}</p><p className="mt-2 text-xs text-muted-foreground">{(META[id] as SourceMeta).knownIssues?.join(". ")}</p></div>)}<p className="mt-4 text-xs text-warning">Needs user confirmation: demand, tariff, water-quality requirements and commercial commitment.</p></TabsContent>
       </div></Tabs>
       <div className="shrink-0 border-t px-6 py-3"><Button variant="link" size="sm" className="h-auto p-0" onClick={() => setContact(name ?? "")}><MessageCircle />Validate this opportunity with us</Button></div>
-    </aside>
+    </section>
   );
+}
+
+
+export function Drawer() {
+  const { selection, select, settings, demandOverride, maxKm } = useApp();
+  const { siteById, companyById, matches } = useMatches();
+  if (!selection) return null;
+  const company = selection.kind === "company" ? companyById.get(selection.id) : undefined;
+  const site = selection.kind === "wwtp" || selection.kind === "regen" ? siteById.get(selection.id) : undefined;
+  const name = company?.name ?? site?.name ?? (selection.kind === "region" ? "Catalonia reuse opportunities" : selection.kind === "comarca" ? `Comarca: ${selection.id}` : null);
+  if (!name) return null;
+  const demand = company ? (demandOverride[company.id] ?? settings.sectorDemand[company.sector] * 365) / 365 : 0;
+  const supply = site ? (site.kind === "wwtp" ? site.supply?.availableReclaimed ?? 0 : Math.max(0, site.capacity - site.reusedVolume / 365)) : 0;
+  const count = matches.filter(m => company ? m.companyId === company.id : m.siteId === site?.id).length;
+  return <aside className="compact-preview rounded-lg border bg-card p-5 shadow-map-panel" aria-label="Opportunity preview">
+    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="label-caps">{company ? "Company" : site ? "Water treatment plant" : "Regional opportunity"}</p><h2 className="mt-1 text-base font-semibold break-words">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{company?.municipi ?? site?.municipi ?? "Catalonia"}</p></div><Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close preview"><X /></Button></div>
+    <p className="mt-3 text-sm">{company || site ? count ? `${count} potential ${company ? "suppliers" : "buyers"} within ${maxKm} km. Validate supply and demand before investing.` : "Needs validation: no ranked link within the current filters." : "Compare potential links and shared-pipe opportunities."}</p>
+    {(company || site) && <p className="tnum mt-3 text-xl font-semibold">{fmt.format(company ? demand : supply)} <span className="text-xs font-normal text-muted-foreground">m³/day · {company ? "indicative demand" : "potential supply"}</span></p>}
+    <p className="mt-2 text-xs text-muted-foreground">{site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow · spare supply needs confirmation" : company && demandOverride[company.id] != null ? "Your demand figure · needs confirmation" : "Estimated · needs confirmation"}</p>
+    <Button asChild className="mt-4 w-full"><Link to="/analysis" search={{ kind: selection.kind, id: selection.id }} resetScroll={false}>Open analysis<ArrowRight /></Link></Button>
+  </aside>;
 }
