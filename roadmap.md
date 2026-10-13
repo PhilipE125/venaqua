@@ -19,3 +19,8 @@
 - [ ] Signed-in saving, notes and download end-to-end check (no auth users; test signup blocked; needs an active account)
 - [ ] Document uploads and actual colleague access (not implemented in this pass)
 - [x] Provided prompt separating detailed plant/company analysis from the map; not applied
+
+# Discovery / analysis separation
+- [ ] Compact map preview and separate four-section analysis page
+- [ ] Preserve camera, filters, selection and company scenario inputs across navigation
+- [ ] Verify map → analysis → map and company/plant views
