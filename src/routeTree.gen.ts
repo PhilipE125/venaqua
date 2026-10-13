@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as DeckRouteImport } from './routes/deck'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -32,6 +33,11 @@ const AnalysisRoute = AnalysisRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeckRoute = DeckRouteImport.update({
+  id: '/deck',
+  path: '/deck',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreRoute = ExploreRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
   '/app': typeof AppRoute
+  '/deck': typeof DeckRoute
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
   '/app': typeof AppRoute
+  '/deck': typeof DeckRoute
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
   '/app': typeof AppRoute
+  '/deck': typeof DeckRoute
   '/explore': typeof ExploreRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analysis'
     | '/app'
+    | '/deck'
     | '/explore'
     | '/login'
     | '/pricing'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analysis'
     | '/app'
+    | '/deck'
     | '/explore'
     | '/login'
     | '/pricing'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analysis'
     | '/app'
+    | '/deck'
     | '/explore'
     | '/login'
     | '/pricing'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalysisRoute: typeof AnalysisRoute
   AppRoute: typeof AppRoute
+  DeckRoute: typeof DeckRoute
   ExploreRoute: typeof ExploreRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/deck': {
+      id: '/deck'
+      path: '/deck'
+      fullPath: '/deck'
+      preLoaderRoute: typeof DeckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore': {
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalysisRoute: AnalysisRoute,
   AppRoute: AppRoute,
+  DeckRoute: DeckRoute,
   ExploreRoute: ExploreRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,

@@ -29,4 +29,4 @@
 ## Public site + workspace (Edith brief)
 - [x] Landing `/`, Explorer `/explore`, Pricing, signup/login, `/app` workspace, gated analysis/projects, pipeline fields
 ## Investor deck (Adwoa)
-- [ ] In-app 2-slide deck: market (TAM/SAM/SOM) + financial projections from market model
+- [x] In-app 2-slide deck (/deck): market (TAM/SAM/SOM) + financial projections from market model
