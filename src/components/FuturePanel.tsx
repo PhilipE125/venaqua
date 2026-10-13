@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -6,6 +6,7 @@ import { cumulative, expectedCut, paybackYear, phaseFrequencies, tariffAt, type 
 import { eurK, fmt1 } from "@/lib/queries";
 import { climateFactor } from "@/lib/sources/aqueduct";
 import type { DroughtEvent, Phase } from "@/lib/sources/drought";
+import { useApp, useScenarioState } from "@/lib/state";
 import { SourceInfo } from "./SourceInfo";
 
 const START = 2026;
@@ -44,8 +45,9 @@ export function useFuture(i: FutureInputs, growth: keyof typeof GROWTH) {
 }
 
 export function FuturePanel({ inputs }: { inputs: FutureInputs }) {
-  const [growth, setGrowth] = useState<keyof typeof GROWTH>("mid");
-  const [year, setYear] = useState(2035);
+  const { selection } = useApp();
+  const [growth, setGrowth] = useScenarioState<keyof typeof GROWTH>(`${selection?.id}:growth`, "mid");
+  const [year, setYear] = useScenarioState(`${selection?.id}:futureYear`, 2035);
   const f = useFuture(inputs, growth);
   const row = f.rows.find((r) => r["year"] === year) ?? f.rows.at(-1)!;
   const best = [f.payB, f.payC].filter((x): x is number => x != null).sort((a, b) => a - b)[0];

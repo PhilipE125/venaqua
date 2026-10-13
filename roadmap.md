@@ -19,3 +19,9 @@
 - [ ] Signed-in saving, notes and download end-to-end check (no auth users; test signup blocked; needs an active account)
 - [ ] Document uploads and actual colleague access (not implemented in this pass)
 - [x] Provided prompt separating detailed plant/company analysis from the map; not applied
+
+# Discovery / analysis separation
+- [x] Compact map preview and separate four-section analysis page
+- [x] Preserve camera, filters, selection and company scenario inputs across navigation
+- [x] Browser-verified map → analysis → map, retained +50% price scenario, plant evidence and contact; 33 tests pass
+- [x] Rename visible app branding, contact drafts, exported briefs and page metadata to Venaqua

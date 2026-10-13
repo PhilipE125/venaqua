@@ -61,7 +61,7 @@ const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longi
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
 export default function MapView() {
-  const { layers, selection, select, dark, sector, confirmed, region } = useApp();
+  const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus } = useApp();
   const pr = useProjects();
   const [popup, setPopup] = useState<ReuseProject | null>(null);
   const clusters = useClusters();
@@ -72,7 +72,15 @@ export default function MapView() {
   const res = useReservoirs();
   const { matches, siteById, companyById } = useMatches();
   const setHover = useRef<(h: Hover) => void>(() => {});
-  useEffect(() => { const v = VIEWS[region]; mapRef.current?.flyTo({ center: [v.longitude, v.latitude], zoom: v.zoom, duration: 700 }); }, [region]);
+  // Fly to the region when it changes; on first mount keep a saved camera (e.g. coming back from /analysis).
+  const firstRun = useRef(true);
+  useEffect(() => {
+    const first = firstRun.current;
+    firstRun.current = false;
+    if (first && camera) return;
+    const v = VIEWS[region];
+    mapRef.current?.flyTo({ center: [v.longitude, v.latitude], zoom: v.zoom, duration: 700 });
+  }, [region]);
 
   const selectedSite =
     selection && selection.kind !== "company" ? siteById.get(selection.id) : undefined;
@@ -122,13 +130,14 @@ export default function MapView() {
 
   // Fly to whatever is selected, from the map, a list or search.
   useEffect(() => {
-    if (!selection || selection.kind === "comarca" || selection.kind === "region") return;
+    if (!selection || cameraFocus === `${selection.kind}:${selection.id}` || selection.kind === "comarca" || selection.kind === "region") return;
     const f = selection.kind === "company" ? companyById.get(selection.id) : siteById.get(selection.id);
     if (!f) return;
     const m = mapRef.current;
     if (!m) return;
     const z = m.getZoom();
-    m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [-180, 0], duration: 900 });
+    setCameraFocus(`${selection.kind}:${selection.id}`);
+    m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [0, -70], duration: 900 });
   }, [selection, companyById, siteById]);
 
   const deckLayers = [
@@ -257,7 +266,8 @@ export default function MapView() {
     <div className="relative h-full w-full">
       <Map
         ref={mapRef}
-        initialViewState={VIEWS[region]}
+        onMoveEnd={e => setCamera(e.viewState)}
+        initialViewState={camera ?? VIEWS[region]}
         mapStyle={
           dark
             ? "https://tiles.openfreemap.org/styles/dark"

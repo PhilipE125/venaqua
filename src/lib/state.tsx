@@ -78,7 +78,15 @@ const KEY = "reuse-match:settings:v2";
 const CONFIRMED_KEY = "reuse-match:confirmed";
 const DEMAND_KEY = "reuse-match:demand";
 
+export interface MapCamera { longitude: number; latitude: number; zoom: number; bearing: number; pitch: number }
+
 interface AppState {
+  camera: MapCamera | null;
+  setCamera: (v: MapCamera) => void;
+  cameraFocus: string | null;
+  setCameraFocus: (v: string | null) => void;
+  scenarioValues: Record<string, unknown>;
+  updateScenario: (key: string, value: unknown) => void;
   region: Region;
   setRegion: (r: Region) => void;
   panelOpen: boolean;
@@ -123,6 +131,9 @@ function load<T>(k: string, fallback: T): T {
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
+  const [camera, setCamera] = useState<MapCamera | null>(null);
+  const [cameraFocus, setCameraFocus] = useState<string | null>(null);
+  const [scenarioValues, setScenarioValues] = useState<Record<string, unknown>>({});
   const [region, setRegion] = useState<Region>("es");
   const [panelOpen, setPanelOpen] = useState(false);
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>(MODE_PRESETS.q2);
@@ -152,8 +163,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AppState>(
     () => ({
+      camera, setCamera, cameraFocus, setCameraFocus, scenarioValues,
+      updateScenario: (key, v) => setScenarioValues(prev => ({ ...prev, [key]: v })),
       region,
-      setRegion: r => { setRegion(r); select(null); },
+      setRegion: r => { setRegion(r); setCamera(null); setCameraFocus(null); select(null); },
       panelOpen,
       setPanelOpen,
       layers,
@@ -210,7 +223,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       searchOpen,
       setSearchOpen,
     }),
-    [layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen, mode, tip, region, panelOpen],
+    [camera, cameraFocus, scenarioValues, layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen, mode, tip, region, panelOpen],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -219,4 +232,10 @@ export function useApp() {
   const v = useContext(Ctx);
   if (!v) throw new Error("useApp outside provider");
   return v;
+}
+
+export function useScenarioState<T>(key: string, fallback: T): [T, (value: T) => void] {
+  const { scenarioValues, updateScenario } = useApp();
+  const value = scenarioValues[key] === undefined ? fallback : scenarioValues[key] as T;
+  return [value, (next: T) => updateScenario(key, next)];
 }

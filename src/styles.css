@@ -156,12 +156,13 @@
 }
 
 .map-shell { height: 100dvh; }
+.compact-preview { position: absolute; right: 20px; bottom: 20px; width: min(360px, calc(100% - 40px)); z-index: 30; }
 .map-left-panel { position: absolute; left: 20px; top: 82px; bottom: 110px; width: 310px; z-index: 20; box-shadow: var(--map-panel-shadow); }
 .opportunity-drawer { position: absolute; right: 20px; top: 20px; bottom: 20px; width: 440px; z-index: 30; box-shadow: var(--map-panel-shadow); }
 .map-context { max-width: calc(100% - 40px); }
 .map-context.with-selection { max-width: calc(100% - 500px); }
 .map-legend { position: absolute; right: 62px; bottom: 110px; }
-.map-legend.with-selection { right: 480px; }
+.map-legend.with-selection { display: none; }
 .maplibregl-ctrl-bottom-right { bottom: 102px !important; }
 .opportunity-drawer h3 { letter-spacing: 0; }
 @media (max-width: 1100px) {
