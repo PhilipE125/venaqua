@@ -1,4 +1,5 @@
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
+import { SourceInfo } from "./SourceInfo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fmt, fmt1, usePrat, useReservoirHistory } from "@/lib/queries";
 
@@ -23,7 +24,8 @@ export function StressStrip() {
   const prat = usePrat();
   const last = res.data?.series.at(-1);
   const first = res.data?.series[0];
-  const pratTotal = prat.data?.series.reduce((s, d) => s + d.value, 0) ?? 0;
+  const pratTotal = prat.data?.series.reduce((s, d) => s + d.reuse, 0) ?? 0;
+  const pratRiver = prat.data?.series.reduce((s, d) => s + d.river, 0) ?? 0;
   return (
     <div className="panel pointer-events-auto absolute bottom-3 left-3 z-10 flex h-[76px] items-stretch gap-6 rounded-md px-4 py-2.5 shadow-md">
       <div className="flex flex-col justify-center">
@@ -32,7 +34,7 @@ export function StressStrip() {
       </div>
       <div className="flex items-center gap-3 border-l pl-5">
         <div>
-          <p className="text-[11px] text-muted-foreground">Avg reservoir fill</p>
+          <p className="flex items-center gap-1 text-[11px] text-muted-foreground">Reservoir fill, volume-weighted <SourceInfo id="reservoirs" date={last?.date} /></p>
           {res.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : res.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
             <p className="tnum text-xl font-medium">
               {fmt1.format(last?.value ?? 0)}%
@@ -46,12 +48,22 @@ export function StressStrip() {
       </div>
       <div className="flex items-center gap-3 border-l pl-5">
         <div>
-          <p className="text-[11px] text-muted-foreground">El Prat reclaimed, 30d</p>
+          <p className="flex items-center gap-1 text-[11px] text-muted-foreground">El Prat reused vs to river, 30d <SourceInfo id="prat" /></p>
           {prat.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : prat.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
-            <p className="tnum text-xl font-medium">{fmt.format(pratTotal / 1000)}<span className="ml-1 text-xs text-muted-foreground">k m³</span></p>
+            <p className="tnum text-xl font-medium">{fmt.format(pratTotal / 1000)}<span className="ml-1 text-xs text-muted-foreground">k m³ reused · {fmt.format(pratRiver / 1000)}k to river</span></p>
           )}
         </div>
-        <div className="h-12 w-40">{prat.data && <Spark data={prat.data.series} color="var(--chart-2)" />}</div>
+        <div className="h-12 w-40">
+          {prat.data && (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={prat.data.series} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
+                <Tooltip contentStyle={{ fontSize: 11, padding: "2px 6px" }} labelFormatter={(_, p) => p?.[0]?.payload?.date ?? ""} formatter={(v) => `${fmt.format(Number(v))} m³/day`} />
+                <Area type="monotone" dataKey="reuse" name="Reused" stackId="1" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.45} strokeWidth={1.5} />
+                <Area type="monotone" dataKey="river" name="To river" stackId="1" stroke="var(--muted-foreground)" fill="var(--muted-foreground)" fillOpacity={0.12} strokeWidth={1} />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
     </div>
   );
