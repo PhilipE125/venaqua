@@ -35,6 +35,7 @@ function Index() {
       <TooltipProvider delayDuration={200}>
         <div className="flex h-screen min-w-[1280px] flex-col overflow-hidden">
           <TopBar />
+          <QuestionBar />
           <div className="flex min-h-0 flex-1">
             <Sidebar />
             <main className="relative min-w-0 flex-1">
@@ -44,7 +45,6 @@ function Index() {
                 </Suspense>
               </ClientOnly>
               <StressStrip />
-              <QuestionBar />
               <Drawer />
               <CompanySearch />
             </main>

@@ -19,8 +19,10 @@ export function QuestionBar() {
   };
   const active = QUESTIONS.find((q) => q.mode === mode);
   return (
-    <div className="absolute left-3 right-3 top-3 z-10 flex flex-col items-start gap-2">
-      <div className="panel flex flex-wrap items-stretch gap-1 rounded-md p-1 shadow-md">
+    <div className="relative z-30 shrink-0">
+      <div className="panel flex items-center gap-3 border-x-0 border-t-0 px-3 py-1.5">
+        <span className="label-caps shrink-0">Your question</span>
+      <div className="flex flex-wrap items-stretch gap-1">
         {QUESTIONS.map((q, i) => (
           <button
             key={q.mode}
@@ -38,9 +40,10 @@ export function QuestionBar() {
           Explore everything
         </button>
       </div>
-      {active && <p className="panel max-w-[560px] rounded-sm px-3 py-1.5 text-xs shadow-sm">“{active.q}”</p>}
+      {active && <p className="hidden min-w-0 flex-1 truncate text-xs text-muted-foreground xl:block">“{active.q}”</p>}
+      </div>
       {tip && (
-        <div className="panel flex max-w-[560px] items-start gap-3 rounded-md p-3 text-xs shadow-md">
+        <div className="panel absolute left-[392px] top-full mt-2 flex max-w-[560px] items-start gap-3 rounded-md p-3 text-xs shadow-md">
           <ol className="flex-1 list-inside list-decimal space-y-0.5">
             <li>Pick the question that matches your role above.</li>
             <li>Click a plant or a company on the map, or use “Find a company”.</li>
