@@ -1,17 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { ClientOnly } from "@tanstack/react-router";
-import { lazy, Suspense, useState } from "react";
-import { Sparkles, X } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, Droplets, Factory, Map, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/lib/workspace";
-import { Drawer } from "@/components/Drawer";
-import { CompanySearch, QuestionBar } from "@/components/Landing";
-import { Sidebar } from "@/components/Sidebar";
-import { StressStrip } from "@/components/StressStrip";
-import { TopBar } from "@/components/TopBar";
-import { TooltipProvider } from "@/components/ui/tooltip";
-
-const MapView = lazy(() => import("@/components/map/MapView"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,50 +14,76 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: Index,
+  component: Landing,
 });
 
-function MapFallback() {
-  return <div className="h-full w-full animate-pulse bg-muted" />;
-}
+const FEATURES = [
+  {
+    icon: Map,
+    title: "Find reuse-ready water near you",
+    text: "Live public data on treatment plants, reuse volumes and industrial demand across Spain, with Catalonia in full detail.",
+  },
+  {
+    icon: TrendingUp,
+    title: "Compare the economics",
+    text: "See reclaimed water versus your tariff, with transparent assumptions and drought-stress scenarios through 2050.",
+  },
+  {
+    icon: Factory,
+    title: "Develop the project",
+    text: "Save opportunities, track them through a pipeline and request an indicative feasibility brief from the team.",
+  },
+];
 
-function FreeMapBanner() {
-  const { user, setAuthOpen } = useWorkspace();
-  const [dismissed, setDismissed] = useState(false);
-  if (user || dismissed) return null;
+function Landing() {
+  const { setAuthOpen } = useWorkspace();
   return (
-    <div className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(92%,560px)] -translate-x-1/2 items-center gap-3 rounded-xl border bg-card/95 px-4 py-2.5 shadow-lg backdrop-blur">
-      <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-      <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground">
-        You're viewing the <span className="font-medium text-foreground">free map</span>. Create an account to save projects, run full economics and get a feasibility brief.
-      </p>
-      <Button size="sm" className="shrink-0" onClick={() => setAuthOpen(true)}>Get started</Button>
-      <button aria-label="Dismiss" className="shrink-0 text-muted-foreground hover:text-foreground" onClick={() => setDismissed(true)}><X className="h-4 w-4" /></button>
-    </div>
-  );
-}
-
-function Index() {
-  return (
-      <TooltipProvider delayDuration={200}>
-        <div className="map-shell flex flex-col overflow-hidden">
-          <TopBar />
-          <div className="relative flex min-h-0 flex-1">
-            <main className="relative min-w-0 flex-1">
-              <ClientOnly fallback={<MapFallback />}>
-                <Suspense fallback={<MapFallback />}>
-                  <MapView />
-                </Suspense>
-              </ClientOnly>
-              <FreeMapBanner />
-              <QuestionBar />
-              <Sidebar />
-              <StressStrip />
-              <Drawer />
-              <CompanySearch />
-            </main>
-          </div>
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="flex items-center justify-between border-b px-5 py-3">
+        <div className="flex items-center gap-2">
+          <Droplets className="h-5 w-5 text-primary" />
+          <span className="font-semibold tracking-tight">Venaqua</span>
         </div>
-      </TooltipProvider>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button>
+          <Button size="sm" onClick={() => setAuthOpen(true)}>Get started — full version</Button>
+        </div>
+      </header>
+
+      <main className="flex flex-1 flex-col">
+        <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-5 pb-16 pt-20 text-center sm:pt-28">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Industrial water reuse · Spain</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+            Match reclaimed water supply with the companies that need it
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Venaqua screens treatment plants and industrial water demand on live public data, so you can find, evaluate and develop reuse projects with confidence.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <Button asChild size="lg">
+              <Link to="/explore">Explore the free map<ArrowRight /></Link>
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => setAuthOpen(true)}>Get started — full version</Button>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">No account needed for the map. Free to explore.</p>
+        </section>
+
+        <section className="border-t bg-muted/40">
+          <div className="mx-auto grid w-full max-w-5xl gap-6 px-5 py-14 sm:grid-cols-3">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="rounded-xl border bg-card p-6">
+                <f.icon className="h-5 w-5 text-primary" />
+                <h2 className="mt-3 font-semibold">{f.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t px-5 py-6 text-center text-xs text-muted-foreground">
+        Venaqua · Built on public European water data · support@venaqua.com
+      </footer>
+    </div>
   );
 }
