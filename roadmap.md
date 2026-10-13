@@ -8,3 +8,11 @@
 - [x] Q1 totals + CSV; Q3 site facts
 - [x] A6 first-visit tip, A7 fly-to
 - [x] C landscape + known gaps
+
+# Current redesign
+- [ ] Calm map-first controls, broad search and practical smaller-screen layout
+- [ ] Opportunity decision workspace with economics, route, evidence and contact
+- [ ] Persistent project shortlist and feasibility brief workflow
+- [ ] Expand to Spain with Catalonia detail preserved; exclude Germany as requested
+- [ ] Regional stress and tariff files (blocked on verified source data if not supplied)
+- [ ] Verify existing question flows and project/contact actions
