@@ -5,12 +5,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { droughtLoss, mid, opportunityCost, optionA, optionB, optionC, type CostInputs, type Range } from "@/lib/costs";
+import { crf, droughtLoss, mid, opportunityCost, optionA, optionB, optionC, type CostInputs, type Range } from "@/lib/costs";
 import { eurK, fmt, fmt1, fmt2, useDrought, useElevation, useWwtps } from "@/lib/queries";
 import { haversineKm } from "@/lib/score";
 import { muniKey } from "@/lib/sectors";
 import { currentPhase, phaseDaysInYear, PHASES, type Phase } from "@/lib/sources/drought";
-import { useApp } from "@/lib/state";
+import { useApp, type Mode } from "@/lib/state";
+import { Answer, Details } from "./Drawer";
+import { FuturePanel, type FutureInputs } from "./FuturePanel";
 import type { Company, Plant } from "@/lib/types";
 import { QualityBadge, SourceInfo } from "./SourceInfo";
 
@@ -65,7 +67,9 @@ function RangeBars({ rows, tariff, max }: { rows: { key: string; label: string; 
 
 const fmtR = (r: Range, f: (n: number) => string) => (Math.abs(r[0] - r[1]) < 1e-9 ? f(r[0]) : `${f(r[0])}–${f(r[1])}`);
 
-export function WaterOptions({ company }: { company: Company }) {
+const EFFLUENT = { light: { label: "Light (cooling, rinsing)", k: 0.8 }, medium: { label: "Medium (mixed process)", k: 1 }, heavy: { label: "Heavy (food, chemicals)", k: 1.4 } } as const;
+
+export function WaterOptions({ company, focus = "all" }: { company: Company; focus?: Mode }) {
   const { settings, demandOverride, setDemandOverride, select } = useApp();
   const w = useWwtps();
   const drought = useDrought();
@@ -73,6 +77,8 @@ export function WaterOptions({ company }: { company: Company }) {
   const [elec, setElec] = useState<"low" | "base" | "high">("base");
   const [phaseOverride, setPhaseOverride] = useState<Phase | "current">("current");
   const [replay, setReplay] = useState(false);
+  const [effluent, setEffluent] = useState<keyof typeof EFFLUENT>(company.sector === "food" || company.sector === "chemicals" ? "heavy" : "medium");
+  const [dischargePct, setDischargePct] = useState(80);
   const [local, setLocal] = useState({ tariff: settings.tariff, dischargeCharge: settings.dischargeCharge, rate: settings.rate, years: settings.years });
 
   const sectorQ = (settings.sectorDemand[company.sector] ?? 0) * 365;
@@ -97,7 +103,8 @@ export function WaterOptions({ company }: { company: Company }) {
   const calc = useMemo(() => {
     const tariff = local.tariff * (1 + Number(tariffShock) / 100);
     const e = settings.electricity[elec];
-    const inputs: CostInputs = { demandM3PerYear: Q, tariff, dischargeCharge: local.dischargeCharge, rate: local.rate, years: local.years, electricity: [e, e] };
+    // Discharge charge applies to the share of water discharged, spread over total demand.
+    const inputs: CostInputs = { demandM3PerYear: Q, tariff, dischargeCharge: local.dischargeCharge * (dischargePct / 100), rate: local.rate, years: local.years, electricity: [e, e] };
     const A = optionA(inputs);
     const distanceKm = candidate ? candidate.d * settings.detourFactor : 0;
     const liftM = elev.data ? Math.max(0, elev.data.b - elev.data.a) + (settings.frictionPer10km * distanceKm) / 10 : (settings.frictionPer10km * distanceKm) / 10;
@@ -112,7 +119,8 @@ export function WaterOptions({ company }: { company: Company }) {
           availableM3PerDay: candidate.p.supply.availableReclaimed,
         })
       : null;
-    const C = optionC(inputs, { recoveryRate: settings.recoveryRate, capexPerM3Day: settings.onsiteCapex, opex: settings.onsiteOpex });
+    const ek = EFFLUENT[effluent].k;
+    const C = optionC(inputs, { recoveryRate: settings.recoveryRate, capexPerM3Day: [settings.onsiteCapex[0] * ek, settings.onsiteCapex[1] * ek], opex: [settings.onsiteOpex[0] * ek, settings.onsiteOpex[1] * ek] });
 
     // Drought: current/selected phase, or 2023 replay weighted by days in each phase.
     let cut = settings.droughtCut[phase];
@@ -128,8 +136,19 @@ export function WaterOptions({ company }: { company: Company }) {
     const bestIsB = !!B && mid(bAnnual) + lossB < mid(C.annualCost) + lossC;
     const opp = opportunityCost(A.annualCost, bAnnual, C.annualCost, lossA, bestIsB ? lossB : lossC);
     const cheapest = mid(A.annualCost) + lossA <= Math.min(mid(bAnnual) + lossB, mid(C.annualCost) + lossC) ? "A" : bestIsB ? "B" : "C";
-    return { tariff, A, B, C, distanceKm, liftM, lossA, lossB, lossC, opp, cheapest, days2023, cut };
-  }, [Q, local, tariffShock, elec, settings, candidate, elev.data, phase, replay, events]);
+    const k = crf(local.rate, local.years);
+    const future: FutureInputs = {
+      q: Q,
+      tariff0: tariff,
+      dischargeCharge: inputs.dischargeCharge,
+      valuePerM3Lost: settings.valuePerM3Lost,
+      cuts: settings.droughtCut,
+      events,
+      B: B ? { capex: mid(B.capex), opexAtT0: mid(B.annualCost) - mid(B.capex) * k, mainsShare: 1 - B.coverage, coverage: B.coverage } : null,
+      C: { capex: mid(C.capex), opexAtT0: mid(C.annualCost) - mid(C.capex) * k, mainsShare: 1 - mid(settings.recoveryRate), protectedShare: mid(settings.recoveryRate) },
+    };
+    return { tariff, A, B, C, distanceKm, liftM, lossA, lossB, lossC, opp, cheapest, days2023, cut, future };
+  }, [Q, local, tariffShock, elec, settings, candidate, elev.data, phase, replay, events, effluent, dischargePct]);
 
   if (w.isLoading || !w.data) return <Skeleton className="h-60 w-full" />;
   const { A, B, C } = calc;
@@ -140,10 +159,38 @@ export function WaterOptions({ company }: { company: Company }) {
     { key: "C", label: "C · On site", perM3: C.perM3, best: calc.cheapest === "C" },
   ];
 
+  const names = { A: "doing nothing", B: "connecting to recycled water", C: "on-site reuse" } as const;
+  const saving = B && calc.cheapest === "B" ? [A.annualCost[0] - B.annualCost[1], A.annualCost[1] - B.annualCost[0]] : [A.annualCost[0] - C.annualCost[1], A.annualCost[1] - C.annualCost[0]];
+  const measured = [candidate?.p.supply.actualQuality === "measured", userQ != null, !!elev.data].filter(Boolean).length;
+  const confidence = <span className="text-muted-foreground"> Confidence: {measured} of 3 key inputs are measured or yours (plant flow, your demand, elevation); costs are benchmarks.</span>;
+  const answer =
+    focus === "q2" ? (
+      <Answer
+        eyebrow="Answer"
+        big={B ? (B.perM3[1] < calc.tariff + inputs0(local, dischargePct) ? "Yes" : B.perM3[0] < calc.tariff + inputs0(local, dischargePct) ? "Maybe" : "Not yet") : "No"}
+      >
+        {B && candidate
+          ? `${candidate.p.name}, ${fmt1.format(calc.distanceKm)} km away, could supply ${fmt.format(B.coverage * 100)}% of your water for €${fmt2.format(B.perM3[0])}–${fmt2.format(B.perM3[1])}/m³, against €${fmt2.format(A.perM3[0])} today.`
+          : `No plant with spare recycled water within ${SEARCH_KM} km.`}
+        {confidence}
+      </Answer>
+    ) : (
+      <Answer eyebrow="Answer" big={calc.cheapest === "A" ? "Keep mains water for now" : `Cheapest: ${names[calc.cheapest as "B" | "C"]}`}>
+        {calc.cheapest === "A"
+          ? "Neither recycled water nor on-site reuse beats your current bill under these assumptions."
+          : `Saves about ${eurK(Math.max(0, saving[0]!))}–${eurK(Math.max(0, saving[1]!))} a year compared with today.`}
+        {confidence}
+      </Answer>
+    );
+
   return (
-    <section className="mt-5">
+    <section className="mt-4">
+      <div className="mb-3">{answer}</div>
+      {focus === "q5" && (
+        <div className="mb-5"><FuturePanel inputs={calc.future} /></div>
+      )}
       <div className="mb-2 flex items-baseline justify-between">
-        <h3 className="text-sm font-medium">Water options</h3>
+        <h3 className="text-sm font-medium">Compare the three options</h3>
         <span className="label-caps">benchmark ranges, not a design</span>
       </div>
 
@@ -163,9 +210,10 @@ export function WaterOptions({ company }: { company: Company }) {
         <p className="text-[11px] text-muted-foreground">Effective € per m³ of demand, low–high. Line = today's tariff{tariffShock !== "0" ? ` +${tariffShock}%` : ""}.</p>
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-4 space-y-3 rounded-sm border p-3">
+        <p className="text-sm font-medium">What if…</p>
         <div className="flex items-center justify-between gap-2">
-          <span className="label-caps">Tariff shock</span>
+          <span className="label-caps">Water price rises</span>
           <ToggleGroup type="single" size="sm" variant="outline" value={tariffShock} onValueChange={(v) => v && setTariffShock(v)}>
             {["0", "25", "50"].map((v) => <ToggleGroupItem key={v} value={v} className="h-7 px-2.5 text-xs">+{v}%</ToggleGroupItem>)}
           </ToggleGroup>
@@ -247,7 +295,7 @@ export function WaterOptions({ company }: { company: Company }) {
 
       <div className="mt-4 rounded-sm border p-3">
         <div className="mb-2 flex items-center justify-between">
-          <p className="label-caps">Inputs</p>
+          <p className="text-sm font-medium">Your site facts</p>
           <QualityBadge q={userQ != null ? "your figure" : "estimate"} />
         </div>
         <div className="grid grid-cols-2 gap-2">
@@ -256,6 +304,14 @@ export function WaterOptions({ company }: { company: Company }) {
           <NumField label="Discharge charge €/m³" value={local.dischargeCharge} onChange={(n) => setLocal({ ...local, dischargeCharge: n })} />
           <NumField label="Discount rate" value={local.rate} onChange={(n) => setLocal({ ...local, rate: n })} />
           <NumField label="Lifetime, years" step={1} value={local.years} onChange={(n) => setLocal({ ...local, years: Math.max(1, n) })} />
+          <NumField label="Share discharged %" step={5} value={dischargePct} onChange={(n) => setDischargePct(Math.min(100, n))} />
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[11px] font-normal text-muted-foreground">Wastewater type (sets on-site treatment cost)</Label>
+            <Select value={effluent} onValueChange={(v) => setEffluent(v as keyof typeof EFFLUENT)}>
+              <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>{(Object.keys(EFFLUENT) as (keyof typeof EFFLUENT)[]).map((k) => <SelectItem key={k} value={k}>{EFFLUENT[k].label}</SelectItem>)}</SelectContent>
+            </Select>
+          </div>
         </div>
         {userQ != null && (
           <button className="mt-2 text-[11px] text-muted-foreground underline" onClick={() => setDemandOverride(company.id, null)}>
@@ -264,6 +320,13 @@ export function WaterOptions({ company }: { company: Company }) {
         )}
         <p className="mt-2 text-[11px] text-muted-foreground">Defaults are assumptions: tariff is the INE Spain average; other ranges are in settings.</p>
       </div>
+      {focus !== "q5" && (
+        <Details label="Show future exposure to 2050">
+          <div className="mt-3"><FuturePanel inputs={calc.future} /></div>
+        </Details>
+      )}
     </section>
   );
 }
+
+const inputs0 = (l: { dischargeCharge: number }, pct: number) => l.dischargeCharge * (pct / 100);
