@@ -10,7 +10,7 @@ import { buyerStatus, STATUS_LABEL } from "@/lib/knownUsers";
 import { haversineKm } from "@/lib/score";
 import { eurK, fmt, fmt1, fmt2, useClusters, useCompanies, useDrought, useMatches, useMeteo, usePrat, useRegen, useStress, useTenders, useWwtps } from "@/lib/queries";
 import { mid } from "@/lib/costs";
-import { currentPhase, PHASES } from "@/lib/sources/drought";
+import { currentPhase } from "@/lib/sources/drought";
 import { muniKey, normalize, sectorById } from "@/lib/sectors";
 import type { Quality } from "@/lib/sources/contract";
 import { useApp } from "@/lib/state";
@@ -319,7 +319,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
 }
 
 function CompanyDetail({ company }: { company: Company }) {
-  const { settings, select, confirmed, toggleConfirmed, demandOverride } = useApp();
+  const { settings, select, confirmed, toggleConfirmed, demandOverride, mode } = useApp();
   const w = useWwtps();
   const status = buyerStatus(company, confirmed);
   const nearest = useMemo(
@@ -346,8 +346,9 @@ function CompanyDetail({ company }: { company: Company }) {
         {confirmed.has(company.id) ? "Remove my confirmation" : "I know this company uses reclaimed water"}
       </button>
 
-      <WaterOptions company={company} />
+      <WaterOptions company={company} focus={mode} />
 
+      <Details label="About this company">
       <Section title="Company">
         <Row k="Municipality" v={company.municipi} />
         <Row k="Activity" info={<SourceInfo id={company.sources.includes("aca") ? "companies" : "ied"} />} v={<span className="line-clamp-2 max-w-[220px]">{company.ccae}</span>} />
@@ -375,6 +376,7 @@ function CompanyDetail({ company }: { company: Company }) {
           </ul>
         )}
       </Section>
+      </Details>
     </>
   );
 }
@@ -418,13 +420,94 @@ function ComarcaDetail({ comarca }: { comarca: string }) {
   );
 }
 
+const PHASE_WEIGHT: Record<string, number> = { normal: 0, "pre-alert": 0.25, alert: 0.5, exceptional: 0.75, emergency: 1 };
+
+function RegionDetail() {
+  const { select, maxKm, settings } = useApp();
+  const { matches, siteById, companyById } = useMatches();
+  const drought = useDrought();
+  const { stress, fill } = useStress();
+  const clusters = useClusters();
+  const w = useWwtps();
+  const links = useMemo(() => {
+    // Pressure relief = water moved off the mains, weighted by local drought phase and reservoir stress.
+    return matches
+      .map((m) => {
+        const co = companyById.get(m.companyId)!;
+        const ph = currentPhase(drought.data?.byMuni.get(muniKey(co.municipi)))?.phase ?? "normal";
+        const severity = PHASE_WEIGHT[ph] ?? 0;
+        return { ...m, co, ph, relief: m.matched * (1 + severity + stress) };
+      })
+      .sort((a, b) => b.relief - a.relief)
+      .slice(0, 10);
+  }, [matches, companyById, drought.data, stress]);
+  const comarques = useMemo(() => [...new Set((w.data?.features ?? []).map((p) => p.comarca).filter(Boolean))].sort(), [w.data]);
+  return (
+    <>
+      <Answer
+        eyebrow="Answer"
+        big={clusters[0] ? <>{fmt2.format(clusters[0].costPerM3[0])}–{fmt2.format(clusters[0].costPerM3[1])} <span className="text-sm font-normal text-muted-foreground">€/m³ pipe cost, best shared link</span></> : undefined}
+      >
+        {clusters.length
+          ? `${clusters.length} groups of companies could share one pipe from a plant within ${maxKm} km. The best one serves ${clusters[0]!.companyIds.length} companies near ${siteById.get(clusters[0]!.plantId)?.name ?? "a plant"}.`
+          : "Looking for groups of companies that could share one pipe…"}
+        <span className="text-muted-foreground"> Reservoirs are {fill != null ? `${fmt1.format(fill)}% full` : "loading"}.</span>
+      </Answer>
+
+      <Section title="Shared pipe clusters" note={<span className="flex items-center gap-1">our estimate <SourceInfo id="costs" /></span>}>
+        <p className="mb-2 text-[11px] text-muted-foreground">Three or more companies in the same direction from one plant, sharing a trunk pipe with short branches. Outlined on the map.</p>
+        <table className="w-full text-xs">
+          <thead><tr className="text-left text-muted-foreground"><th className="pb-1 font-normal">Plant</th><th className="pb-1 text-right font-normal">Firms</th><th className="pb-1 text-right font-normal">m³/day</th><th className="pb-1 text-right font-normal">€/m³</th></tr></thead>
+          <tbody>
+            {clusters.slice(0, 10).map((c) => (
+              <tr key={c.plantId + c.companyIds[0]} className="cursor-pointer border-t hover:bg-accent" onClick={() => select({ kind: "wwtp", id: c.plantId })}>
+                <td className="max-w-[170px] truncate py-1.5 pr-2">{siteById.get(c.plantId)?.name}</td>
+                <td className="tnum text-right">{c.companyIds.length}</td>
+                <td className="tnum text-right">{fmt.format(c.delivered)}</td>
+                <td className="tnum text-right">{fmt2.format(mid(c.costPerM3))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-1.5 text-[11px] text-muted-foreground">Pipe cost only, {eurK(settings.pipeCostPerKm[0])}–{eurK(settings.pipeCostPerKm[1])} per km, over {settings.years} years.</p>
+      </Section>
+
+      <Section title="Links that relieve the most stressed sources" note="top 10">
+        <p className="mb-2 text-[11px] text-muted-foreground">Water moved off the mains, weighted up where the municipality is in a drought phase and reservoirs are low.</p>
+        <ol className="space-y-1 text-xs">
+          {links.map((l, i) => (
+            <li key={l.siteId + l.companyId}>
+              <button className="flex w-full justify-between gap-2 rounded-sm px-1.5 py-1 text-left hover:bg-accent" onClick={() => select({ kind: "company", id: l.companyId })}>
+                <span className="truncate"><span className="tnum mr-1.5 text-muted-foreground">{i + 1}</span>{l.co.name} ← {siteById.get(l.siteId)?.name}</span>
+                <span className="tnum shrink-0 text-muted-foreground">{fmt.format(l.matched)} m³/d{l.ph !== "normal" ? ` · ${l.ph}` : ""}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      <Details label="Look at one comarca">
+        <div className="mt-3">
+          <Select onValueChange={(v) => select({ kind: "comarca", id: v })}>
+            <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Choose a comarca" /></SelectTrigger>
+            <SelectContent>{comarques.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+      </Details>
+    </>
+  );
+}
+
 export function Drawer() {
   const { selection, select } = useApp();
   const { siteById, companyById } = useMatches();
   if (!selection) return null;
   let name: string | undefined;
   let body: React.ReactNode = null;
-  if (selection.kind === "comarca") {
+  if (selection.kind === "region") {
+    name = "Catalonia: where reuse helps most";
+    body = <RegionDetail />;
+  } else if (selection.kind === "comarca") {
     name = `Comarca: ${selection.id}`;
     body = <ComarcaDetail comarca={selection.id} />;
   } else if (selection.kind === "company") {
