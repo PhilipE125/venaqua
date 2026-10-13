@@ -50,11 +50,20 @@ export function scorePairs(
 ): Match[] {
   const out: Match[] = [];
   const dLat = opts.maxKm / 111;
+  // Sorted by latitude so each site only scans the companies in its latitude band.
+  const byLat = [...companies].sort((a, b) => a.lat - b.lat);
   for (const s of sites) {
     if (!(s.supply > 0)) continue;
     const dLon = opts.maxKm / (111 * Math.cos((s.lat * Math.PI) / 180));
-    for (const c of companies) {
-      if (Math.abs(c.lat - s.lat) > dLat || Math.abs(c.lon - s.lon) > dLon) continue;
+    let lo = 0, hi = byLat.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (byLat[mid]!.lat < s.lat - dLat) lo = mid + 1;
+      else hi = mid;
+    }
+    for (let i = lo; i < byLat.length && byLat[i]!.lat <= s.lat + dLat; i++) {
+      const c = byLat[i]!;
+      if (Math.abs(c.lon - s.lon) > dLon) continue;
       const d = haversineKm(s, c);
       if (d > opts.maxKm) continue;
       const raw = rawScore({ supply: s.supply, demand: c.demand, stress: opts.stress, distanceKm: d });

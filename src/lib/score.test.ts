@@ -40,6 +40,16 @@ describe("scorePairs", () => {
     expect(m[0]?.companyId).toBe("near");
     expect(m[0]?.score).toBe(100);
   });
+  it("finds the same pairs as a brute-force scan", () => {
+    const grid = (n: number, f: (i: number) => [number, number]) => Array.from({ length: n }, (_, i) => f(i));
+    const ss = grid(20, (i) => [40 + ((i * 7) % 20) / 10, 1 + ((i * 3) % 20) / 10]).map(([lat, lon], i) => ({ id: `s${i}`, lat, lon, supply: 100 }));
+    const cs = grid(200, (i) => [40 + ((i * 13) % 200) / 100, 1 + ((i * 17) % 200) / 100]).map(([lat, lon], i) => ({ id: `c${i}`, lat, lon, demand: 10 }));
+    const key = (m: { siteId: string; companyId: string }) => `${m.siteId}-${m.companyId}`;
+    const got = scorePairs(ss, cs, { maxKm: 15, stress: 0 }).map(key).sort();
+    const want = ss.flatMap((s) => cs.filter((c) => haversineKm(s, c) <= 15).map((c) => key({ siteId: s.id, companyId: c.id }))).sort();
+    expect(want.length).toBeGreaterThan(0);
+    expect(got).toEqual(want);
+  });
 });
 
 describe("businessCase", () => {

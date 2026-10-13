@@ -21,6 +21,18 @@ import type { Company, SupplySite } from "./types";
 const H = 60 * 60 * 1000;
 const opts = { staleTime: H, gcTime: 2 * H, retry: 1, refetchOnWindowFocus: false } as const;
 
+// One result per input set, shared by every component that calls the hook, so the heavy
+// derivations (plant join, company merge, pair scoring, clusters) run once, not once per caller.
+type Slot = { deps?: unknown[]; value?: unknown };
+function shared<T>(slot: Slot, deps: unknown[], fn: () => T): T {
+  if (!slot.deps || slot.deps.length !== deps.length || slot.deps.some((d, i) => !Object.is(d, deps[i]))) {
+    slot.value = fn();
+    slot.deps = deps;
+  }
+  return slot.value as T;
+}
+const slots = { plants: {} as Slot, plantsData: {} as Slot, companies: {} as Slot, companiesData: {} as Slot, matches: {} as Slot, clusters: {} as Slot };
+
 const useWwtpsRaw = () => useQuery({ queryKey: ["wwtp"], queryFn: fetchWwtps, ...opts });
 export const useEea = () => useQuery({ queryKey: ["eea-es"], queryFn: fetchEeaSpain, ...opts, staleTime: 24 * H, gcTime: 24 * H });
 
@@ -40,23 +52,26 @@ export function useWwtps() {
   const w = useWwtpsRaw();
   const e = useEea();
   const g = useRegen();
-  const enriched = useMemo(() => {
+  const enriched = shared(slots.plants, [w.data, e.data, g.data, region], () => {
     const cat = w.data ? enrichPlants(w.data.features, e.data?.plants, g.data?.features ?? []) : null;
     if (region === "cat") return cat;
     const joined = new Set((cat?.plants ?? []).map(p => p.supply?.eeaCode).filter(Boolean));
     const national = [...(e.data?.plants.values() ?? [])].filter(p => !joined.has(p.code)).map(nationalPlant).filter((p): p is NonNullable<typeof p> => p !== null);
     return { plants: [...(cat?.plants ?? []), ...national], matched: cat?.matched ?? 0, total: cat?.total ?? 0 };
-  }, [w.data, e.data, g.data, region]);
-  return useMemo(
-    () => ({
-      ...w,
-      isLoading: region === "es" ? w.isLoading && e.isLoading : w.isLoading,
-      data: enriched ? { ...(w.data ?? { fetchedAt: e.data?.fetchedAt ?? "" }), features: enriched.plants } : undefined,
-      join: enriched && e.data ? { matched: enriched.matched, total: enriched.total } : null,
-      eeaLoading: e.isLoading,
-    }),
-    [w, enriched, e.data, e.isLoading, region],
+  });
+  // useQuery returns a fresh object every render: key `data` on its stable parts only,
+  // or every consumer's memo (scoring, map layers) recomputes on every render.
+  const data = shared(slots.plantsData, [enriched, w.data, e.data?.fetchedAt], () =>
+    enriched ? { ...(w.data ?? { fetchedAt: e.data?.fetchedAt ?? "" }), features: enriched.plants } : undefined,
   );
+  const join = useMemo(() => (enriched && e.data ? { matched: enriched.matched, total: enriched.total } : null), [enriched, e.data]);
+  return {
+    ...w,
+    isLoading: region === "es" ? w.isLoading && e.isLoading : w.isLoading,
+    data,
+    join,
+    eeaLoading: e.isLoading,
+  };
 }
 
 const useAcaCompanies = () => useQuery({ queryKey: ["companies"], queryFn: fetchCompanies, ...opts });
@@ -70,7 +85,7 @@ export function useCompanies() {
   const { region } = useApp();
   const a = useAcaCompanies();
   const i = useIed();
-  const merged = useMemo(() => {
+  const merged = shared(slots.companies, [a.data, i.data, region], () => {
     if (!a.data && !i.data) return null;
     const m = mergeCompanies(a.data?.features ?? [], i.data?.facilities ?? []);
     const companies: Company[] = m.companies.map((c) => {
@@ -78,17 +93,15 @@ export function useCompanies() {
       return src ? { ...c, confirmedSource: src } : c;
     });
     return { ...m, companies: region === "cat" ? companies.filter(c => c.lat > 40.4 && c.lat < 42.9 && c.lon > 0.1 && c.lon < 3.4) : companies };
-  }, [a.data, i.data, region]);
-  return useMemo(
-    () => ({
-      ...a,
-      isLoading: a.isLoading && i.isLoading,
-      data: merged ? { ...(a.data ?? { fetchedAt: i.data?.fetchedAt ?? "" }), features: merged.companies } : undefined,
-      ied: i,
-      mergeStats: merged && i.data ? { merged: merged.merged, iedExcluded: merged.excluded, iedFetched: i.data.fetched } : null,
-    }),
-    [a, merged, i],
+  });
+  const data = shared(slots.companiesData, [merged, a.data, i.data?.fetchedAt], () =>
+    merged ? { ...(a.data ?? { fetchedAt: i.data?.fetchedAt ?? "" }), features: merged.companies } : undefined,
   );
+  const mergeStats = useMemo(
+    () => (merged && i.data ? { merged: merged.merged, iedExcluded: merged.excluded, iedFetched: i.data.fetched } : null),
+    [merged, i.data],
+  );
+  return { ...a, isLoading: a.isLoading && i.isLoading, data, ied: i, mergeStats };
 }
 
 export const useReservoirs = () => useQuery({ queryKey: ["reservoirs"], queryFn: fetchReservoirs, ...opts });
@@ -156,7 +169,7 @@ export function useMatches(): Derived {
   const c = useCompanies();
   const { stress } = useStress();
 
-  return useMemo(() => {
+  return shared(slots.matches, [w.data, r.data, c.data, maxKm, sector, minCapacity, settings, stress], () => {
     const sites: SupplySite[] = [...(w.data?.features ?? []), ...(r.data?.features ?? [])];
     const companies = c.data?.features ?? [];
     const siteById = new Map(sites.map((s) => [s.id, s]));
@@ -174,7 +187,7 @@ export function useMatches(): Derived {
       })
       .sort((a, b) => b.score - a.score);
     return { sites, siteById, companyById, matches, filtered };
-  }, [w.data, r.data, c.data, maxKm, sector, minCapacity, settings, stress]);
+  });
 }
 
 export const fmt = new Intl.NumberFormat("en-GB", { maximumFractionDigits: 0 });
@@ -189,7 +202,7 @@ export function useClusters() {
   const { maxKm, settings } = useApp();
   const w = useWwtps();
   const c = useCompanies();
-  return useMemo(() => {
+  return shared(slots.clusters, [w.data, c.data, maxKm, settings], () => {
     if (!w.data || !c.data) return [];
     const plants = w.data.features
       .filter((p) => p.supply && p.supply.availableReclaimed > 0)
@@ -198,5 +211,5 @@ export function useClusters() {
       .filter((x) => x.lat > 40 && x.lat < 43.2 && x.lon > 0 && x.lon < 3.5)
       .map((x) => ({ id: x.id, lat: x.lat, lon: x.lon, demand: settings.sectorDemand[x.sector] ?? 0 }));
     return findClusters(plants, companies, { maxKm, pipeCostPerKm: settings.pipeCostPerKm, rate: settings.rate, years: settings.years });
-  }, [w.data, c.data, maxKm, settings]);
+  });
 }
