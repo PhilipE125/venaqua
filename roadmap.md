@@ -32,3 +32,4 @@
 ## Landing page restore (Edith, Oct 13)
 - [x] Faded live map behind the landing hero (backdrop, non-interactive, panels hidden)
 - [x] Full landing content from brief v2: hero, Why Venaqua, How it works, For teams, live product proof, trust note, final CTA (Explore map + Talk to the team)
+- [x] Banner nav expanded (Platform/Resources dropdowns, Pricing, About us; no Partnerships) + /pricing page built from brief (5 plans, no checkout) — verified in browser, build OK

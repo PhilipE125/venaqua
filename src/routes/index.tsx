@@ -18,6 +18,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
 
 const MapView = lazy(() => import("@/components/map/MapView"));
@@ -107,22 +108,7 @@ function Landing() {
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
       <MapBackdrop />
-      <header className="relative z-10 flex items-center justify-between border-b border-border/60 bg-background/70 px-5 py-3 backdrop-blur-sm">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2">
-            <Droplets className="h-5 w-5 text-primary" />
-            <span className="font-semibold tracking-tight">Venaqua</span>
-          </Link>
-          <nav className="hidden items-center gap-5 text-sm text-muted-foreground md:flex">
-            <a className="transition-colors hover:text-foreground" href="/#how">How it works</a>
-            <a className="transition-colors hover:text-foreground" href="/#teams">For teams</a>
-          </nav>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button>
-          <Button size="sm" onClick={() => setAuthOpen(true)}>Get started — full version</Button>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="relative z-10 flex flex-1 flex-col">
         <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-5 pb-16 pt-20 text-center sm:pt-28">
