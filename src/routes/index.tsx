@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { Drawer } from "@/components/Drawer";
-import { CompanySearch, Landing } from "@/components/Landing";
+import { CompanySearch, QuestionBar } from "@/components/Landing";
 import { Sidebar } from "@/components/Sidebar";
 import { StressStrip } from "@/components/StressStrip";
 import { TopBar } from "@/components/TopBar";
@@ -44,7 +44,7 @@ function Index() {
                 </Suspense>
               </ClientOnly>
               <StressStrip />
-              <Landing />
+              <QuestionBar />
               <Drawer />
               <CompanySearch />
             </main>
