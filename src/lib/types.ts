@@ -42,6 +42,9 @@ export interface Plant extends BaseFeature {
   steps: string[];
   factsheet?: string | undefined;
   codiAglomeracio: string;
+  nuts?: string;
+  national?: boolean;
+  reuseReported?: number | null;
   supply?: Supply | undefined;
 }
 

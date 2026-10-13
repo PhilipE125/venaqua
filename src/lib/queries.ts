@@ -7,7 +7,7 @@ import { mergeCompanies } from "./merge";
 import { effectiveSupply, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
 import { fetchDrought } from "./sources/drought";
-import { enrichPlants, fetchEeaSpain } from "./sources/eea";
+import { enrichPlants, fetchEeaSpain, nationalPlant } from "./sources/eea";
 import { fetchIedSpain } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
 import { fetchProjects } from "./sources/projects";
@@ -36,17 +36,21 @@ export function useRegen() {
 
 /** Treatment plants enriched with EEA actual flows and reuse volumes. */
 export function useWwtps() {
+  const { region } = useApp();
   const w = useWwtpsRaw();
   const e = useEea();
   const g = useRegen();
-  const enriched = useMemo(
-    () => (w.data ? enrichPlants(w.data.features, e.data?.plants, g.data?.features ?? []) : null),
-    [w.data, e.data, g.data],
-  );
+  const enriched = useMemo(() => {
+    const cat = w.data ? enrichPlants(w.data.features, e.data?.plants, g.data?.features ?? []) : null;
+    if (region === "cat") return cat;
+    const joined = new Set((cat?.plants ?? []).map(p => p.supply?.eeaCode).filter(Boolean));
+    const national = [...(e.data?.plants.values() ?? [])].filter(p => !joined.has(p.code)).map(nationalPlant).filter((p): p is NonNullable<typeof p> => p !== null);
+    return { plants: [...(cat?.plants ?? []), ...national], matched: cat?.matched ?? 0, total: cat?.total ?? 0 };
+  }, [w.data, e.data, g.data, region]);
   return useMemo(
     () => ({
       ...w,
-      data: w.data && enriched ? { ...w.data, features: enriched.plants } : undefined,
+      data: enriched ? { ...(w.data ?? { fetchedAt: e.data?.fetchedAt ?? "" }), features: enriched.plants } : undefined,
       join: enriched && e.data ? { matched: enriched.matched, total: enriched.total } : null,
       eeaLoading: e.isLoading,
     }),
