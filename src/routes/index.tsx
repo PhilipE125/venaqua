@@ -39,6 +39,19 @@ const FEATURES = [
   },
 ];
 
+function MapBackdrop() {
+  return (
+    <div className="landing-map pointer-events-none absolute inset-0" aria-hidden="true">
+      <ClientOnly fallback={<div className="h-full w-full bg-muted" />}>
+        <Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
+          <MapView />
+        </Suspense>
+      </ClientOnly>
+      <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/55 to-background/90" />
+    </div>
+  );
+}
+
 function Landing() {
   const { setAuthOpen } = useWorkspace();
   return (
