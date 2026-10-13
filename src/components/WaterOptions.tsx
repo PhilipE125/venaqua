@@ -71,7 +71,7 @@ const fmtR = (r: Range, f: (n: number) => string) => (Math.abs(r[0] - r[1]) < 1e
 
 const EFFLUENT = { light: { label: "Light (cooling, rinsing)", k: 0.8 }, medium: { label: "Medium (mixed process)", k: 1 }, heavy: { label: "Heavy (food, chemicals)", k: 1.4 } } as const;
 
-export function WaterOptions({ company, focus = "all", view = "economics", onSummary }: { company: Company; focus?: Mode; view?: "overview" | "economics"; onSummary?: (p: OpportunitySnapshot) => void }) {
+export function WaterOptions({ company, focus = "all", view = "economics", onSummary }: { company: Company; focus?: Mode; view?: "overview" | "economics"; onSummary?: ((p: OpportunitySnapshot) => void) | undefined }) {
   const { settings, demandOverride, setDemandOverride, select } = useApp();
   const w = useWwtps();
   const drought = useDrought();

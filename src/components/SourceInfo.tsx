@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils";
 
 const QUALITY_LABEL: Record<string, string> = {
   measured: "Measured",
-  modelled: "Calculated",
+  modelled: "Modelled",
   assumption: "Our estimate",
   estimate: "Our estimate",
-  "your figure": "Your figure",
+  "your figure": "Needs confirmation",
 };
 const QUALITY_HINT: Record<string, string> = {
   measured: "Reported by a public body from real readings.",
