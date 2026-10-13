@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import type { OpportunitySnapshot } from "@/lib/project-model";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -69,7 +71,7 @@ const fmtR = (r: Range, f: (n: number) => string) => (Math.abs(r[0] - r[1]) < 1e
 
 const EFFLUENT = { light: { label: "Light (cooling, rinsing)", k: 0.8 }, medium: { label: "Medium (mixed process)", k: 1 }, heavy: { label: "Heavy (food, chemicals)", k: 1.4 } } as const;
 
-export function WaterOptions({ company, focus = "all" }: { company: Company; focus?: Mode }) {
+export function WaterOptions({ company, focus = "all", view = "economics", onSummary }: { company: Company; focus?: Mode; view?: "overview" | "economics"; onSummary?: (p: OpportunitySnapshot) => void }) {
   const { settings, demandOverride, setDemandOverride, select } = useApp();
   const w = useWwtps();
   const drought = useDrought();
@@ -150,8 +152,12 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
     return { tariff, A, B, C, distanceKm, liftM, lossA, lossB, lossC, opp, cheapest, days2023, cut, future };
   }, [Q, local, tariffShock, elec, settings, candidate, elev.data, phase, replay, events, effluent, dischargePct]);
 
-  if (w.isLoading || !w.data) return <Skeleton className="h-60 w-full" />;
   const { A, B, C } = calc;
+  const deliveredCost = B ? `€${fmt2.format(B.perM3[0])}–${fmt2.format(B.perM3[1])}/m³` : "No connection identified";
+  const savings = calc.cheapest === "A" ? "No saving under current assumptions" : `${eurK(Math.max(0, A.annualCost[0] - (calc.cheapest === "B" && B ? B.annualCost[1] : C.annualCost[1])))}–${eurK(Math.max(0, A.annualCost[1] - (calc.cheapest === "B" && B ? B.annualCost[0] : C.annualCost[0])))} / year`;
+  const verdict = calc.cheapest === "A" ? "Keep mains water for now: alternatives do not beat your current cost under these assumptions." : `Potential savings with ${calc.cheapest === "B" ? "a recycled-water connection" : "on-site reuse"}; firm demand and engineering costs need validation.`;
+  useEffect(() => { onSummary?.({ id: company.id, kind: "company", name: company.name, location: company.municipi, plant: candidate?.p.name ?? "", buyer: company.name, volume: Q / 365, distance: candidate?.d ?? null, confidence: userQ != null ? "Needs user confirmation · demand supplied by you" : "Estimated demand · modelled economics", blocker: "Demand, water quality and final pipe route are not validated.", nextAction: "Confirm annual demand and water-quality requirements with the site team.", cost: deliveredCost, value: savings, verdict }); }, [onSummary, company.id, company.name, company.municipi, candidate?.p.name, candidate?.d, Q, userQ, deliveredCost, savings, verdict]);
+  if (w.isLoading || !w.data) return <Skeleton className="h-60 w-full" />;
   const max = Math.max(calc.tariff + local.dischargeCharge, A.perM3[1], B?.perM3[1] ?? 0, C.perM3[1]) * 1.1;
   const rows = [
     { key: "A", label: "A · Status quo", perM3: A.perM3, best: calc.cheapest === "A" },
@@ -166,7 +172,7 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
   const answer =
     focus === "q2" ? (
       <Answer
-        eyebrow="Answer"
+        eyebrow="Connection outlook"
         big={B ? (B.perM3[1] < calc.tariff + inputs0(local, dischargePct) ? "Yes" : B.perM3[0] < calc.tariff + inputs0(local, dischargePct) ? "Maybe" : "Not yet") : "No"}
       >
         {B && candidate
@@ -175,7 +181,7 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
         {confidence}
       </Answer>
     ) : (
-      <Answer eyebrow="Answer" big={calc.cheapest === "A" ? "Keep mains water for now" : `Cheapest: ${names[calc.cheapest as "B" | "C"]}`}>
+      <Answer eyebrow="Economic outlook" big={calc.cheapest === "A" ? "Keep mains water for now" : `Cheapest: ${names[calc.cheapest as "B" | "C"]}`}>
         {calc.cheapest === "A"
           ? "Neither recycled water nor on-site reuse beats your current bill under these assumptions."
           : `Saves about ${eurK(Math.max(0, saving[0]!))}–${eurK(Math.max(0, saving[1]!))} a year compared with today.`}
@@ -183,6 +189,12 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
       </Answer>
     );
 
+  if (view === "overview") return <section className="mt-5 space-y-5">{answer}
+    <div className="grid grid-cols-2 gap-5 border-y py-5"><div><p className="label-caps">Indicative demand · our estimate</p><p className="tnum mt-1 text-xl font-semibold">{fmt.format(Q / 365)} <span className="text-xs font-normal text-muted-foreground">m³/day</span></p></div><div><p className="label-caps">Delivered-water cost · modelled</p><p className="mt-1 text-lg font-semibold">{deliveredCost}</p></div><div><p className="label-caps">Nearest candidate</p><p className="mt-1 text-sm font-medium">{candidate?.p.name ?? "None within 30 km"}</p></div><div><p className="label-caps">Straight-line distance</p><p className="tnum mt-1 text-sm font-medium">{candidate ? `${fmt1.format(candidate.d)} km` : "Not available"}</p></div></div>
+    <div><p className="label-caps">Main blocker</p><p className="mt-1 text-sm">{calc.cheapest === "A" ? "Cost exceeds the current bill. Confirm your tariff and shorten the route, or test shared infrastructure." : "Firm demand, water quality and the pipe route need validation."}</p></div>
+    <div className="border-l-2 border-primary pl-4"><p className="label-caps">Recommended next step</p><p className="mt-1 text-sm font-medium">Confirm annual demand and water-quality requirements with the site team.</p></div>
+    {focus === "q5" && <FuturePanel inputs={calc.future} />}
+  </section>;
   return (
     <section className="mt-4">
       <div className="mb-3">{answer}</div>
@@ -194,7 +206,7 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
         <span className="label-caps">benchmark ranges, not a design</span>
       </div>
 
-      <div className="rounded-sm border bg-muted/40 p-3">
+      <div className="border-y py-4">
         <p className="label-caps flex items-center gap-1.5">Opportunity cost of waiting <SourceInfo id="costs" quality="modelled" /></p>
         <p className="tnum mt-1 text-2xl font-medium">
           {calc.opp[1] <= 0 ? "None" : `${eurK(Math.max(0, calc.opp[0]))}–${eurK(calc.opp[1])}`}
@@ -210,7 +222,7 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
         <p className="text-[11px] text-muted-foreground">Effective € per m³ of demand, low–high. Line = today's tariff{tariffShock !== "0" ? ` +${tariffShock}%` : ""}.</p>
       </div>
 
-      <div className="mt-4 space-y-3 rounded-sm border p-3">
+      <Details label="What if… adjust scenarios"><div className="mt-4 space-y-3">
         <p className="text-sm font-medium">What if…</p>
         <div className="flex items-center justify-between gap-2">
           <span className="label-caps">Water price rises</span>
@@ -247,7 +259,7 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
             {!events && " No drought record for this municipality (internal basins only)."}
           </p>
         )}
-      </div>
+      </div></Details>
 
       <table className="mt-4 w-full text-xs">
         <thead>
@@ -293,7 +305,7 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
         </p>
       </div>
 
-      <div className="mt-4 rounded-sm border p-3">
+      <Details label="Adjust assumptions & your site facts"><div className="mt-4">
         <div className="mb-2 flex items-center justify-between">
           <p className="text-sm font-medium">Your site facts</p>
           <QualityBadge q={userQ != null ? "your figure" : "estimate"} />
@@ -319,7 +331,7 @@ export function WaterOptions({ company, focus = "all" }: { company: Company; foc
           </button>
         )}
         <p className="mt-2 text-[11px] text-muted-foreground">Defaults are assumptions: tariff is the INE Spain average; other ranges are in settings.</p>
-      </div>
+      </div></Details>
       {focus !== "q5" && (
         <Details label="Show future exposure to 2050">
           <div className="mt-3"><FuturePanel inputs={calc.future} /></div>
