@@ -241,7 +241,7 @@ function LandscapeBox() {
             </Fragment>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">Fewest players do shared clusters and future stress, so Reuse Match adds most there.</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">Fewest players do shared clusters and future stress, so Venaqua adds most there.</p>
       </div>
     </>
   );

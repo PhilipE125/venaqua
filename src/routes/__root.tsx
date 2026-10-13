@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { WorkspaceProvider } from "@/lib/workspace";
 import { WorkspaceDialogs } from "@/components/WorkspaceDialogs";
+import { AppStateProvider } from "@/lib/state";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -81,9 +82,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Reuse Match" },
+      { title: "Venaqua" },
       { name: "description", content: "Match reclaimed wastewater supply with nearby companies that need water." },
-      { property: "og:title", content: "Reuse Match" },
+      { property: "og:title", content: "Venaqua" },
       { property: "og:description", content: "Match reclaimed wastewater supply with nearby companies that need water." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -128,7 +129,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <WorkspaceProvider><Outlet /><WorkspaceDialogs /><Toaster /></WorkspaceProvider>
+      <AppStateProvider><WorkspaceProvider><Outlet /><WorkspaceDialogs /><Toaster /></WorkspaceProvider></AppStateProvider>
     </QueryClientProvider>
   );
 }

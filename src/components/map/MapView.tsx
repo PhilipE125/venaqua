@@ -44,7 +44,7 @@ const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmln
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
 export default function MapView() {
-  const { layers, selection, select, dark, sector, confirmed, region } = useApp();
+  const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus } = useApp();
   const pr = useProjects();
   const [popup, setPopup] = useState<ReuseProject | null>(null);
   const clusters = useClusters();
@@ -55,7 +55,7 @@ export default function MapView() {
   const res = useReservoirs();
   const { matches, siteById, companyById } = useMatches();
   const [hover, setHover] = useState<Hover>(null);
-  useEffect(() => { mapRef.current?.flyTo({ center: region === "es" ? [-3.7, 40.2] : [1.75, 41.7], zoom: region === "es" ? 5.5 : 7.4, duration: 700 }); }, [region]);
+  useEffect(() => { if (camera) return; mapRef.current?.flyTo({ center: region === "es" ? [-3.7, 40.2] : [1.75, 41.7], zoom: region === "es" ? 5.5 : 7.4, duration: 700 }); }, [region]);
 
   const selectedSite =
     selection && selection.kind !== "company" ? siteById.get(selection.id) : undefined;
@@ -94,13 +94,14 @@ export default function MapView() {
 
   // Fly to whatever is selected, from the map, a list or search.
   useEffect(() => {
-    if (!selection || selection.kind === "comarca" || selection.kind === "region") return;
+    if (!selection || cameraFocus === `${selection.kind}:${selection.id}` || selection.kind === "comarca" || selection.kind === "region") return;
     const f = selection.kind === "company" ? companyById.get(selection.id) : siteById.get(selection.id);
     if (!f) return;
     const m = mapRef.current;
     if (!m) return;
     const z = m.getZoom();
-    m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [-180, 0], duration: 900 });
+    setCameraFocus(`${selection.kind}:${selection.id}`);
+    m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [0, -70], duration: 900 });
   }, [selection, companyById, siteById]);
 
   const deckLayers = [
@@ -229,7 +230,8 @@ export default function MapView() {
     <div className="relative h-full w-full">
       <Map
         ref={mapRef}
-        initialViewState={{ longitude: region === "es" ? -3.7 : 1.75, latitude: region === "es" ? 40.2 : 41.7, zoom: region === "es" ? 5.5 : 7.4 }}
+        onMoveEnd={e => setCamera(e.viewState)}
+        initialViewState={camera ?? { longitude: region === "es" ? -3.7 : 1.75, latitude: region === "es" ? 40.2 : 41.7, zoom: region === "es" ? 5.5 : 7.4 }}
         mapStyle={
           dark
             ? "https://tiles.openfreemap.org/styles/dark"

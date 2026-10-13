@@ -12,7 +12,7 @@ import { eurK, fmt, fmt1, fmt2, useDrought, useElevation, useWwtps } from "@/lib
 import { haversineKm } from "@/lib/score";
 import { muniKey } from "@/lib/sectors";
 import { currentPhase, phaseDaysInYear, PHASES, type Phase } from "@/lib/sources/drought";
-import { useApp, type Mode } from "@/lib/state";
+import { useApp, useScenarioState, type Mode } from "@/lib/state";
 import { Answer, Details } from "./Drawer";
 import { FuturePanel, type FutureInputs } from "./FuturePanel";
 import type { Company, Plant } from "@/lib/types";
@@ -75,13 +75,13 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
   const { settings, demandOverride, setDemandOverride, select } = useApp();
   const w = useWwtps();
   const drought = useDrought();
-  const [tariffShock, setTariffShock] = useState("0");
-  const [elec, setElec] = useState<"low" | "base" | "high">("base");
-  const [phaseOverride, setPhaseOverride] = useState<Phase | "current">("current");
-  const [replay, setReplay] = useState(false);
-  const [effluent, setEffluent] = useState<keyof typeof EFFLUENT>(company.sector === "food" || company.sector === "chemicals" ? "heavy" : "medium");
-  const [dischargePct, setDischargePct] = useState(80);
-  const [local, setLocal] = useState({ tariff: settings.tariff, dischargeCharge: settings.dischargeCharge, rate: settings.rate, years: settings.years });
+  const [tariffShock, setTariffShock] = useScenarioState(`${company.id}:tariffShock`, "0");
+  const [elec, setElec] = useScenarioState<"low" | "base" | "high">(`${company.id}:elec`, "base");
+  const [phaseOverride, setPhaseOverride] = useScenarioState<Phase | "current">(`${company.id}:phaseOverride`, "current");
+  const [replay, setReplay] = useScenarioState(`${company.id}:replay`, false);
+  const [effluent, setEffluent] = useScenarioState<keyof typeof EFFLUENT>(`${company.id}:effluent`, company.sector === "food" || company.sector === "chemicals" ? "heavy" : "medium");
+  const [dischargePct, setDischargePct] = useScenarioState(`${company.id}:dischargePct`, 80);
+  const [local, setLocal] = useScenarioState(`${company.id}:local`, { tariff: settings.tariff, dischargeCharge: settings.dischargeCharge, rate: settings.rate, years: settings.years });
 
   const sectorQ = (settings.sectorDemand[company.sector] ?? 0) * 365;
   const userQ = demandOverride[company.id];

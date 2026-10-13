@@ -18,3 +18,5 @@
 - WorkspaceProvider owns shared session, shortlist and enquiry dialog state; project rows are scoped to auth.uid() by RLS — keeps map browsing public and projects private.
 - Project briefs export captured opportunity snapshots and explicitly distinguish indicative screening from engineer review — prevents unsupported engineering claims.
 - Spain treatment plants normalize EEA records through nationalPlant while joined Catalan records retain their richer overlay — preserves local calculations and source provenance.
+- AppStateProvider lives in the root; camera and per-opportunity scenario values stay in this context across map and analysis routes — returning to discovery must not discard user inputs.
+- The map renders only a compact opportunity preview; detailed views are reused on the public analysis route — keeps discovery visually separate from project evaluation.
