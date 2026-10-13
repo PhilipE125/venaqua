@@ -21,7 +21,7 @@
 - [x] Provided prompt separating detailed plant/company analysis from the map; not applied
 
 # Discovery / analysis separation
-- [ ] Compact map preview and separate four-section analysis page
-- [ ] Preserve camera, filters, selection and company scenario inputs across navigation
-- [ ] Verify map → analysis → map and company/plant views
-- [ ] Rename visible app branding and page metadata to Venaqua
+- [x] Compact map preview and separate four-section analysis page
+- [x] Preserve camera, filters, selection and company scenario inputs across navigation
+- [x] Browser-verified map → analysis → map, retained +50% price scenario, plant evidence and contact; 33 tests pass
+- [x] Rename visible app branding, contact drafts, exported briefs and page metadata to Venaqua
