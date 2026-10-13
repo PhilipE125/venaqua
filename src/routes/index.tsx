@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState } from "react";
+import { Sparkles, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useWorkspace } from "@/lib/workspace";
 import { Drawer } from "@/components/Drawer";
 import { CompanySearch, QuestionBar } from "@/components/Landing";
 import { Sidebar } from "@/components/Sidebar";
@@ -28,6 +31,22 @@ function MapFallback() {
   return <div className="h-full w-full animate-pulse bg-muted" />;
 }
 
+function FreeMapBanner() {
+  const { user, setAuthOpen } = useWorkspace();
+  const [dismissed, setDismissed] = useState(false);
+  if (user || dismissed) return null;
+  return (
+    <div className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(92%,560px)] -translate-x-1/2 items-center gap-3 rounded-xl border bg-card/95 px-4 py-2.5 shadow-lg backdrop-blur">
+      <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+      <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground">
+        You're viewing the <span className="font-medium text-foreground">free map</span>. Create an account to save projects, run full economics and get a feasibility brief.
+      </p>
+      <Button size="sm" className="shrink-0" onClick={() => setAuthOpen(true)}>Get started</Button>
+      <button aria-label="Dismiss" className="shrink-0 text-muted-foreground hover:text-foreground" onClick={() => setDismissed(true)}><X className="h-4 w-4" /></button>
+    </div>
+  );
+}
+
 function Index() {
   return (
       <TooltipProvider delayDuration={200}>
@@ -40,6 +59,7 @@ function Index() {
                   <MapView />
                 </Suspense>
               </ClientOnly>
+              <FreeMapBanner />
               <QuestionBar />
               <Sidebar />
               <StressStrip />

@@ -180,3 +180,23 @@
   .map-legend { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+/* Slide deck (1920x1080 scaled) */
+.slide-wrapper {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  left: 50%;
+  top: 50%;
+  margin-left: -960px;
+  margin-top: -540px;
+  transform: scale(var(--scale));
+  transform-origin: center center;
+}
+.slide-content { width: 1920px; height: 1080px; overflow: hidden; position: relative; }
+.slide-title { font-size: 88px; line-height: 1.05; letter-spacing: -0.04em; }
+.slide-subtitle { font-size: 52px; line-height: 1.15; letter-spacing: -0.025em; }
+.slide-body { font-size: 32px; line-height: 1.28; }
+.slide-caption { font-size: 24px; line-height: 1.25; }
+.slide-kicker { font-size: 22px; line-height: 1.1; letter-spacing: 0.12em; text-transform: uppercase; }
+.slide-chrome, .slide-footer { font-size: 20px; line-height: 1.15; }
