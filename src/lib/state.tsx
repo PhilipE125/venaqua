@@ -4,8 +4,32 @@ import { DEFAULT_SECTOR_DEMAND } from "./sectorDemand";
 import type { SectorId } from "./sectors";
 import type { Phase } from "./sources/drought";
 
-export type LayerKey = "wwtp" | "regen" | "companies" | "reservoirs" | "tenders" | "projects";
-export type Selection = { kind: "wwtp" | "regen" | "company"; id: string } | { kind: "comarca"; id: string } | null;
+export type LayerKey = "wwtp" | "regen" | "companies" | "reservoirs" | "tenders" | "projects" | "clusters";
+export type Selection =
+  | { kind: "wwtp" | "regen" | "company"; id: string }
+  | { kind: "comarca"; id: string }
+  | { kind: "region"; id: "catalonia" }
+  | null;
+
+export type Mode = "q1" | "q2" | "q3" | "q4" | "q5" | "all";
+
+export const QUESTIONS: { mode: Exclude<Mode, "all">; who: string; short: string; q: string }[] = [
+  { mode: "q1", who: "Plant operator", short: "Who would buy my water?", q: "Who within 10 km would buy my reclaimed water, and how much?" },
+  { mode: "q2", who: "Factory manager", short: "Is recycled water cheaper?", q: "Is there reuse-ready water near me, and is it cheaper than my tariff?" },
+  { mode: "q3", who: "Factory, on site", short: "Build or connect?", q: "How much could reusing my own water on site save me, compared with a grid solution?" },
+  { mode: "q4", who: "City or region", short: "Which links help most?", q: "Which reuse links in Catalonia would take the most pressure off the most stressed sources?" },
+  { mode: "q5", who: "Factory, future", short: "How exposed am I later?", q: "As tariffs and drought restrictions rise, how exposed is my site, and when does reuse pay off?" },
+];
+
+// Which map layers each question needs.
+export const MODE_PRESETS: Record<Mode, Record<LayerKey, boolean>> = {
+  q1: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
+  q2: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
+  q3: { wwtp: false, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
+  q4: { wwtp: true, regen: true, companies: false, reservoirs: true, tenders: false, projects: true, clusters: true },
+  q5: { wwtp: false, regen: true, companies: true, reservoirs: true, tenders: false, projects: false, clusters: false },
+  all: { wwtp: true, regen: true, companies: true, reservoirs: true, tenders: true, projects: true, clusters: true },
+};
 
 export interface Settings {
   sectorDemand: Record<SectorId, number>;
@@ -71,6 +95,10 @@ interface AppState {
   toggleConfirmed: (id: string) => void;
   demandOverride: Record<string, number>;
   setDemandOverride: (id: string, v: number | null) => void;
+  mode: Mode;
+  setMode: (m: Mode) => void;
+  tip: boolean;
+  dismissTip: () => void;
   landing: boolean;
   setLanding: (b: boolean) => void;
   searchOpen: boolean;
@@ -96,7 +124,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     reservoirs: true,
     tenders: true,
     projects: true,
+    clusters: true,
   });
+  const [mode, setModeState] = useState<Mode>("all");
+  const [tip, setTip] = useState(false);
   const [selection, select] = useState<Selection>(null);
   const [maxKm, setMaxKm] = useState(10);
   const [sector, setSector] = useState<SectorId | "all">("all");
@@ -113,6 +144,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setSettingsState({ ...DEFAULT_SETTINGS, ...s, sectorDemand: { ...DEFAULT_SECTOR_DEMAND, ...s.sectorDemand } });
     setConfirmed(new Set(load<string[]>(CONFIRMED_KEY, [])));
     setDemand(load<Record<string, number>>(DEMAND_KEY, {}));
+    setTip(!load<boolean>("reuse-match:tip-done", false));
   }, []);
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -158,12 +190,23 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
           localStorage.setItem(DEMAND_KEY, JSON.stringify(n));
           return n;
         }),
+      mode,
+      setMode: (m) => {
+        setModeState(m);
+        setLayers(MODE_PRESETS[m]);
+        setLanding(false);
+      },
+      tip,
+      dismissTip: () => {
+        setTip(false);
+        localStorage.setItem("reuse-match:tip-done", "true");
+      },
       landing,
       setLanding,
       searchOpen,
       setSearchOpen,
     }),
-    [layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen],
+    [layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen, mode, tip],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
