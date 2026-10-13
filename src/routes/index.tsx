@@ -55,8 +55,9 @@ function MapBackdrop() {
 function Landing() {
   const { setAuthOpen } = useWorkspace();
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="flex items-center justify-between border-b px-5 py-3">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
+      <MapBackdrop />
+      <header className="relative z-10 flex items-center justify-between border-b border-border/60 bg-background/70 px-5 py-3 backdrop-blur-sm">
         <div className="flex items-center gap-2">
           <Droplets className="h-5 w-5 text-primary" />
           <span className="font-semibold tracking-tight">Venaqua</span>
