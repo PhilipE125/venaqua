@@ -1,0 +1,9 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+export const Route = createFileRoute("/reset-password")({ head: () => ({ meta: [{ title: "Reset your password · Reuse Match" }, { name: "description", content: "Securely update your Reuse Match project account password." }, { property: "og:title", content: "Reset your password · Reuse Match" }, { property: "og:description", content: "Return to your private water reuse project workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: ResetPassword });
+function ResetPassword() { const [message, setMessage] = useState(""); return <main className="flex min-h-screen items-center justify-center p-6"><form className="w-full max-w-sm space-y-5" onSubmit={async e => { e.preventDefault(); const password = String(new FormData(e.currentTarget).get("password")); const { error } = await supabase.auth.updateUser({ password }); setMessage(error ? error.message : "Password updated. You can return to your projects."); }}><h1 className="text-2xl font-semibold">Set a new password</h1><Label htmlFor="new-password">New password</Label><Input id="new-password" name="password" type="password" minLength={8} required autoComplete="new-password" /><Button type="submit" className="w-full">Update password</Button>{message && <p role="status" className="text-sm">{message}</p>}<Button asChild variant="link"><a href="/">Return to Reuse Match</a></Button></form></main>; }

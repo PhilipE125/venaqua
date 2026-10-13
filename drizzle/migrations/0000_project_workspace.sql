@@ -1,0 +1,10 @@
+CREATE TABLE public.reuse_projects (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL DEFAULT auth.uid(), name text NOT NULL CHECK (length(name) BETWEEN 1 AND 200), opportunity jsonb NOT NULL DEFAULT '{}'::jsonb, stage text NOT NULL DEFAULT 'Confirm supply', owner_name text NOT NULL DEFAULT '', notes text NOT NULL DEFAULT '', activity jsonb NOT NULL DEFAULT '[]'::jsonb, created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.reuse_projects TO authenticated;
+GRANT ALL ON public.reuse_projects TO service_role;
+ALTER TABLE public.reuse_projects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Owners manage projects" ON public.reuse_projects FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+CREATE TABLE public.project_enquiries (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL CHECK (length(name) BETWEEN 1 AND 100), email text NOT NULL CHECK (length(email) BETWEEN 3 AND 255), organisation text NOT NULL CHECK (length(organisation) BETWEEN 1 AND 200), role text NOT NULL DEFAULT '', opportunity text NOT NULL DEFAULT '', help text NOT NULL CHECK (length(help) BETWEEN 1 AND 3000), created_at timestamptz NOT NULL DEFAULT now());
+GRANT INSERT ON public.project_enquiries TO anon, authenticated;
+GRANT ALL ON public.project_enquiries TO service_role;
+ALTER TABLE public.project_enquiries ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Visitors submit enquiries" ON public.project_enquiries FOR INSERT TO anon, authenticated WITH CHECK (true);

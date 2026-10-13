@@ -1,4 +1,6 @@
 import { Fragment, useState } from "react";
+import { Layers3, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { LANDSCAPE } from "@/lib/landscape";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -62,7 +64,7 @@ function LayerRow({
           Fetched {new Date(q.dataUpdatedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
         </p>
       )}
-      {children && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">{children}</div>}
+      {children && layers[k] && <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">{children}</div>}
     </div>
   );
 }
@@ -176,13 +178,14 @@ function OpportunitiesTab() {
         ) : (
           <ol className="space-y-1">
             {filtered.slice(0, 50).map((m, i) => {
-              const s = siteById.get(m.siteId)!;
-              const co = companyById.get(m.companyId)!;
+               const s = siteById.get(m.siteId);
+               const co = companyById.get(m.companyId);
+               if (!s || !co) return null;
               return (
                 <li key={m.siteId + m.companyId}>
-                  <button
+                   <Button variant="ghost"
                     onClick={() => select({ kind: s.kind, id: s.id })}
-                    className="w-full rounded-sm px-2 py-1.5 text-left transition-colors hover:bg-accent"
+                     className="block h-auto w-full rounded-sm px-2 py-2 text-left whitespace-normal"
                   >
                     <div className="flex items-baseline justify-between gap-2 text-xs">
                       <span className="truncate font-medium"><span className="tnum mr-1.5 text-muted-foreground">{i + 1}</span>{co.name}</span>
@@ -195,7 +198,7 @@ function OpportunitiesTab() {
                     <div className="mt-1 h-1 w-full rounded-full bg-muted">
                       <div className="h-1 rounded-full bg-primary" style={{ width: `${m.score}%` }} />
                     </div>
-                  </button>
+                   </Button>
                 </li>
               );
             })}
@@ -327,13 +330,16 @@ function DataQualityTab() {
 
 export function Sidebar() {
   const [tab, setTab] = useState("layers");
+  const { panelOpen, setPanelOpen, selection } = useApp();
+  if (!panelOpen) return null;
   return (
-    <aside className="panel flex h-full w-[380px] shrink-0 flex-col border-y-0 border-l-0">
+    <aside className={`panel map-left-panel flex flex-col rounded-lg ${selection ? "obscured" : ""}`}>
+      <div className="flex items-center justify-between px-4 pt-3"><h2 className="flex items-center gap-2 text-sm font-semibold"><Layers3 className="h-4 w-4 text-primary" />Map controls</h2><Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Close map controls" onClick={() => setPanelOpen(false)}><X /></Button></div>
       <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
         <TabsList className="mx-4 mt-3 grid grid-cols-3">
           <TabsTrigger value="layers">Layers</TabsTrigger>
-          <TabsTrigger value="opps">Opportunities</TabsTrigger>
-          <TabsTrigger value="about">Data quality</TabsTrigger>
+          <TabsTrigger value="opps">Filters</TabsTrigger>
+          <TabsTrigger value="about">Sources</TabsTrigger>
         </TabsList>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <TabsContent value="layers" className="mt-0"><LayersTab /></TabsContent>

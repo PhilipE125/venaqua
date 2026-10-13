@@ -77,6 +77,10 @@ const CONFIRMED_KEY = "reuse-match:confirmed";
 const DEMAND_KEY = "reuse-match:demand";
 
 interface AppState {
+  region: "es" | "cat";
+  setRegion: (r: "es" | "cat") => void;
+  panelOpen: boolean;
+  setPanelOpen: (b: boolean) => void;
   layers: Record<LayerKey, boolean>;
   toggleLayer: (k: LayerKey) => void;
   selection: Selection;
@@ -117,15 +121,9 @@ function load<T>(k: string, fallback: T): T {
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [layers, setLayers] = useState<Record<LayerKey, boolean>>({
-    wwtp: true,
-    regen: true,
-    companies: true,
-    reservoirs: true,
-    tenders: true,
-    projects: true,
-    clusters: true,
-  });
+  const [region, setRegion] = useState<"es" | "cat">("es");
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(MODE_PRESETS.q2);
   const [mode, setModeState] = useState<Mode>("all");
   const [tip, setTip] = useState(false);
   const [selection, select] = useState<Selection>(null);
@@ -152,6 +150,10 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<AppState>(
     () => ({
+      region,
+      setRegion: r => { setRegion(r); select(null); },
+      panelOpen,
+      setPanelOpen,
       layers,
       toggleLayer: (k) => setLayers((l) => ({ ...l, [k]: !l[k] })),
       selection,
@@ -206,7 +208,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       searchOpen,
       setSearchOpen,
     }),
-    [layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen, mode, tip],
+    [layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen, mode, tip, region, panelOpen],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

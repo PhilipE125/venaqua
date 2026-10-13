@@ -7,7 +7,7 @@ import { mergeCompanies } from "./merge";
 import { effectiveSupply, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
 import { fetchDrought } from "./sources/drought";
-import { enrichPlants, fetchEeaSpain } from "./sources/eea";
+import { enrichPlants, fetchEeaSpain, nationalPlant } from "./sources/eea";
 import { fetchIedSpain } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
 import { fetchProjects } from "./sources/projects";
@@ -22,7 +22,7 @@ const H = 60 * 60 * 1000;
 const opts = { staleTime: H, gcTime: 2 * H, retry: 1, refetchOnWindowFocus: false } as const;
 
 const useWwtpsRaw = () => useQuery({ queryKey: ["wwtp"], queryFn: fetchWwtps, ...opts });
-export const useEea = () => useQuery({ queryKey: ["eea-es"], queryFn: fetchEeaSpain, ...opts });
+export const useEea = () => useQuery({ queryKey: ["eea-es"], queryFn: fetchEeaSpain, ...opts, staleTime: 24 * H, gcTime: 24 * H });
 
 export function useRegen() {
   const w = useWwtpsRaw();
@@ -36,21 +36,26 @@ export function useRegen() {
 
 /** Treatment plants enriched with EEA actual flows and reuse volumes. */
 export function useWwtps() {
+  const { region } = useApp();
   const w = useWwtpsRaw();
   const e = useEea();
   const g = useRegen();
-  const enriched = useMemo(
-    () => (w.data ? enrichPlants(w.data.features, e.data?.plants, g.data?.features ?? []) : null),
-    [w.data, e.data, g.data],
-  );
+  const enriched = useMemo(() => {
+    const cat = w.data ? enrichPlants(w.data.features, e.data?.plants, g.data?.features ?? []) : null;
+    if (region === "cat") return cat;
+    const joined = new Set((cat?.plants ?? []).map(p => p.supply?.eeaCode).filter(Boolean));
+    const national = [...(e.data?.plants.values() ?? [])].filter(p => !joined.has(p.code)).map(nationalPlant).filter((p): p is NonNullable<typeof p> => p !== null);
+    return { plants: [...(cat?.plants ?? []), ...national], matched: cat?.matched ?? 0, total: cat?.total ?? 0 };
+  }, [w.data, e.data, g.data, region]);
   return useMemo(
     () => ({
       ...w,
-      data: w.data && enriched ? { ...w.data, features: enriched.plants } : undefined,
+      isLoading: region === "es" ? w.isLoading && e.isLoading : w.isLoading,
+      data: enriched ? { ...(w.data ?? { fetchedAt: e.data?.fetchedAt ?? "" }), features: enriched.plants } : undefined,
       join: enriched && e.data ? { matched: enriched.matched, total: enriched.total } : null,
       eeaLoading: e.isLoading,
     }),
-    [w, enriched, e.data, e.isLoading],
+    [w, enriched, e.data, e.isLoading, region],
   );
 }
 
@@ -62,21 +67,23 @@ export function useIed() {
 
 /** Catalan discharge permits merged with Spain-wide EEA industrial facilities. */
 export function useCompanies() {
+  const { region } = useApp();
   const a = useAcaCompanies();
   const i = useIed();
   const merged = useMemo(() => {
-    if (!a.data) return null;
-    const m = mergeCompanies(a.data.features, i.data?.facilities ?? []);
+    if (!a.data && !i.data) return null;
+    const m = mergeCompanies(a.data?.features ?? [], i.data?.facilities ?? []);
     const companies: Company[] = m.companies.map((c) => {
       const src = knownUserSource(c);
       return src ? { ...c, confirmedSource: src } : c;
     });
-    return { ...m, companies };
-  }, [a.data, i.data]);
+    return { ...m, companies: region === "cat" ? companies.filter(c => c.lat > 40.4 && c.lat < 42.9 && c.lon > 0.1 && c.lon < 3.4) : companies };
+  }, [a.data, i.data, region]);
   return useMemo(
     () => ({
       ...a,
-      data: a.data && merged ? { ...a.data, features: merged.companies } : undefined,
+      isLoading: a.isLoading && i.isLoading,
+      data: merged ? { ...(a.data ?? { fetchedAt: i.data?.fetchedAt ?? "" }), features: merged.companies } : undefined,
       ied: i,
       mergeStats: merged && i.data ? { merged: merged.merged, iedExcluded: merged.excluded, iedFetched: i.data.fetched } : null,
     }),

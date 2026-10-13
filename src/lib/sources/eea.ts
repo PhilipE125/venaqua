@@ -4,7 +4,7 @@ import { normalize } from "../sectors";
 const BASE =
   "https://water.discomap.eea.europa.eu/arcgis/rest/services/WISE_UWWTD/TreatmentPlants_2022/MapServer/0/query";
 const FIELDS =
-  "uwwCode,uwwName,uwwCapacity,uwwLoadEnteringUWWTP,uwwWasteWaterTreated,uwwNRemoval,uwwPRemoval,uwwUV,uwwSandFiltration,uwwMicroFiltration,uwwOzonation";
+  "uwwCode,uwwName,uwwNUTS,uwwCapacity,uwwLoadEnteringUWWTP,uwwWasteWaterTreated,uwwWasteWaterReuse,uwwNRemoval,uwwPRemoval,uwwUV,uwwSandFiltration,uwwMicroFiltration,uwwOzonation";
 
 export interface EeaPlant {
   code: string;
@@ -14,6 +14,12 @@ export interface EeaPlant {
   uv: boolean;
   filtration: boolean;
   ozonation: boolean;
+  lat?: number;
+  lon?: number;
+  nuts?: string;
+  nRemoval?: boolean;
+  pRemoval?: boolean;
+  reusePct?: number | null;
 }
 
 /** ES09080010001010 → ES9080010001010E (drop the "0" after "ES", append "E"). */
@@ -35,11 +41,12 @@ export async function fetchEeaSpain(): Promise<{ plants: Map<string, EeaPlant>; 
       f: "geojson",
       resultRecordCount: "2000",
       resultOffset: String(offset),
+      outSR: "4326",
     });
     const r = await fetch(`${BASE}?${q}`);
     if (!r.ok) throw new Error(`EEA HTTP ${r.status}`);
     const j = (await r.json()) as {
-      features: { properties: Record<string, unknown> }[];
+      features: { properties: Record<string, unknown>; geometry?: { coordinates: number[] } }[];
       exceededTransferLimit?: boolean;
       properties?: { exceededTransferLimit?: boolean };
     };
@@ -54,6 +61,12 @@ export async function fetchEeaSpain(): Promise<{ plants: Map<string, EeaPlant>; 
         uv: p["uwwUV"] === 1,
         filtration: p["uwwSandFiltration"] === 1 || p["uwwMicroFiltration"] === 1,
         ozonation: p["uwwOzonation"] === 1,
+        lat: f.geometry?.coordinates[1] ?? 0,
+        lon: f.geometry?.coordinates[0] ?? 0,
+        nuts: String(p["uwwNUTS"] ?? ""),
+        nRemoval: p["uwwNRemoval"] === 1,
+        pRemoval: p["uwwPRemoval"] === 1,
+        reusePct: parseReusePercent(p["uwwWasteWaterReuse"]),
       });
     }
     fetched += j.features.length;
@@ -61,6 +74,22 @@ export async function fetchEeaSpain(): Promise<{ plants: Map<string, EeaPlant>; 
     offset += 2000;
   }
   return { plants, fetched, fetchedAt: new Date().toISOString() };
+}
+
+export function parseReusePercent(value: unknown): number | null {
+  if (value == null || String(value).trim() === "") return null;
+  const n = Number(String(value).replace(",", "."));
+  return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null;
+}
+
+export function nationalPlant(e: EeaPlant): Plant | null {
+  if (!e.lat || !Number.isFinite(e.lon)) return null;
+  const treated = e.treatedM3PerYear;
+  const flow = treated != null ? treated / 365 : e.capacity * 0.2;
+  const reused = flow * ((e.reusePct ?? 0) / 100);
+  const tertiary = !!e.nRemoval && !!e.pRemoval;
+  const advanced = tertiary && (e.uv || e.filtration || e.ozonation);
+  return { id: `eea-${e.code}`, kind: "wwtp", name: e.name, lat: e.lat, lon: e.lon ?? 0, municipi: e.name, comarca: "", operator: "", manager: "", treatment: advanced ? "Advanced treatment" : tertiary ? "Nitrogen and phosphorus removal" : "Secondary treatment", level: tertiary ? "tertiary" : "secondary", capacity: flow, pe: e.capacity, receiving: "", year: "2022", steps: [tertiary ? "N + P removal" : "Secondary", ...(e.filtration ? ["Filtration"] : []), ...(e.uv ? ["UV"] : []), ...(e.ozonation ? ["Ozonation"] : [])], codiAglomeracio: "", nuts: e.nuts ?? "", national: true, reuseReported: e.reusePct ?? null, supply: { designFlow: e.capacity * 0.2, actualFlow: flow, actualQuality: treated != null ? "measured" : "assumption", utilisation: null, alreadyReused: reused, availableReclaimed: Math.max(0, flow - reused), suspect: null, eeaCode: e.code, reuseReady: advanced, eeaFiltration: e.filtration, eeaUV: e.uv } };
 }
 
 export const FALLBACK_UTILISATION = 0.6;

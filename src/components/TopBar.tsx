@@ -1,51 +1,17 @@
-import { Moon, Search, Settings2, Sparkles, Sun } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Droplets, FolderOpen, MessageCircle, Moon, Search, Settings2, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useApp } from "@/lib/state";
+import { useWorkspace } from "@/lib/workspace";
 import { SettingsDialog } from "./SettingsDialog";
 
 export function TopBar() {
-  const { dark, setDark, setSearchOpen } = useApp();
-  return (
-    <header className="panel flex h-12 shrink-0 items-center justify-between border-x-0 border-t-0 px-4">
-      <div className="flex items-center gap-5">
-        <div className="flex items-center gap-2">
-          <span className="h-3 w-3 rounded-full border-[3px] border-primary" />
-          <span className="text-sm font-semibold tracking-tight">Reuse Match</span>
-        </div>
-        <Select value="cat">
-          <SelectTrigger className="h-8 w-[200px] text-xs"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="cat">Catalonia</SelectItem>
-            <SelectItem value="es" disabled>Spain · coming soon</SelectItem>
-            <SelectItem value="eea" disabled>Europe (EEA) · coming soon</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="sm" className="h-8 w-56 justify-start gap-1.5 text-xs text-muted-foreground" onClick={() => setSearchOpen(true)}>
-          <Search className="h-3.5 w-3.5" /> Find a company
-        </Button>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span>
-              <Button variant="outline" size="sm" disabled className="h-8 gap-1.5 text-xs">
-                <Sparkles className="h-3.5 w-3.5" /> Ask the analyst
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>Coming next</TooltipContent>
-        </Tooltip>
-        <SettingsDialog>
-          <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Settings">
-            <Settings2 className="h-4 w-4" />
-          </Button>
-        </SettingsDialog>
-        <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Toggle theme" onClick={() => setDark(!dark)}>
-          {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
-      </div>
-    </header>
-  );
+  const { dark, setDark, setSearchOpen, region, setRegion } = useApp();
+  const { setContact, count, user, setAuthOpen } = useWorkspace();
+  return <header className="relative z-40 flex min-h-16 shrink-0 items-center justify-between gap-3 border-b bg-card px-4 md:px-6">
+    <div className="flex shrink-0 items-center gap-3 md:gap-6"><Link to="/" className="flex items-center gap-2"><Droplets className="h-6 w-6 text-primary" /><span className="text-lg font-semibold">Reuse Match</span></Link><div className="hidden sm:block"><Select value={region} onValueChange={v => setRegion(v as "es" | "cat")}><SelectTrigger className="h-8 w-32 border-0 bg-muted text-xs"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="es">Spain</SelectItem><SelectItem value="cat">Catalonia</SelectItem></SelectContent></Select></div></div>
+    <Button variant="outline" className="h-9 min-w-0 justify-start gap-2 text-muted-foreground md:w-[340px] lg:w-[390px]" onClick={() => setSearchOpen(true)}><Search /><span className="hidden truncate md:block text-xs">Search a company, plant, city or project</span><span className="md:hidden sr-only">Search a company, plant, city or project</span></Button>
+    <div className="flex shrink-0 items-center gap-1 md:gap-2"><Button asChild variant="ghost" size="sm"><Link to="/projects"><FolderOpen /><span className="hidden sm:inline">Projects</span>{count > 0 && <span className="tnum text-xs text-primary">{count}</span>}</Link></Button><Button variant="outline" size="sm" className="hidden lg:flex" onClick={() => setContact("")}><MessageCircle />Talk to the team</Button><SettingsDialog><Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Settings"><Settings2 /></Button></SettingsDialog><Button variant="ghost" size="icon" className="hidden h-8 w-8 sm:inline-flex" aria-label="Toggle theme" onClick={() => setDark(!dark)}>{dark ? <Sun /> : <Moon />}</Button>{!user && <Button variant="ghost" size="sm" className="hidden xl:inline-flex" onClick={() => setAuthOpen(true)}>Sign in</Button>}</div>
+  </header>;
 }

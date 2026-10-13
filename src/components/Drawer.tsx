@@ -1,6 +1,12 @@
-import { ChevronDown, Download, X } from "lucide-react";
+import { ArrowRight, BookmarkPlus, ChevronDown, Download, MessageCircle, X } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ProjectRoute } from "./ProjectRoute";
+import { useWorkspace } from "@/lib/workspace";
+import type { OpportunitySnapshot } from "@/lib/project-model";
+import { META, type SourceId, type SourceMeta } from "@/lib/sources/contract";
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,7 +48,7 @@ function Section({ title, children, note }: { title: string; children: React.Rea
 
 export function Answer({ eyebrow, big, children }: { eyebrow: string; big?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="rounded-sm border bg-muted/40 p-3">
+    <div className="border-b pb-5">
       <p className="label-caps">{eyebrow}</p>
       {big && <p className="tnum mt-1 text-2xl font-medium">{big}</p>}
       <p className="mt-1 text-sm leading-snug">{children}</p>
@@ -181,6 +187,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
         ))}
       </div>
 
+      {site.kind === "wwtp" && site.national && <p className="mt-3 border-l-2 border-warning pl-3 text-xs text-muted-foreground">Potential only. {site.reuseReported == null ? "No reuse reported; existing reuse may be missing from public data." : `${fmt1.format(site.reuseReported)}% reuse reported by EEA.`} Firm available supply needs operator confirmation.</p>}
       <div className="mt-3">
         <Answer eyebrow="Answer" big={<>{fmt.format(totalDemand)} <span className="text-sm font-normal text-muted-foreground">m³/day of possible demand</span></>}>
           {buyers.length === 0
@@ -238,24 +245,24 @@ function SiteDetail({ site }: { site: SupplySite }) {
       </Section>
 
       <Details>
-      <ReuseToday regen={regenForSite} />
+      {!(site.kind === "wwtp" && site.national) && <ReuseToday regen={regenForSite} />}
 
       {supply && plant && (
         <Section title="Supply" note="m³/day">
-          <Row k="Design flow" info={<SourceInfo id="wwtp" date={plant.year} />} v={fmt.format(supply.designFlow)} />
+          <Row k={plant.national ? "Capacity-based flow · our estimate" : "Design flow"} info={<SourceInfo id={plant.national ? "eea" : "wwtp"} date={plant.year} />} v={fmt.format(supply.designFlow)} />
           <Row
             k="Actual flow"
-            info={<SourceInfo id="eea" quality={supply.actualQuality} note={supply.actualQuality === "assumption" ? "No EEA match: design flow × 0.6." : `EEA code ${supply.eeaCode}`} date="2022" />}
+            info={<SourceInfo id="eea" quality={supply.actualQuality} note={supply.actualQuality === "assumption" ? plant.national ? "No treated volume: population capacity × 0.2 m³/day." : "No EEA match: design flow × 0.6." : `EEA code ${supply.eeaCode}`} date="2022" />}
             v={<span className="inline-flex items-center gap-1.5"><QualityBadge q={supply.actualQuality} />{fmt.format(supply.actualFlow)}</span>}
           />
           <Row k="How full the plant runs" v={supply.utilisation != null ? `${fmt.format(supply.utilisation * 100)}%` : "–"} />
-          <Row k="Already reused" info={<SourceInfo id="regen" />} v={fmt.format(supply.alreadyReused)} />
+          <Row k="Already reused" info={<SourceInfo id={plant.national ? "eea" : "regen"} />} v={plant.national && plant.reuseReported == null ? "No reuse reported" : fmt.format(supply.alreadyReused)} />
           <Row k="Available reclaimed" v={<span className="font-medium">{fmt.format(supply.availableReclaimed)}</span>} />
           {supply.suspect && <p className="mt-1.5 text-[11px] text-destructive">Suspect value: {supply.suspect}. Excluded from costs.</p>}
         </Section>
       )}
 
-      {plant && supply && (
+      {plant && supply && !plant.national && (
         <Section title="Where this plant's water goes" note="m³/yr">
           <Sankey source={plant.name} flows={plantFlows(supply.actualFlow * 365, supply.actualQuality, regenForSite, plant.receiving)} />
           <p className="mt-1 text-[11px] text-muted-foreground">
@@ -269,7 +276,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
       <Section title="Plant">
         <Row k="Municipality" v={site.municipi} />
         <Row k="Operator" v={site.operator} />
-        <Row k="Design capacity" info={<SourceInfo id={site.kind === "regen" ? "regen" : "wwtp"} />} v={`${fmt.format(site.capacity)} m³/day`} />
+        <Row k={site.kind === "wwtp" && site.national ? "Treated flow" : "Design capacity"} info={<SourceInfo id={site.kind === "regen" ? "regen" : site.national ? "eea" : "wwtp"} />} v={`${fmt.format(site.capacity)} m³/day`} />
         {site.kind === "wwtp" ? (
           <>
             <Row k="Population equivalent" v={fmt.format(site.pe)} />
@@ -318,7 +325,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
   );
 }
 
-function CompanyDetail({ company }: { company: Company }) {
+function CompanyDetail({ company, view = "overview", onSummary }: { company: Company; view?: "overview" | "economics"; onSummary?: (p: OpportunitySnapshot) => void }) {
   const { settings, select, confirmed, toggleConfirmed, demandOverride, mode } = useApp();
   const w = useWwtps();
   const status = buyerStatus(company, confirmed);
@@ -346,7 +353,7 @@ function CompanyDetail({ company }: { company: Company }) {
         {confirmed.has(company.id) ? "Remove my confirmation" : "I know this company uses reclaimed water"}
       </button>
 
-      <WaterOptions company={company} focus={mode} />
+      <WaterOptions company={company} focus={mode} view={view} onSummary={onSummary} />
 
       <Details label="About this company">
       <Section title="Company">
@@ -499,8 +506,12 @@ function RegionDetail() {
 }
 
 export function Drawer() {
-  const { selection, select } = useApp();
-  const { siteById, companyById } = useMatches();
+  const { selection, select, maxKm } = useApp();
+  const { siteById, companyById, matches } = useMatches();
+  const { save, setContact } = useWorkspace();
+  const [tab, setTab] = useState("overview");
+  const [summary, setSummary] = useState<OpportunitySnapshot | null>(null);
+  const [saving, setSaving] = useState(false);
   if (!selection) return null;
   let name: string | undefined;
   let body: React.ReactNode = null;
@@ -513,24 +524,38 @@ export function Drawer() {
   } else if (selection.kind === "company") {
     const company = companyById.get(selection.id);
     name = company?.name;
-    if (company) body = <CompanyDetail key={company.id} company={company} />;
+    if (company) body = <CompanyDetail key={company.id} company={company} onSummary={setSummary} />;
   } else {
     const site = siteById.get(selection.id);
     name = site?.name;
     if (site) body = <SiteDetail key={site.id} site={site} />;
   }
   if (!name) return null;
+  const site = siteById.get(selection.id);
+  const company = companyById.get(selection.id);
+  const location = site?.municipi ?? company?.municipi ?? "Catalonia";
+  const links = matches.filter(m => m.siteId === selection.id);
+  const volume = site ? (site.kind === "wwtp" ? site.supply?.availableReclaimed ?? 0 : Math.max(0, site.capacity - site.reusedVolume / 365)) : 0;
+  const base: OpportunitySnapshot = { id: selection.id, kind: selection.kind, name, location, plant: site?.name ?? "", buyer: "", volume, distance: null, cost: "Select a buyer to evaluate costs", value: "Needs a confirmed buyer", confidence: "Estimated demand · supply needs confirmation", verdict: volume > 0 ? `Potential supply: ${fmt.format(volume)} m³/day and ${links.length} potential buyers within ${maxKm} km.` : "Needs validation: confirm supply and demand before evaluating a project.", blocker: "Firm available supply, buyer demand and pipe route are not confirmed.", nextAction: "Confirm firm supply with the plant operator, then validate the nearest buyer's demand." };
+  const snapshot = summary?.id === selection.id ? summary : base;
+  const sourceIds: SourceId[] = company ? [...(company.sources.includes("aca") ? ["companies" as const] : []), ...(company.sources.includes("eea") ? ["ied" as const] : []), "demand", "costs", "meteo"] : ["wwtp", "eea", "regen", "costs"];
+  async function shortlist() { setSaving(true); try { if (await save(snapshot)) { toast.success("Saved to Projects"); setTab("route"); } } catch (e) { toast.error(e instanceof Error ? e.message : "Could not save project"); } finally { setSaving(false); } }
   return (
-    <aside className="panel absolute right-3 top-3 bottom-3 z-20 flex w-[420px] flex-col rounded-md shadow-xl animate-in slide-in-from-right-4 fade-in">
-      <div className="flex items-start justify-between gap-2 border-b px-5 py-4">
-        <h2 className="text-base font-semibold leading-snug">{name}</h2>
+    <aside className="panel opportunity-drawer flex flex-col rounded-lg animate-in slide-in-from-right-4 fade-in" aria-label="Opportunity workspace">
+      <div className="flex items-start justify-between gap-2 px-6 pt-5 pb-3">
+        <div><p className="mb-2 text-[11px] text-muted-foreground">Evaluate a project</p><h2 className="text-lg font-semibold leading-snug">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{location}</p></div>
         <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close">
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="px-5 pb-6 pt-4">{body}</div>
-      </div>
+      <div className="px-6 pb-4"><div className="mb-3 flex flex-wrap gap-2"><Badge variant="outline" className="border-warning/40 text-warning">Needs validation</Badge><Badge variant="secondary">{company ? "Estimated demand" : site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow" : "Our estimate"}</Badge></div><div className="flex gap-2"><Button className="flex-1" size="sm" disabled={saving} onClick={shortlist}><BookmarkPlus />{saving ? "Saving…" : "Evaluate project"}<ArrowRight /></Button><Button size="sm" variant="outline" aria-label="Contact Reuse Match team" onClick={() => setContact(name ?? "")}><MessageCircle /></Button></div></div>
+      <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col"><TabsList className="mx-6 grid shrink-0 grid-cols-4"><TabsTrigger value="overview">Overview</TabsTrigger><TabsTrigger value="economics">Economics</TabsTrigger><TabsTrigger value="route">Project route</TabsTrigger><TabsTrigger value="evidence">Evidence</TabsTrigger></TabsList><div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <TabsContent value="overview" className="mt-0">{body}{site && <div className="mt-5 border-l-2 border-primary pl-3"><p className="label-caps">Recommended next step</p><p className="mt-1 text-sm">{base.nextAction}</p></div>}</TabsContent>
+        <TabsContent value="economics" className="mt-0">{company ? <CompanyDetail company={company} view="economics" onSummary={setSummary} /> : <><h3 className="text-xl font-semibold">Start with a buyer.</h3><p className="mt-3 text-sm text-muted-foreground">Connection economics depend on each buyer's demand, tariff, water quality and route. Select a potential buyer from the overview to compare mains water, a connection and on-site reuse.</p><Button className="mt-5" variant="outline" onClick={() => setTab("overview")}>View potential buyers<ArrowRight /></Button></>}</TabsContent>
+        <TabsContent value="route" className="mt-0"><ProjectRoute onContact={() => setContact(`Engineer-reviewed Deal File: ${name}`)} /></TabsContent>
+        <TabsContent value="evidence" className="mt-0"><h3 className="text-xl font-semibold">What supports this opportunity?</h3><p className="my-3 text-sm text-muted-foreground">Public records are evidence of infrastructure, not confirmed spare capacity or buyer commitment.</p>{sourceIds.map(id => <div key={id} className="border-b py-4"><div className="flex items-center justify-between gap-3"><a className="text-sm font-medium hover:text-primary" href={META[id].url} target="_blank" rel="noreferrer">{META[id].name}</a><QualityBadge q={META[id].quality} /></div><p className="mt-1 text-xs text-muted-foreground">{META[id].publisher} · {id === "eea" ? "2022 records" : id === "ied" ? "2024 records" : site?.year ? `${site.year} records` : META[id].updateFrequency}</p><p className="mt-2 text-xs text-muted-foreground">{(META[id] as SourceMeta).knownIssues?.join(". ")}</p></div>)}<p className="mt-4 text-xs text-warning">Needs user confirmation: demand, tariff, water-quality requirements and commercial commitment.</p></TabsContent>
+      </div></Tabs>
+      <div className="shrink-0 border-t px-6 py-3"><Button variant="link" size="sm" className="h-auto p-0" onClick={() => setContact(name ?? "")}><MessageCircle />Validate this opportunity with us</Button></div>
     </aside>
   );
 }

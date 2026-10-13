@@ -46,11 +46,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --shadow-map-panel: var(--map-panel-shadow);
 }
 
 :root {
   --radius: 0.375rem;
-  --background: oklch(0.995 0 0);
+  --background: oklch(0.98 0.003 95);
   --foreground: oklch(0.2 0.01 230);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0.01 230);
@@ -84,6 +85,7 @@
   --sidebar-accent-foreground: oklch(0.25 0.01 230);
   --sidebar-border: oklch(0.92 0.005 220);
   --sidebar-ring: oklch(0.48 0.09 225);
+  --map-panel-shadow: 0 4px 24px oklch(0.2 0.01 230 / 10%), 0 1px 3px oklch(0.2 0.01 230 / 6%);
 }
 
 .dark {
@@ -116,6 +118,7 @@
   --sidebar-accent-foreground: oklch(0.95 0.004 220);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.66 0.1 215);
+  --map-panel-shadow: 0 4px 24px oklch(0.1 0 0 / 35%);
 }
 
 @layer base {
@@ -140,8 +143,8 @@
 
 @utility label-caps {
   font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--color-muted-foreground);
   font-weight: 500;
 }
@@ -151,3 +154,28 @@
   backdrop-filter: blur(8px);
   border: 1px solid var(--color-border);
 }
+
+.map-shell { height: 100dvh; }
+.map-left-panel { position: absolute; left: 20px; top: 82px; bottom: 110px; width: 310px; z-index: 20; box-shadow: var(--map-panel-shadow); }
+.opportunity-drawer { position: absolute; right: 20px; top: 20px; bottom: 20px; width: 440px; z-index: 30; box-shadow: var(--map-panel-shadow); }
+.map-context { max-width: calc(100% - 40px); }
+.map-context.with-selection { max-width: calc(100% - 500px); }
+.map-legend { position: absolute; right: 62px; bottom: 110px; }
+.map-legend.with-selection { right: 480px; }
+.maplibregl-ctrl-bottom-right { bottom: 102px !important; }
+.opportunity-drawer h3 { letter-spacing: 0; }
+@media (max-width: 1100px) {
+  .map-left-panel { width: 280px; }
+  .map-left-panel.obscured { display: none; }
+  .opportunity-drawer { width: 410px; }
+  .map-context.with-selection { max-width: calc(100% - 460px); }
+  .map-legend.with-selection { display: none; }
+}
+@media (max-width: 767px) {
+  .map-left-panel { left: 12px; top: 76px; bottom: 110px; width: min(310px, calc(100% - 24px)); }
+  .opportunity-drawer { left: 8px; right: 8px; top: 76px; bottom: 8px; width: auto; }
+  .map-context { max-width: calc(100% - 24px); }
+  .map-context.with-selection { display: none; }
+  .map-legend { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }

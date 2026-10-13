@@ -44,7 +44,7 @@ const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmln
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
 export default function MapView() {
-  const { layers, selection, select, dark, sector, confirmed } = useApp();
+  const { layers, selection, select, dark, sector, confirmed, region } = useApp();
   const pr = useProjects();
   const [popup, setPopup] = useState<ReuseProject | null>(null);
   const clusters = useClusters();
@@ -55,6 +55,7 @@ export default function MapView() {
   const res = useReservoirs();
   const { matches, siteById, companyById } = useMatches();
   const [hover, setHover] = useState<Hover>(null);
+  useEffect(() => { mapRef.current?.flyTo({ center: region === "es" ? [-3.7, 40.2] : [1.75, 41.7], zoom: region === "es" ? 5.5 : 7.4, duration: 700 }); }, [region]);
 
   const selectedSite =
     selection && selection.kind !== "company" ? siteById.get(selection.id) : undefined;
@@ -228,7 +229,7 @@ export default function MapView() {
     <div className="relative h-full w-full">
       <Map
         ref={mapRef}
-        initialViewState={{ longitude: 1.75, latitude: 41.7, zoom: 7.4 }}
+        initialViewState={{ longitude: region === "es" ? -3.7 : 1.75, latitude: region === "es" ? 40.2 : 41.7, zoom: region === "es" ? 5.5 : 7.4 }}
         mapStyle={
           dark
             ? "https://tiles.openfreemap.org/styles/dark"
@@ -263,7 +264,7 @@ export default function MapView() {
           }}
         />
       </Map>
-      <div className="panel absolute right-14 bottom-3 z-10 max-w-[360px] space-y-0.5 rounded-sm px-2.5 py-1.5 text-[10px] text-muted-foreground">
+      <div className={`panel map-legend z-10 max-w-[290px] space-y-0.5 rounded-md px-3 py-2 text-[10px] text-muted-foreground ${selection ? "with-selection" : ""}`}>
         {layers.wwtp && <p>Circle = treatment plant; bigger = more water treated; hollow = our estimate.</p>}
         {layers.regen && <p>Ring = recycled water already used (accent = industry); gap = unused.</p>}
         {layers.companies && <p>Dot = company: hollow potential, grey water-intensive, black confirmed.</p>}
