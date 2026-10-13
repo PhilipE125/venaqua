@@ -36,6 +36,7 @@ export interface RegenPlant extends BaseFeature {
   capacity: number; // m3/day
   treatments: string[];
   reusedVolume: number; // m3/year
+  reuseByUse: { agricultural: number; environmental: number; urban: number; recreational: number; industrial: number }; // m3/year
   year: string;
   geocodedBy: "wwtp" | "nominatim";
 }
@@ -62,6 +63,7 @@ export type SupplySite = Plant | RegenPlant;
 export interface SourceResult<T> {
   features: T[];
   fetchedAt: string;
+  excludedCount?: number;
 }
 
 export interface Tender {

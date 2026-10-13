@@ -193,8 +193,16 @@ function OpportunitiesTab() {
 }
 
 function AboutTab() {
+  const c = useCompanies();
   return (
     <div className="space-y-4 px-4 py-4 text-xs">
+      {c.data?.excludedCount != null && (
+        <p className="rounded-sm border bg-muted/50 p-3 text-muted-foreground">
+          Company register: {fmt.format(c.data.excludedCount)} rows excluded — non-discharge records, water utilities
+          (AIGÜES RESIDUALS / CAPTACIÓ D'AIGUA) and public bodies (AJUNTAMENT, CONSELL COMARCAL, CONSORCI, AGÈNCIA
+          CATALANA DE L'AIGUA).
+        </p>
+      )}
       <div className="rounded-sm border bg-muted/50 p-3">
         <p className="label-caps mb-1.5">Opportunity score</p>
         <p className="font-mono text-[11px] leading-relaxed">score = min(supply, demand) × (1 + stress) / (1 + distance_km)</p>

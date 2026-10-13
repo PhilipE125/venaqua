@@ -72,6 +72,13 @@ export async function fetchRegen(wwtps: Plant[]): Promise<SourceResult<RegenPlan
         (s) => s && s !== "NA",
       ),
       reusedVolume: num(r.volum_total_aigua_reutilitzada),
+      reuseByUse: {
+        agricultural: num(r.volum_aigua_reutilitzada),
+        environmental: num(r.volum_aigua_reutilitzada_1),
+        urban: num(r.volum_aigua_reutilitzada_2),
+        recreational: num(r.volum_aigua_reutilitzada_3),
+        industrial: num(r.volum_aigua_reutilitzada_4),
+      },
       year: r.any ?? "",
       geocodedBy,
     });

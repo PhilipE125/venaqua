@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,6 +96,39 @@ function SiteDetail({ site }: { site: SupplySite }) {
           Steps: {(site.kind === "wwtp" ? site.steps : site.treatments).join(" → ") || "–"}
         </p>
       </Section>
+
+      {site.kind === "regen" && (
+        <Section title="Reuse by use vs capacity" note="m³/year">
+          {(() => {
+            const annualCapacity = site.capacity * 365;
+            const data = [
+              { name: "Agricultural", value: site.reuseByUse.agricultural },
+              { name: "Environmental", value: site.reuseByUse.environmental },
+              { name: "Urban", value: site.reuseByUse.urban },
+              { name: "Recreational", value: site.reuseByUse.recreational },
+              { name: "Industrial", value: site.reuseByUse.industrial },
+              { name: "Unused capacity", value: Math.max(0, annualCapacity - site.reusedVolume) },
+            ].filter((d) => d.value > 0);
+            return (
+              <>
+                <div className="h-32">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data} layout="vertical" margin={{ left: 0, right: 8, top: 0, bottom: 0 }}>
+                      <XAxis type="number" hide />
+                      <YAxis type="category" dataKey="name" width={96} tick={{ fontSize: 10 }} />
+                      <Tooltip contentStyle={{ fontSize: 11 }} formatter={(v) => `${fmt.format(Number(v))} m³/year`} />
+                      <Bar dataKey="value" fill="var(--chart-2)" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="mt-1.5 text-[11px] text-muted-foreground">
+                  Design capacity × 365 = {fmt.format(annualCapacity)} m³/year; reused {fmt.format(site.reusedVolume)} m³/year.
+                </p>
+              </>
+            );
+          })()}
+        </Section>
+      )}
 
       <Section title="Nearby buyers" note={`within ${maxKm} km`}>
         {buyers.length === 0 ? (
