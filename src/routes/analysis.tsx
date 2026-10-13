@@ -31,7 +31,7 @@ function AnalysisPage() {
   useEffect(() => {
     if (!id || selection?.id === id && selection.kind === kind) return;
     select(kind === "region" ? { kind, id: "catalonia" } : { kind, id });
-  }, [kind, id, selection, select]);
+  }, [kind, id]);
   return <TooltipProvider><div className="min-h-dvh bg-background">
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b bg-background px-4 sm:px-8">
       <Button variant="ghost" asChild><Link to="/" resetScroll={false}><ArrowLeft />Back to map</Link></Button>
