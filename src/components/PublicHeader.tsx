@@ -1,63 +1,107 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown, Droplets } from "lucide-react";
+import { Droplets } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useWorkspace } from "@/lib/workspace";
 
-const triggerClass =
-  "inline-flex items-center gap-1 rounded-md px-3 py-2 outline-none transition-colors hover:text-foreground focus-visible:text-foreground data-[state=open]:text-foreground";
-const linkClass = "rounded-md px-3 py-2 transition-colors hover:text-foreground";
+type Key = "platform" | "how" | "pricing" | "resources" | "about";
+
+const ITEMS: { key: Key; label: string }[] = [
+  { key: "platform", label: "Platform" },
+  { key: "how", label: "How it works" },
+  { key: "pricing", label: "Pricing" },
+  { key: "resources", label: "Resources" },
+  { key: "about", label: "About us" },
+];
 
 export function PublicHeader() {
   const { setAuthOpen, setContact } = useWorkspace();
+  const [open, setOpen] = useState<Key | null>(null);
+  const close = () => setOpen(null);
+
+  const content: Record<Key, { title: string; body: string; actions: React.ReactNode }> = {
+    platform: {
+      title: "The Venaqua platform",
+      body: "A live map of water recycling plants, industrial water users and water stress. Spot reuse opportunities, then save and develop them as projects.",
+      actions: (
+        <>
+          <Button asChild size="sm"><Link to="/explore" onClick={close}>Explore the free map</Link></Button>
+          <Button asChild size="sm" variant="outline"><Link to="/projects" onClick={close}>Projects</Link></Button>
+        </>
+      ),
+    },
+    how: {
+      title: "How it works",
+      body: "Explore the map to find supply near demand. Qualify each match with economics and evidence. Progress the best ones into a project with the Venaqua team.",
+      actions: <Button asChild size="sm"><a href="/#how" onClick={close}>Read more</a></Button>,
+    },
+    pricing: {
+      title: "Pricing",
+      body: "The map is free. Paid plans add full economics, private project pipelines and feasibility briefs for teams.",
+      actions: <Button asChild size="sm"><Link to="/pricing" onClick={close}>See plans</Link></Button>,
+    },
+    resources: {
+      title: "Resources",
+      body: "Every figure is labelled measured, modelled or estimated, with its public source. Questions? The team is happy to help.",
+      actions: (
+        <>
+          <Button size="sm" onClick={() => { close(); setContact(""); }}>Talk to the team</Button>
+          <Button asChild size="sm" variant="outline"><a href="mailto:support@venaqua.com">Email us</a></Button>
+        </>
+      ),
+    },
+    about: {
+      title: "About Venaqua",
+      body: "We help water operators, industry and planners find the reuse projects worth building — starting in Spain, expanding across Europe.",
+      actions: <Button asChild size="sm"><a href="/#why" onClick={close}>Why Venaqua</a></Button>,
+    },
+  };
+
+  const current = open ? content[open] : null;
+
   return (
-    <header className="relative z-10 flex items-center justify-between border-b border-border/60 bg-background/70 px-5 py-3 backdrop-blur-sm">
-      <div className="flex items-center gap-4">
-        <Link to="/" className="flex items-center gap-2">
+    <header className="relative z-10 border-b border-border/60 bg-background/75 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-5">
+        <Link to="/" className="flex shrink-0 items-center gap-2">
           <Droplets className="h-5 w-5 text-primary" />
           <span className="font-semibold tracking-tight">Venaqua</span>
         </Link>
-        <nav className="hidden items-center gap-1 text-sm text-muted-foreground md:flex">
-          <DropdownMenu>
-            <DropdownMenuTrigger className={triggerClass}>
-              Platform <ChevronDown className="h-3.5 w-3.5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem asChild>
-                <Link to="/explore">Explore the free map</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/projects">Projects</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <a href="/#how" className={linkClass}>How it works</a>
-          <Link to="/pricing" className={linkClass}>Pricing</Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger className={triggerClass}>
-              Resources <ChevronDown className="h-3.5 w-3.5" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onSelect={() => setContact("")}>
-                Talk to the team
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href="mailto:support@venaqua.com">Email the team</a>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <a href="/#why" className={linkClass}>About us</a>
+        <nav className="hidden items-center gap-0.5 text-sm text-muted-foreground lg:flex">
+          {ITEMS.map((i) => (
+            <button
+              key={i.key}
+              onClick={() => setOpen(i.key)}
+              className="whitespace-nowrap rounded-full px-3 py-1.5 transition-colors hover:bg-muted hover:text-foreground"
+            >
+              {i.label}
+            </button>
+          ))}
         </nav>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Button variant="ghost" size="sm" className="whitespace-nowrap" onClick={() => setAuthOpen(true)}>Sign in</Button>
+          <Button size="sm" className="whitespace-nowrap" onClick={() => setAuthOpen(true)}>Get started</Button>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button>
-        <Button size="sm" onClick={() => setAuthOpen(true)}>Get started — full version</Button>
-      </div>
+      <Dialog open={!!current} onOpenChange={(o) => !o && close()}>
+        <DialogContent className="max-w-sm">
+          {current && (
+            <>
+              <DialogHeader>
+                <DialogTitle>{current.title}</DialogTitle>
+                <DialogDescription className="leading-relaxed">{current.body}</DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-wrap gap-2 pt-1">{current.actions}</div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

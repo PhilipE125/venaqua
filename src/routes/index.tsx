@@ -112,7 +112,7 @@ function Landing() {
 
       <main className="relative z-10 flex flex-1 flex-col">
         <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-5 pb-16 pt-20 text-center sm:pt-28">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Industrial water reuse · Spain</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Industrial water reuse · Europe</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             Find the water-reuse projects worth building
           </h1>
