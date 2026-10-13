@@ -14,3 +14,4 @@
 - The map component is lazy-loaded behind ClientOnly and sets the MapLibre worker URL explicitly — MapLibre/deck.gl cannot run during SSR and the bundled worker path breaks otherwise.
 - Every source's static metadata (publisher, quality, known issues) lives in src/lib/sources/contract.ts and is surfaced via SourceInfo popovers — one place to keep data provenance honest.
 - The A/B/C water-option cost model is pure range arithmetic in src/lib/costs.ts with unit tests; UI only feeds it inputs — keeps money logic auditable.
+- Question modes (state `mode` + `MODE_PRESETS` in src/lib/state.tsx) decide which layers and panel a view shows; clusters and future projections are pure modules (clusters.ts, projection.ts) with tests — keeps each question view thin.
