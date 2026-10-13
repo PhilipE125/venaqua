@@ -18,6 +18,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
 
 const MapView = lazy(() => import("@/components/map/MapView"));
