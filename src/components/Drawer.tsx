@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { ChevronDown, Download, X } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useMemo } from "react";
 import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { Badge } from "@/components/ui/badge";
@@ -7,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { buyerStatus, STATUS_LABEL } from "@/lib/knownUsers";
 import { haversineKm } from "@/lib/score";
-import { fmt, fmt1, useCompanies, useMatches, useMeteo, usePrat, useRegen, useStress, useTenders, useWwtps } from "@/lib/queries";
-import { normalize, sectorById } from "@/lib/sectors";
+import { eurK, fmt, fmt1, fmt2, useClusters, useCompanies, useDrought, useMatches, useMeteo, usePrat, useRegen, useStress, useTenders, useWwtps } from "@/lib/queries";
+import { mid } from "@/lib/costs";
+import { currentPhase, PHASES } from "@/lib/sources/drought";
+import { muniKey, normalize, sectorById } from "@/lib/sectors";
 import type { Quality } from "@/lib/sources/contract";
 import { useApp } from "@/lib/state";
 import type { BuyerStatus, Company, Plant, RegenPlant, ReuseByUse, SupplySite } from "@/lib/types";
@@ -35,6 +38,38 @@ function Section({ title, children, note }: { title: string; children: React.Rea
       {children}
     </section>
   );
+}
+
+export function Answer({ eyebrow, big, children }: { eyebrow: string; big?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="rounded-sm border bg-muted/40 p-3">
+      <p className="label-caps">{eyebrow}</p>
+      {big && <p className="tnum mt-1 text-2xl font-medium">{big}</p>}
+      <p className="mt-1 text-sm leading-snug">{children}</p>
+    </div>
+  );
+}
+
+export function Details({ children, label = "Show the details" }: { children: React.ReactNode; label?: string }) {
+  return (
+    <Collapsible className="mt-5 border-t pt-3">
+      <CollapsibleTrigger className="group flex w-full items-center justify-between text-xs font-medium">
+        {label}
+        <ChevronDown className="h-3.5 w-3.5 transition-transform group-data-[state=open]:rotate-180" />
+      </CollapsibleTrigger>
+      <CollapsibleContent>{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function downloadCsv(name: string, rows: (string | number)[][]) {
+  const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function StatusChip({ s }: { s: BuyerStatus }) {
@@ -123,11 +158,12 @@ function SiteDetail({ site }: { site: SupplySite }) {
     () =>
       matches
         .filter((m) => m.siteId === site.id)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 12)
+        .sort((a, b) => b.matched - a.matched || b.score - a.score)
         .map((m) => ({ ...m, company: companyById.get(m.companyId)! })),
     [matches, site.id, companyById],
   );
+  const totalDemand = buyers.reduce((s, b) => s + b.matched, 0);
+  const canSupply = supply?.availableReclaimed ?? (site.kind === "regen" ? Math.max(0, site.capacity - site.reusedVolume / 365) : 0);
   const siteTenders = (tenders.data?.tenders ?? []).filter((t) => t.city && normalize(t.city) === normalize(site.municipi));
 
   return (
@@ -145,6 +181,63 @@ function SiteDetail({ site }: { site: SupplySite }) {
         ))}
       </div>
 
+      <div className="mt-3">
+        <Answer eyebrow="Answer" big={<>{fmt.format(totalDemand)} <span className="text-sm font-normal text-muted-foreground">m³/day of possible demand</span></>}>
+          {buyers.length === 0
+            ? `No companies within ${maxKm} km.`
+            : `${fmt.format(buyers.length)} potential buyers within ${maxKm} km could use up to ${fmt.format(totalDemand)} m³/day, against about ${fmt.format(canSupply)} m³/day this plant could supply.`}{" "}
+          <span className="text-muted-foreground">Demand is our estimate.</span>
+        </Answer>
+      </div>
+
+      <Section title="Potential buyers" note={`within ${maxKm} km`}>
+        <p className="mb-2 text-[11px] text-muted-foreground">
+          Companies with a wastewater discharge permit or industrial installation within {maxKm} km. Not confirmed buyers; demand is estimated.
+        </p>
+        {buyers.length > 0 && (
+          <button
+            className="mb-2 inline-flex items-center gap-1 text-[11px] underline"
+            onClick={() =>
+              downloadCsv(`${site.name} potential buyers.csv`, [
+                ["Company", "Municipality", "Sector", "Status", "Distance km", "Estimated m3/day", "Score"],
+                ...buyers.map((b) => [b.company.name, b.company.municipi, sectorById[b.company.sector].label, buyerStatus(b.company, confirmed), fmt1.format(b.distanceKm), Math.round(b.matched), Math.round(b.score)]),
+              ])
+            }
+          >
+            <Download className="h-3 w-3" /> Download all {buyers.length} as CSV
+          </button>
+        )}
+        {buyers.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No companies within the distance limit.</p>
+        ) : (
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-left text-muted-foreground">
+                <th className="pb-1 font-normal">Company</th>
+                <th className="pb-1 text-right font-normal">km</th>
+                <th className="pb-1 text-right font-normal">m³/day</th>
+              </tr>
+            </thead>
+            <tbody>
+              {buyers.slice(0, 15).map((b) => (
+                <tr key={b.companyId} onClick={() => select({ kind: "company", id: b.companyId })} className="cursor-pointer border-t hover:bg-accent">
+                  <td className="max-w-[230px] py-1.5 pr-2">
+                    <div className="truncate">{b.company.name}</div>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                      <StatusChip s={buyerStatus(b.company, confirmed)} />
+                      {sectorById[b.company.sector].label}
+                    </div>
+                  </td>
+                  <td className="tnum py-1.5 text-right align-top">{fmt1.format(b.distanceKm)}</td>
+                  <td className="tnum py-1.5 text-right align-top">{fmt.format(b.matched)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Section>
+
+      <Details>
       <ReuseToday regen={regenForSite} />
 
       {supply && plant && (
@@ -195,40 +288,6 @@ function SiteDetail({ site }: { site: SupplySite }) {
         </p>
       </Section>
 
-      <Section title="Potential buyers" note={`within ${maxKm} km`}>
-        <p className="mb-2 text-[11px] text-muted-foreground">
-          Companies with a wastewater discharge permit or industrial installation within {maxKm} km. Not confirmed buyers; demand is estimated.
-        </p>
-        {buyers.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No companies within the distance limit.</p>
-        ) : (
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-muted-foreground">
-                <th className="pb-1 font-normal">Company</th>
-                <th className="pb-1 text-right font-normal">km</th>
-                <th className="pb-1 text-right font-normal">Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {buyers.map((b) => (
-                <tr key={b.companyId} onClick={() => select({ kind: "company", id: b.companyId })} className="cursor-pointer border-t hover:bg-accent">
-                  <td className="max-w-[230px] py-1.5 pr-2">
-                    <div className="truncate">{b.company.name}</div>
-                    <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <StatusChip s={buyerStatus(b.company, confirmed)} />
-                      {sectorById[b.company.sector].label}
-                    </div>
-                  </td>
-                  <td className="tnum py-1.5 text-right align-top">{fmt1.format(b.distanceKm)}</td>
-                  <td className="tnum py-1.5 text-right align-top">{fmt.format(b.score)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Section>
-
       <Section title="Local water demand pressure" note={<span className="flex items-center gap-1">modelled <SourceInfo id="meteo" /></span>}>
         {meteo.isLoading ? (
           <Skeleton className="h-28 w-full" />
@@ -254,6 +313,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
           </>
         )}
       </Section>
+      </Details>
     </>
   );
 }
