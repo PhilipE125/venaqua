@@ -24,6 +24,21 @@ function DeckOverlay(props: MapboxOverlayProps) {
 
 type Hover = { x: number; y: number; text: string } | null;
 
+// Owns the hover state so a mouse move re-renders this tooltip only, not the whole map.
+function HoverTip({ bind }: { bind: { current: (h: Hover) => void } }) {
+  const [hover, setHover] = useState<Hover>(null);
+  bind.current = setHover;
+  if (!hover) return null;
+  return (
+    <div
+      className="pointer-events-none absolute z-10 rounded-sm bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md"
+      style={{ left: hover.x + 12, top: hover.y + 12 }}
+    >
+      {hover.text}
+    </div>
+  );
+}
+
 // Ring glyph: segments = reuse by use (greys, industry in accent), hollow remainder = unused.
 const SEG_COLORS = ["#b5b5b5", "#8f8f8f", "#6b6b6b", "#474747", "#0b6e8a"];
 function ringIcon(g: RegenPlant, annual: number): string {
@@ -54,7 +69,7 @@ export default function MapView() {
   const c = useCompanies();
   const res = useReservoirs();
   const { matches, siteById, companyById } = useMatches();
-  const [hover, setHover] = useState<Hover>(null);
+  const setHover = useRef<(h: Hover) => void>(() => {});
   useEffect(() => { mapRef.current?.flyTo({ center: region === "es" ? [-3.7, 40.2] : [1.75, 41.7], zoom: region === "es" ? 5.5 : 7.4, duration: 700 }); }, [region]);
 
   const selectedSite =
@@ -92,6 +107,17 @@ export default function MapView() {
       .map((x) => ({ path: [[src.lon, src.lat], [x.lon, x.lat]] as [number, number][] }));
   }, [r.data, c.data, confirmed]);
 
+  // Stable layer data: a new array makes deck.gl rebuild every attribute for that layer.
+  const companyData = useMemo(
+    () => (c.data?.features ?? []).filter((d) => sector === "all" || d.sector === sector),
+    [c.data, sector],
+  );
+  const regenData = useMemo(() => {
+    const ringed = new Set(rings.map((x) => x.g.id));
+    return (r.data?.features ?? []).filter((g) => !ringed.has(g.id));
+  }, [r.data, rings]);
+  const clusterData = useMemo(() => clusters.slice(0, 40), [clusters]);
+
   // Fly to whatever is selected, from the map, a list or search.
   useEffect(() => {
     if (!selection || selection.kind === "comarca" || selection.kind === "region") return;
@@ -107,7 +133,7 @@ export default function MapView() {
     layers.clusters &&
       new PolygonLayer({
         id: "clusters",
-        data: clusters.slice(0, 40),
+        data: clusterData,
         getPolygon: (d: (typeof clusters)[number]) => d.hull,
         filled: true,
         getFillColor: [11, 110, 138, 25],
@@ -153,7 +179,7 @@ export default function MapView() {
     layers.companies &&
       new ScatterplotLayer<Company>({
         id: "companies",
-        data: (c.data?.features ?? []).filter((d) => sector === "all" || d.sector === sector),
+        data: companyData,
         getPosition: (d) => [d.lon, d.lat],
         getRadius: (d) => (arcCompanyIds.has(d.id) || selection?.id === d.id ? 4.5 : 2.8),
         radiusUnits: "pixels",
@@ -202,7 +228,7 @@ export default function MapView() {
     layers.regen &&
       new ScatterplotLayer<RegenPlant>({
         id: "regen",
-        data: (r.data?.features ?? []).filter((g) => !rings.some((x) => x.g.id === g.id)),
+        data: regenData,
         getPosition: (d) => [d.lon, d.lat],
         getRadius: 6,
         radiusUnits: "pixels",
@@ -247,9 +273,9 @@ export default function MapView() {
             const raw = info.object as { name?: string; kind?: string; fill?: number; g?: RegenPlant; buyer?: string; object?: string } | undefined;
             const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
             const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
-            if (!o?.name) return setHover(null);
+            if (!o?.name) return setHover.current(null);
             const extra = o.kind === "reservoir" ? ` · ${o.fill}% full` : "";
-            setHover({ x: info.x, y: info.y, text: o.name + extra });
+            setHover.current({ x: info.x, y: info.y, text: o.name + extra });
           }}
           onClick={(info) => {
             const raw = info.object as { id: string; kind: string; g?: RegenPlant; plant?: Plant; buyer?: string } | undefined;
@@ -285,14 +311,7 @@ export default function MapView() {
           {popup.url && <a href={popup.url} target="_blank" rel="noreferrer" className="mt-1.5 inline-block underline">Open notice</a>}
         </div>
       )}
-      {hover && (
-        <div
-          className="pointer-events-none absolute z-10 rounded-sm bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md"
-          style={{ left: hover.x + 12, top: hover.y + 12 }}
-        >
-          {hover.text}
-        </div>
-      )}
+      <HoverTip bind={setHover} />
     </div>
   );
 }
