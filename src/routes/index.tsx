@@ -99,7 +99,7 @@ function Landing() {
         </section>
       </main>
 
-      <footer className="border-t px-5 py-6 text-center text-xs text-muted-foreground">
+      <footer className="relative z-10 border-t border-border/60 bg-background/70 px-5 py-6 text-center text-xs text-muted-foreground backdrop-blur-sm">
         Venaqua · Built on public European water data · support@venaqua.com
       </footer>
     </div>
