@@ -33,17 +33,17 @@ function Index() {
   return (
     <AppStateProvider>
       <TooltipProvider delayDuration={200}>
-        <div className="flex h-screen min-w-[1280px] flex-col overflow-hidden">
+        <div className="map-shell flex flex-col overflow-hidden">
           <TopBar />
-          <QuestionBar />
-          <div className="flex min-h-0 flex-1">
-            <Sidebar />
+          <div className="relative flex min-h-0 flex-1">
             <main className="relative min-w-0 flex-1">
               <ClientOnly fallback={<MapFallback />}>
                 <Suspense fallback={<MapFallback />}>
                   <MapView />
                 </Suspense>
               </ClientOnly>
+              <QuestionBar />
+              <Sidebar />
               <StressStrip />
               <Drawer />
               <CompanySearch />
