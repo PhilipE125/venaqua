@@ -50,9 +50,15 @@ export type Database = {
       reuse_projects: {
         Row: {
           activity: Json
+          assumptions: Json
+          blocker: string
+          comments: Json
+          confidence: string
           created_at: string
+          evidence: Json
           id: string
           name: string
+          next_action: string
           notes: string
           opportunity: Json
           owner_name: string
@@ -61,9 +67,15 @@ export type Database = {
         }
         Insert: {
           activity?: Json
+          assumptions?: Json
+          blocker?: string
+          comments?: Json
+          confidence?: string
           created_at?: string
+          evidence?: Json
           id?: string
           name: string
+          next_action?: string
           notes?: string
           opportunity?: Json
           owner_name?: string
@@ -72,13 +84,55 @@ export type Database = {
         }
         Update: {
           activity?: Json
+          assumptions?: Json
+          blocker?: string
+          comments?: Json
+          confidence?: string
           created_at?: string
+          evidence?: Json
           id?: string
           name?: string
+          next_action?: string
           notes?: string
           opportunity?: Json
           owner_name?: string
           stage?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      workspaces: {
+        Row: {
+          created_at: string
+          full_name: string
+          goal: string
+          id: string
+          name: string
+          onboarding: Json
+          plan: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          goal?: string
+          id?: string
+          name: string
+          onboarding?: Json
+          plan?: string
+          role?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          goal?: string
+          id?: string
+          name?: string
+          onboarding?: Json
+          plan?: string
+          role?: string
           user_id?: string
         }
         Relationships: []
