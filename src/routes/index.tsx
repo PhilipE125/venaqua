@@ -7,7 +7,6 @@ import { Sidebar } from "@/components/Sidebar";
 import { StressStrip } from "@/components/StressStrip";
 import { TopBar } from "@/components/TopBar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AppStateProvider } from "@/lib/state";
 
 const MapView = lazy(() => import("@/components/map/MapView"));
 
@@ -31,7 +30,6 @@ function MapFallback() {
 
 function Index() {
   return (
-    <AppStateProvider>
       <TooltipProvider delayDuration={200}>
         <div className="map-shell flex flex-col overflow-hidden">
           <TopBar />
@@ -51,6 +49,5 @@ function Index() {
           </div>
         </div>
       </TooltipProvider>
-    </AppStateProvider>
   );
 }
