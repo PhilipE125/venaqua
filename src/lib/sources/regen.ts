@@ -14,7 +14,7 @@ function readCache(): Record<string, [number, number] | null> {
   }
 }
 
-async function nominatim(municipi: string): Promise<[number, number] | null> {
+export async function nominatim(municipi: string): Promise<[number, number] | null> {
   const cache = readCache();
   if (municipi in cache) return cache[municipi] ?? null;
   await new Promise((r) => setTimeout(r, 1100)); // 1 req/sec
@@ -83,5 +83,5 @@ export async function fetchRegen(wwtps: Plant[]): Promise<SourceResult<RegenPlan
       geocodedBy,
     });
   }
-  return { features, fetchedAt: new Date().toISOString() };
+  return { features, fetchedAt: new Date().toISOString(), fetchedCount: latest.size, latestDataDate: String(Math.max(...[...latest.values()].map((r) => num(r.any)))) };
 }

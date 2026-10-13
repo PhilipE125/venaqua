@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { Drawer } from "@/components/Drawer";
+import { CompanySearch, Landing } from "@/components/Landing";
 import { Sidebar } from "@/components/Sidebar";
 import { StressStrip } from "@/components/StressStrip";
 import { TopBar } from "@/components/TopBar";
@@ -13,9 +14,9 @@ const MapView = lazy(() => import("@/components/map/MapView"));
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Reuse Match · Reclaimed water for Catalan industry" },
+      { title: "Reuse Match · Is reclaimed water cheaper than your tariff?" },
       { name: "description", content: "Map that matches reclaimed wastewater supply in Catalonia with nearby companies that need water, using live public data." },
-      { property: "og:title", content: "Reuse Match · Reclaimed water for Catalan industry" },
+      { property: "og:title", content: "Reuse Match · Is reclaimed water cheaper than your tariff?" },
       { property: "og:description", content: "Match treatment and regeneration plants with nearby water users, ranked by an opportunity score." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -43,7 +44,9 @@ function Index() {
                 </Suspense>
               </ClientOnly>
               <StressStrip />
+              <Landing />
               <Drawer />
+              <CompanySearch />
             </main>
           </div>
         </div>

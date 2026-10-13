@@ -8,6 +8,7 @@ export const DEFAULT_SECTOR_DEMAND: Record<SectorId, number> = {
   paper: 800,
   textiles: 250,
   metals: 200,
+  minerals: 150,
   plastics: 120,
   energy: 600,
   agriculture: 150,

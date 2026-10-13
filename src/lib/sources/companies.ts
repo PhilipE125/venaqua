@@ -39,7 +39,8 @@ export async function fetchCompanies(): Promise<SourceResult<Company>> {
       sector: sectorFromCcae(`${r.ccae ?? ""} ${r.activitat_contaminant ?? ""}`),
       tipus: r.tipus ?? "",
       subtipus: r.subtipus ?? "",
+      sources: ["aca"],
     });
   }
-  return { features, fetchedAt: new Date().toISOString(), excludedCount };
+  return { features, fetchedAt: new Date().toISOString(), excludedCount, fetchedCount: rows.length };
 }

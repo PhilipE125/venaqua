@@ -19,7 +19,6 @@ const BODY = {
     "deadline-receipt-tender-date-lot",
   ],
   limit: 250,
-  page: 1,
 };
 
 function pickLang(v: unknown): string {
@@ -35,14 +34,22 @@ function pickLang(v: unknown): string {
 }
 
 export const searchTenders = createServerFn({ method: "GET" }).handler(async () => {
-  const r = await fetch("https://api.ted.europa.eu/v3/notices/search", {
-    method: "POST",
-    headers: { "content-type": "application/json", accept: "application/json" },
-    body: JSON.stringify(BODY),
-  });
-  if (!r.ok) throw new Error(`TED returned HTTP ${r.status}`);
-  const j = (await r.json()) as { notices?: Record<string, unknown>[] };
-  const tenders: Tender[] = (j.notices ?? []).map((n) => {
+  const notices: Record<string, unknown>[] = [];
+  for (let page = 1; page <= 8; page++) {
+    const r = await fetch("https://api.ted.europa.eu/v3/notices/search", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "application/json" },
+      body: JSON.stringify({ ...BODY, page }),
+    });
+    if (!r.ok) {
+      if (page === 1) throw new Error(`TED returned HTTP ${r.status}`);
+      break;
+    }
+    const j = (await r.json()) as { notices?: Record<string, unknown>[] };
+    notices.push(...(j.notices ?? []));
+    if ((j.notices?.length ?? 0) < BODY.limit) break;
+  }
+  const tenders: Tender[] = notices.map((n) => {
     const type = String(n["notice-type"] ?? "");
     const id = String(n["publication-number"] ?? "");
     const valueRaw = Array.isArray(n["estimated-value-proc"])

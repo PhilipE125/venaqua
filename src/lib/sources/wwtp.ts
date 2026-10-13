@@ -6,8 +6,9 @@ export const WWTP_ID = "k288-dig3";
 function level(r: Row): TreatmentLevel {
   const t = (r.tipus_tractament ?? "").toLowerCase();
   const tert = r.tipus_tractament_terciari && r.tipus_tractament_terciari !== "NA";
-  if (tert || t.includes("nitrogen") || t.includes("fòsfor") || t.includes("fosfor")) return "tertiary";
-  if (t.includes("biol")) return "secondary";
+  if (tert || t.includes("terciari") || t.includes("nitrogen") || t.includes("fòsfor") || t.includes("fosfor")) return "tertiary";
+  // Lagoons and extensive systems are biological (secondary) treatment.
+  if (t.includes("biol") || t.includes("llacun") || t.includes("lagun") || t.includes("extensiu") || t.includes("aiguamoll")) return "secondary";
   return "primary";
 }
 
@@ -52,10 +53,11 @@ export async function fetchWwtps(): Promise<SourceResult<Plant>> {
       receiving: r.medi_receptor ?? "",
       year: r.any ?? "",
       steps,
+      codiAglomeracio: r.codi_aglomeracio ?? "",
       factsheet: (r as unknown as { fitxa?: { url?: string } }).fitxa?.url,
     });
   }
-  return { features, fetchedAt: new Date().toISOString() };
+  return { features, fetchedAt: new Date().toISOString(), fetchedCount: latest.size, latestDataDate: String(Math.max(...[...latest.values()].map((r) => num(r.any)))) };
 }
 
 export function titleCase(s: string) {

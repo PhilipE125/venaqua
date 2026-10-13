@@ -45,14 +45,15 @@ export async function fetchReservoirs(): Promise<SourceResult<Reservoir>> {
 }
 
 export async function fetchReservoirHistory() {
-  const rows = await socrata<{ dia: string; avg: string }>(RESERVOIRS_ID, {
-    $select: "dia, avg(percentatge_volum_embassat) as avg",
-    $where: `dia >= '${isoDaysAgo(90)}'`,
+  // Volume-weighted fill: total stored / total capacity (capacity = volume / pct).
+  const rows = await socrata<{ dia: string; v: string; cap: string }>(RESERVOIRS_ID, {
+    $select: "dia, sum(volum_embassat) as v, sum(volum_embassat * 100 / percentatge_volum_embassat) as cap",
+    $where: `dia >= '${isoDaysAgo(90)}' AND percentatge_volum_embassat > 0`,
     $group: "dia",
     $order: "dia",
   });
   return {
-    series: rows.map((r) => ({ date: r.dia.slice(0, 10), value: num(r.avg) })),
+    series: rows.map((r) => ({ date: r.dia.slice(0, 10), value: num(r.cap) > 0 ? (num(r.v) / num(r.cap)) * 100 : 0 })),
     fetchedAt: new Date().toISOString(),
   };
 }
@@ -62,15 +63,16 @@ export async function fetchPratHistory() {
     $where: `dia >= '${isoDaysAgo(31)}'`,
     $order: "dia",
   });
-  // Sum outflows (excluding discharge to the river) and convert m3/s -> m3/day.
-  const byDay = new Map<string, number>();
+  // m3/s -> m3/day. Can Solé pumping = reuse; "a riu" = discharged to the river.
+  const byDay = new Map<string, { date: string; reuse: number; river: number }>();
   for (const r of rows) {
-    if (/a riu/i.test(r.descripcio_variable)) continue;
     const d = r.dia.slice(0, 10);
-    byDay.set(d, (byDay.get(d) ?? 0) + num(r.cabal_canal_m3_s) * 86400);
+    const e = byDay.get(d) ?? { date: d, reuse: 0, river: 0 };
+    const v = num(r.cabal_canal_m3_s) * 86400;
+    if (/a riu/i.test(r.descripcio_variable)) e.river += v;
+    else e.reuse += v;
+    byDay.set(d, e);
   }
-  return {
-    series: [...byDay.entries()].map(([date, value]) => ({ date, value })),
-    fetchedAt: new Date().toISOString(),
-  };
+  const series = [...byDay.values()].map((e) => ({ ...e, value: e.reuse }));
+  return { series, fetchedAt: new Date().toISOString() };
 }
