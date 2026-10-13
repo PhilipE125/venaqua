@@ -82,9 +82,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Reuse Match" },
+      { title: "Venaqua" },
       { name: "description", content: "Match reclaimed wastewater supply with nearby companies that need water." },
-      { property: "og:title", content: "Reuse Match" },
+      { property: "og:title", content: "Venaqua" },
       { property: "og:description", content: "Match reclaimed wastewater supply with nearby companies that need water." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

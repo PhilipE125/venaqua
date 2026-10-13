@@ -13,9 +13,9 @@ const MapView = lazy(() => import("@/components/map/MapView"));
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Reuse Match · Industrial water reuse opportunities" },
-      { name: "description", content: "Find water reuse opportunities across Spain, evaluate project economics and develop a feasibility case with the Reuse Match team." },
-      { property: "og:title", content: "Reuse Match · Industrial water reuse opportunities" },
+      { title: "Venaqua · Industrial water reuse opportunities" },
+      { name: "description", content: "Find water reuse opportunities across Spain, evaluate project economics and develop a feasibility case with the Venaqua team." },
+      { property: "og:title", content: "Venaqua · Industrial water reuse opportunities" },
       { property: "og:description", content: "Explore supply and buyers, compare water options and turn promising opportunities into validated projects." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -152,7 +152,7 @@ export const META = {
   demand: {
     id: "demand",
     name: "Sector water demand",
-    publisher: "Reuse Match",
+    publisher: "Venaqua",
     url: "#settings",
     unitNotes: "m³/day per site by sector.",
     updateFrequency: "Static",

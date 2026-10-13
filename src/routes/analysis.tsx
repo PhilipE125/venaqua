@@ -15,9 +15,9 @@ export const Route = createFileRoute("/analysis")({
     id: typeof search['id'] === "string" ? search['id'] : "",
   }),
   head: () => ({ meta: [
-    { title: "Opportunity analysis · Reuse Match" },
+    { title: "Opportunity analysis · Venaqua" },
     { name: "description", content: "Evaluate water reuse economics, project steps and source evidence for a company or treatment plant." },
-    { property: "og:title", content: "Opportunity analysis · Reuse Match" },
+    { property: "og:title", content: "Opportunity analysis · Venaqua" },
     { property: "og:description", content: "Compare water options and validate the next steps for an industrial reuse project." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
@@ -35,7 +35,7 @@ function AnalysisPage() {
   return <TooltipProvider><div className="min-h-dvh bg-background">
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b bg-background px-4 sm:px-8">
       <Button variant="ghost" asChild><Link to="/" resetScroll={false}><ArrowLeft />Back to map</Link></Button>
-      <span className="hidden items-center gap-2 font-semibold sm:flex"><Droplets className="h-5 w-5 text-primary" />Reuse Match / Analysis</span>
+      <span className="hidden items-center gap-2 font-semibold sm:flex"><Droplets className="h-5 w-5 text-primary" />Venaqua / Analysis</span>
       <Button variant="outline" asChild><Link to="/projects"><Folder />Projects</Link></Button>
     </header>
     {id ? <AnalysisWorkspace key={`${kind}:${id}`} /> : <div className="mx-auto max-w-xl px-6 py-16"><h1 className="text-2xl font-semibold">Select an opportunity</h1><p className="mt-3 text-muted-foreground">Choose a company or treatment plant on the map.</p><Button asChild className="mt-6"><Link to="/">Explore the map</Link></Button></div>}
