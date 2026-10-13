@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 import { ArrowRight, Droplets, Factory, Map, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/lib/workspace";
+
+const MapView = lazy(() => import("@/components/map/MapView"));
 
 export const Route = createFileRoute("/")({
   head: () => ({
