@@ -251,7 +251,6 @@ function Landing() {
           <span className="flex items-center gap-1"><Building2 className="h-3.5 w-3.5" /> Venaqua</span>
           <span>Built on public European water data</span>
           <a href="mailto:support@venaqua.com" className="underline">support@venaqua.com</a>
-          <Link to="/pricing" className="underline">Pricing</Link>
         </div>
       </footer>
     </div>
