@@ -24,3 +24,4 @@
 - [ ] Compact map preview and separate four-section analysis page
 - [ ] Preserve camera, filters, selection and company scenario inputs across navigation
 - [ ] Verify map → analysis → map and company/plant views
+- [ ] Rename visible app branding and page metadata to Venaqua
