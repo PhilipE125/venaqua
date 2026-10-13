@@ -90,6 +90,7 @@ export interface Reservoir extends BaseFeature {
   fill: number; // %
   volume: number; // hm3
   date: string;
+  note?: string; // shown instead of "% full" (river gauges in Germany)
 }
 
 export type SupplySite = Plant | RegenPlant;

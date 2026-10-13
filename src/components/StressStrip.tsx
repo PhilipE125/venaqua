@@ -1,7 +1,7 @@
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { SourceInfo } from "./SourceInfo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fmt, fmt1, usePrat, useReservoirHistory } from "@/lib/queries";
+import { fmt, fmt1, usePrat, useReservoirHistory, useReservoirs } from "@/lib/queries";
 import { useApp } from "@/lib/state";
 
 function Spark({ data, color }: { data: { date: string; value: number }[]; color: string }) {
@@ -20,7 +20,39 @@ function Spark({ data, color }: { data: { date: string; value: number }[]; color
   );
 }
 
+// Germany: no reservoir series; stress is the share of federal river gauges at low water.
+function GaugeStrip({ withSelection }: { withSelection: boolean }) {
+  const g = useReservoirs();
+  const gauges = g.data?.features ?? [];
+  const low = gauges.filter((x) => x.note === "low water").length;
+  return (
+    <div className={`panel map-context pointer-events-auto absolute bottom-4 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${withSelection ? "with-selection" : ""}`}>
+      <div className="flex flex-col justify-center">
+        <p className="label-caps">Water stress now</p>
+        <p className="text-[11px] text-muted-foreground">Germany, federal waterways</p>
+      </div>
+      <div className="flex min-w-0 items-center gap-3 border-l pl-4">
+        <div>
+          <p className="text-[11px] text-muted-foreground">River gauges at low water (PEGELONLINE, live)</p>
+          {g.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : g.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
+            <p className="tnum text-xl font-medium">
+              {gauges.length ? fmt.format((low / gauges.length) * 100) : 0}%
+              <span className="ml-1.5 text-xs text-muted-foreground">{fmt.format(low)} of {fmt.format(gauges.length)} gauges</span>
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function StressStrip() {
+  const { selection, region } = useApp();
+  if (region === "de") return <GaugeStrip withSelection={!!selection} />;
+  return <CatalanStrip />;
+}
+
+function CatalanStrip() {
   const { selection } = useApp();
   const res = useReservoirHistory();
   const prat = usePrat();

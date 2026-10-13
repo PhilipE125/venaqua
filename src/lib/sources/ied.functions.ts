@@ -14,7 +14,7 @@ export interface IedFacility {
 }
 
 const DAY = 24 * 60 * 60 * 1000;
-let cache: { at: number; data: { facilities: IedFacility[]; fetched: number; fetchedAt: string } } | null = null;
+const cache = new Map<string, { at: number; data: { facilities: IedFacility[]; fetched: number; fetchedAt: string } }>();
 
 async function sql<T>(query: string): Promise<T[]> {
   const r = await fetch(`https://discodata.eea.europa.eu/sql?query=${encodeURIComponent(query)}`, {
@@ -26,8 +26,11 @@ async function sql<T>(query: string): Promise<T[]> {
   return j.results ?? [];
 }
 
-export const fetchIedSpain = createServerFn({ method: "GET" }).handler(async () => {
-  if (cache && Date.now() - cache.at < DAY) return cache.data;
+export const fetchIed = createServerFn({ method: "GET" })
+  .inputValidator((country: "ES" | "DE") => (country === "DE" ? "DE" : "ES"))
+  .handler(async ({ data: country }) => {
+  const hit = cache.get(country);
+  if (hit && Date.now() - hit.at < DAY) return hit.data;
   type Row = {
     id: number;
     facilityName: string | null;
@@ -42,7 +45,7 @@ export const fetchIedSpain = createServerFn({ method: "GET" }).handler(async () 
   let lastId = 0;
   for (let i = 0; i < 6; i++) {
     const page = await sql<Row>(
-      `SELECT TOP 5000 id, facilityName, parentCompanyName, EPRTRAnnexIMainActivity, x_4326, y_4326, city, NUTS3 FROM [IED].[latest].[ProductionFacility] WHERE countryCode='ES' AND reportingYear=2024 AND status='functional' AND id > ${lastId} ORDER BY id`,
+      `SELECT TOP 5000 id, facilityName, parentCompanyName, EPRTRAnnexIMainActivity, x_4326, y_4326, city, NUTS3 FROM [IED].[latest].[ProductionFacility] WHERE countryCode='${country}' AND reportingYear=2024 AND status='functional' AND id > ${lastId} ORDER BY id`,
     );
     rows.push(...page);
     if (page.length < 5000) break;
@@ -52,7 +55,7 @@ export const fetchIedSpain = createServerFn({ method: "GET" }).handler(async () 
   let water = new Set<string>();
   try {
     const w = await sql<{ localId: string }>(
-      `SELECT DISTINCT f.localId FROM [IED].[latest].[ProductionFacility] f JOIN [IED].[latest].[ProductionFacilityReport] r ON r.localId=f.localId AND r.namespace=f.namespace AND r.reportingYear=f.reportingYear JOIN [IED].[latest].[PollutantRelease] p ON p.facilityReportId=r.Id WHERE f.countryCode='ES' AND f.reportingYear=2023 AND p.mediumCode='WATER'`,
+      `SELECT DISTINCT f.localId FROM [IED].[latest].[ProductionFacility] f JOIN [IED].[latest].[ProductionFacilityReport] r ON r.localId=f.localId AND r.namespace=f.namespace AND r.reportingYear=f.reportingYear JOIN [IED].[latest].[PollutantRelease] p ON p.facilityReportId=r.Id WHERE f.countryCode='${country}' AND f.reportingYear=2023 AND p.mediumCode='WATER'`,
     );
     water = new Set(w.map((x) => x.localId.toUpperCase()));
   } catch {
@@ -61,7 +64,7 @@ export const fetchIedSpain = createServerFn({ method: "GET" }).handler(async () 
   let localIds = new Map<number, string>();
   if (water.size) {
     const ids = await sql<{ id: number; localId: string }>(
-      `SELECT id, localId FROM [IED].[latest].[ProductionFacility] WHERE countryCode='ES' AND reportingYear=2024 AND status='functional'`,
+      `SELECT id, localId FROM [IED].[latest].[ProductionFacility] WHERE countryCode='${country}' AND reportingYear=2024 AND status='functional'`,
     );
     localIds = new Map(ids.map((x) => [x.id, x.localId.toUpperCase()]));
   }
@@ -79,6 +82,6 @@ export const fetchIedSpain = createServerFn({ method: "GET" }).handler(async () 
       water: water.has(localIds.get(r.id) ?? ""),
     }));
   const data = { facilities, fetched: rows.length, fetchedAt: new Date().toISOString() };
-  cache = { at: Date.now(), data };
+  cache.set(country, { at: Date.now(), data });
   return data;
 });
