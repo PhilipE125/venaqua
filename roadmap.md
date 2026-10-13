@@ -25,3 +25,6 @@
 - [x] Preserve camera, filters, selection and company scenario inputs across navigation
 - [x] Browser-verified map → analysis → map, retained +50% price scenario, plant evidence and contact; 33 tests pass
 - [x] Rename visible app branding, contact drafts, exported briefs and page metadata to Venaqua
+
+# Pitch deck
+- [ ] Standalone 2-slide .pptx pitch deck (market + financials) delivered as a file, not in-app
