@@ -509,7 +509,7 @@ function RegionDetail() {
 export function AnalysisWorkspace() {
   const { selection, select, maxKm } = useApp();
   const { siteById, companyById, matches } = useMatches();
-  const { save, setContact } = useWorkspace();
+  const { save, setContact, user } = useWorkspace();
   const [tab, setTab] = useState("overview");
   const [summary, setSummary] = useState<OpportunitySnapshot | null>(null);
   const [saving, setSaving] = useState(false);
@@ -546,7 +546,7 @@ export function AnalysisWorkspace() {
       <div className="flex items-start justify-between gap-2 px-6 pt-5 pb-3">
         <div><p className="mb-2 text-[11px] text-muted-foreground">Evaluate a project</p><h2 className="text-lg font-semibold leading-snug">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{location}</p></div>
         <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" asChild aria-label="Back to map">
-          <Link to="/" resetScroll={false}><X className="h-4 w-4" /></Link>
+          <Link to={user ? "/app" : "/explore"} resetScroll={false}><X className="h-4 w-4" /></Link>
         </Button>
       </div>
       <div className="sticky top-16 z-20 bg-background px-6 py-4"><div className="mb-3 flex flex-wrap gap-2"><Badge variant="outline" className="border-warning/40 text-warning">Needs validation</Badge><Badge variant="secondary">{company ? "Estimated demand" : site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow" : "Our estimate"}</Badge></div><div className="flex gap-2"><Button className="flex-1" size="sm" disabled={saving} onClick={shortlist}><BookmarkPlus />{saving ? "Saving…" : "Save project"}<ArrowRight /></Button><Button size="sm" variant="outline" aria-label="Contact team" onClick={() => setContact(name ?? "")}><MessageCircle />Contact team</Button></div></div>
@@ -564,6 +564,7 @@ export function AnalysisWorkspace() {
 
 export function Drawer() {
   const { selection, select, settings, demandOverride, maxKm } = useApp();
+  const { user, openGate } = useWorkspace();
   const { siteById, companyById, matches } = useMatches();
   if (!selection) return null;
   const company = selection.kind === "company" ? companyById.get(selection.id) : undefined;
@@ -578,6 +579,6 @@ export function Drawer() {
     <p className="mt-3 text-sm">{company || site ? count ? `${count} potential ${company ? "suppliers" : "buyers"} within ${maxKm} km. Validate supply and demand before investing.` : "Needs validation: no ranked link within the current filters." : "Compare potential links and shared-pipe opportunities."}</p>
     {(company || site) && <p className="tnum mt-3 text-xl font-semibold">{fmt.format(company ? demand : supply)} <span className="text-xs font-normal text-muted-foreground">m³/day · {company ? "indicative demand" : "potential supply"}</span></p>}
     <p className="mt-2 text-xs text-muted-foreground">{site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow · spare supply needs confirmation" : company && demandOverride[company.id] != null ? "Your demand figure · needs confirmation" : "Estimated · needs confirmation"}</p>
-    <Button asChild className="mt-4 w-full"><Link to="/analysis" search={{ kind: selection.kind, id: selection.id }} resetScroll={false}>Open analysis<ArrowRight /></Link></Button>
+    {user ? <Button asChild className="mt-4 w-full"><Link to="/analysis" search={{ kind: selection.kind, id: selection.id }} resetScroll={false}>Open analysis<ArrowRight /></Link></Button> : <Button className="mt-4 w-full" onClick={() => openGate(`/analysis?kind=${selection.kind}&id=${encodeURIComponent(selection.id)}`)}>Open analysis<ArrowRight /></Button>}
   </aside>;
 }

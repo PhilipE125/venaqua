@@ -25,3 +25,8 @@
 - [x] Preserve camera, filters, selection and company scenario inputs across navigation
 - [x] Browser-verified map → analysis → map, retained +50% price scenario, plant evidence and contact; 33 tests pass
 - [x] Rename visible app branding, contact drafts, exported briefs and page metadata to Venaqua
+
+## Public site + workspace (Edith brief)
+- [x] Landing `/`, Explorer `/explore`, Pricing, signup/login, `/app` workspace, gated analysis/projects, pipeline fields
+## Investor deck (Adwoa)
+- [x] In-app 2-slide deck (/deck): market (TAM/SAM/SOM) + financial projections from market model

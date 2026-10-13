@@ -20,3 +20,5 @@
 - Spain treatment plants normalize EEA records through nationalPlant while joined Catalan records retain their richer overlay — preserves local calculations and source provenance.
 - AppStateProvider lives in the root; camera and per-opportunity scenario values stay in this context across map and analysis routes — returning to discovery must not discard user inputs.
 - The map renders only a compact opportunity preview; detailed views are reused on the public analysis route — keeps discovery visually separate from project evaluation.
+- Public marketing pages (/, /pricing, /signup, /login) sit outside the product; /explore (public) and /app (signed-in) both render the single MapExperience component — never fork the map.
+- Workspace pages (/app, /analysis, /projects) wrap in RequireAuth client-side and rely on RLS for data; gated actions open the non-blocking GatePanel via openGate(redirect) so signup returns users to the same opportunity.
