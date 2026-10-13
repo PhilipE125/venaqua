@@ -68,7 +68,7 @@ export default function MapView() {
   // Ring glyphs: one per treatment plant that has a regeneration plant in its municipality.
   const rings = useMemo(() => {
     const regens = r.data?.features ?? [];
-    const byMuni = new Map(regens.map((g) => [normalize(g.municipi), g]));
+    const byMuni = new globalThis.Map(regens.map((g) => [normalize(g.municipi), g]));
     const seen = new Set<string>();
     const out: { plant: Plant; g: RegenPlant; icon: string }[] = [];
     for (const p of [...(w.data?.features ?? [])].sort((a, b) => b.capacity - a.capacity)) {

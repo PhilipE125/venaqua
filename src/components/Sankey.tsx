@@ -10,7 +10,7 @@ export interface Flow {
 }
 
 type N = { name: string };
-type L = { source: number; target: number; value: number; modelled?: boolean; accent?: boolean };
+type L = { source: number; target: number; value: number; modelled?: boolean | undefined; accent?: boolean | undefined };
 
 /** Single-source sankey: one inflow split into named outflows. Modelled bands are dashed. */
 export function Sankey({ source, flows, height = 170 }: { source: string; flows: Flow[]; height?: number }) {
