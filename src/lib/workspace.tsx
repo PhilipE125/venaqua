@@ -42,7 +42,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     (async () => {
       const { data } = await supabase.from("workspaces").select("*").eq("user_id", user.id).maybeSingle();
       if (data) { if (live) setWorkspace(data); return; }
-      const m = user.user_metadata ?? {};
+      const m = (user.user_metadata ?? {}) as { organisation?: string; full_name?: string; name?: string; role?: string; goal?: string };
       const { data: created } = await supabase.from("workspaces").insert({ name: String(m.organisation || "My workspace").slice(0, 200), full_name: String(m.full_name || m.name || "").slice(0, 100), role: String(m.role || "").slice(0, 100), goal: String(m.goal || "").slice(0, 100) }).select("*").single();
       if (live && created) setWorkspace(created);
     })();

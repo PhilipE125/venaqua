@@ -3,7 +3,7 @@ import { LoginForm } from "@/components/AuthForms";
 import { safeRedirect } from "@/lib/workspace";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (s: Record<string, unknown>): { redirect?: string } => ({ redirect: typeof s["redirect"] === "string" ? s["redirect"] : undefined }),
+  validateSearch: (s: Record<string, unknown>): { redirect?: string | undefined } => ({ redirect: typeof s["redirect"] === "string" ? s["redirect"] : undefined }),
   head: () => ({ meta: [
     { title: "Log in · Venaqua" },
     { name: "description", content: "Log in to your Venaqua workspace." },

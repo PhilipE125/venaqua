@@ -47,7 +47,7 @@ const STEPS = [["map", "Search a plant, company or city"], ["analysis", "Open a 
 function Onboarding() {
   const { workspace, count, updateOnboarding } = useWorkspace();
   const done = (workspace?.onboarding ?? {}) as Record<string, boolean>;
-  if (!workspace || done.dismissed) return null;
+  if (!workspace || done["dismissed"]) return null;
   const isDone = (k: string) => done[k] || (k === "project" && count > 0);
   return <aside aria-label="Getting started" className="panel absolute bottom-24 left-3 z-20 w-72 rounded-lg p-4 shadow-map-panel md:left-5">
     <div className="flex items-start justify-between"><p className="text-sm font-semibold">Get started with Venaqua</p><Button variant="ghost" size="icon" className="h-6 w-6" aria-label="Dismiss checklist" onClick={() => updateOnboarding("dismissed")}><X /></Button></div>
