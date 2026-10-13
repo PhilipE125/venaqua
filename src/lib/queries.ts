@@ -7,15 +7,16 @@ import { mergeCompanies } from "./merge";
 import { effectiveSupply, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
 import { fetchDrought } from "./sources/drought";
-import { enrichPlants, fetchEeaSpain, nationalPlant } from "./sources/eea";
-import { fetchIedSpain } from "./sources/ied.functions";
+import { enrichPlants, fetchEea, nationalPlant } from "./sources/eea";
+import { fetchIed } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
 import { fetchProjects } from "./sources/projects";
+import { fetchGauges, lowWaterShare } from "./sources/pegel";
 import { fetchRegen } from "./sources/regen";
 import { fetchPratHistory, fetchReservoirHistory, fetchReservoirs } from "./sources/reservoirs";
 import { searchTenders } from "./sources/ted.functions";
 import { fetchWwtps } from "./sources/wwtp";
-import { useApp } from "./state";
+import { useApp, type Region } from "./state";
 import type { Company, SupplySite } from "./types";
 
 const H = 60 * 60 * 1000;
@@ -33,17 +34,29 @@ function shared<T>(slot: Slot, deps: unknown[], fn: () => T): T {
 }
 const slots = { plants: {} as Slot, plantsData: {} as Slot, companies: {} as Slot, companiesData: {} as Slot, matches: {} as Slot, clusters: {} as Slot };
 
+const country = (region: Region) => (region === "de" ? "DE" : "ES");
+
+// Catalan-only sources (ACA plants' regeneration, projects, drought phases, El Prat) are empty in Germany.
+function catalanOnly<T extends { data?: unknown; isLoading: boolean }>(q: T, region: Region): T {
+  return region === "de" ? { ...q, data: undefined, isLoading: false } : q;
+}
+
 const useWwtpsRaw = () => useQuery({ queryKey: ["wwtp"], queryFn: fetchWwtps, ...opts });
-export const useEea = () => useQuery({ queryKey: ["eea-es"], queryFn: fetchEeaSpain, ...opts, staleTime: 24 * H, gcTime: 24 * H });
+export function useEea() {
+  const c = country(useApp().region);
+  return useQuery({ queryKey: ["eea", c], queryFn: () => fetchEea(c), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+}
 
 export function useRegen() {
+  const { region } = useApp();
   const w = useWwtpsRaw();
-  return useQuery({
+  const q = useQuery({
     queryKey: ["regen"],
     queryFn: () => fetchRegen(w.data!.features),
     enabled: !!w.data,
     ...opts,
   });
+  return catalanOnly(q, region);
 }
 
 /** Treatment plants enriched with EEA actual flows and reuse volumes. */
@@ -53,6 +66,10 @@ export function useWwtps() {
   const e = useEea();
   const g = useRegen();
   const enriched = shared(slots.plants, [w.data, e.data, g.data, region], () => {
+    if (region === "de") {
+      const plants = [...(e.data?.plants.values() ?? [])].map(nationalPlant).filter((p): p is NonNullable<typeof p> => p !== null);
+      return { plants, matched: 0, total: 0 };
+    }
     const cat = w.data ? enrichPlants(w.data.features, e.data?.plants, g.data?.features ?? []) : null;
     if (region === "cat") return cat;
     const joined = new Set((cat?.plants ?? []).map(p => p.supply?.eeaCode).filter(Boolean));
@@ -67,7 +84,7 @@ export function useWwtps() {
   const join = useMemo(() => (enriched && e.data ? { matched: enriched.matched, total: enriched.total } : null), [enriched, e.data]);
   return {
     ...w,
-    isLoading: region === "es" ? w.isLoading && e.isLoading : w.isLoading,
+    isLoading: region === "es" ? w.isLoading && e.isLoading : region === "de" ? e.isLoading : w.isLoading,
     data,
     join,
     eeaLoading: e.isLoading,
@@ -76,8 +93,9 @@ export function useWwtps() {
 
 const useAcaCompanies = () => useQuery({ queryKey: ["companies"], queryFn: fetchCompanies, ...opts });
 export function useIed() {
-  const fn = useServerFn(fetchIedSpain);
-  return useQuery({ queryKey: ["ied-es"], queryFn: () => fn(), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+  const c = country(useApp().region);
+  const fn = useServerFn(fetchIed);
+  return useQuery({ queryKey: ["ied", c], queryFn: () => fn({ data: c }), ...opts, staleTime: 24 * H, gcTime: 24 * H });
 }
 
 /** Catalan discharge permits merged with Spain-wide EEA industrial facilities. */
@@ -87,15 +105,15 @@ export function useCompanies() {
   const i = useIed();
   const merged = shared(slots.companies, [a.data, i.data, region], () => {
     if (!a.data && !i.data) return null;
-    const m = mergeCompanies(a.data?.features ?? [], i.data?.facilities ?? []);
+    const m = mergeCompanies(region === "de" ? [] : a.data?.features ?? [], i.data?.facilities ?? []);
     const companies: Company[] = m.companies.map((c) => {
       const src = knownUserSource(c);
       return src ? { ...c, confirmedSource: src } : c;
     });
     return { ...m, companies: region === "cat" ? companies.filter(c => c.lat > 40.4 && c.lat < 42.9 && c.lon > 0.1 && c.lon < 3.4) : companies };
   });
-  const data = shared(slots.companiesData, [merged, a.data, i.data?.fetchedAt], () =>
-    merged ? { ...(a.data ?? { fetchedAt: i.data?.fetchedAt ?? "" }), features: merged.companies } : undefined,
+  const data = shared(slots.companiesData, [merged, a.data, i.data?.fetchedAt, region], () =>
+    merged ? { ...((region !== "de" && a.data) || { fetchedAt: i.data?.fetchedAt ?? "" }), features: merged.companies } : undefined,
   );
   const mergeStats = useMemo(
     () => (merged && i.data ? { merged: merged.merged, iedExcluded: merged.excluded, iedFetched: i.data.fetched } : null),
@@ -104,19 +122,25 @@ export function useCompanies() {
   return { ...a, isLoading: a.isLoading && i.isLoading, data, ied: i, mergeStats };
 }
 
-export const useReservoirs = () => useQuery({ queryKey: ["reservoirs"], queryFn: fetchReservoirs, ...opts });
+/** Catalan reservoirs, or in Germany the federal river gauges (same shape, fill mapped from low/normal/high water). */
+export function useReservoirs() {
+  const de = useApp().region === "de";
+  return useQuery({ queryKey: ["reservoirs", de], queryFn: de ? fetchGauges : fetchReservoirs, ...opts, staleTime: de ? H / 4 : H });
+}
 export const useReservoirHistory = () =>
-  useQuery({ queryKey: ["reservoirs-90d"], queryFn: fetchReservoirHistory, ...opts });
-export const usePrat = () => useQuery({ queryKey: ["prat-30d"], queryFn: fetchPratHistory, ...opts });
-export const useDrought = () => useQuery({ queryKey: ["drought"], queryFn: fetchDrought, ...opts });
+  catalanOnly(useQuery({ queryKey: ["reservoirs-90d"], queryFn: fetchReservoirHistory, ...opts }), useApp().region);
+export const usePrat = () => catalanOnly(useQuery({ queryKey: ["prat-30d"], queryFn: fetchPratHistory, ...opts }), useApp().region);
+export const useDrought = () => catalanOnly(useQuery({ queryKey: ["drought"], queryFn: fetchDrought, ...opts }), useApp().region);
 export function useProjects() {
+  const { region } = useApp();
   const w = useWwtpsRaw();
-  return useQuery({
+  const q = useQuery({
     queryKey: ["projects"],
     queryFn: () => fetchProjects(w.data!.features),
     enabled: !!w.data,
     ...opts,
   });
+  return catalanOnly(q, region);
 }
 export const useMeteo = (lat?: number, lon?: number) =>
   useQuery({
@@ -143,15 +167,23 @@ export function useElevation(a?: { lat: number; lon: number }, b?: { lat: number
 }
 
 export function useTenders() {
+  const c = useApp().region === "de" ? "DEU" : "ESP";
   const fn = useServerFn(searchTenders);
-  return useQuery({ queryKey: ["ted"], queryFn: () => fn(), ...opts });
+  return useQuery({ queryKey: ["ted", c], queryFn: () => fn({ data: c }), ...opts });
 }
 
 /** Current stress = 1 − volume-weighted reservoir fill. */
+/** Current stress = 1 − volume-weighted reservoir fill; in Germany, the share of river gauges at low water. */
 export function useStress() {
+  const de = useApp().region === "de";
   const h = useReservoirHistory();
+  const g = useReservoirs();
+  if (de) {
+    const low = lowWaterShare(g.data?.features ?? []);
+    return { stress: low ?? 0.5, fill: null, known: low != null, lowWater: low };
+  }
   const last = h.data?.series.at(-1)?.value;
-  return { stress: last != null ? 1 - last / 100 : 0.5, fill: last ?? null, known: last != null };
+  return { stress: last != null ? 1 - last / 100 : 0.5, fill: last ?? null, known: last != null, lowWater: null };
 }
 
 export interface Derived {

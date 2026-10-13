@@ -30,13 +30,13 @@ export function eeaJoinKey(codiAglomeracio: string): string | null {
   return `ES${rest.startsWith("0") ? rest.slice(1) : rest}E`;
 }
 
-export async function fetchEeaSpain(): Promise<{ plants: Map<string, EeaPlant>; fetched: number; fetchedAt: string }> {
+export async function fetchEea(country: "ES" | "DE"): Promise<{ plants: Map<string, EeaPlant>; fetched: number; fetchedAt: string }> {
   const plants = new Map<string, EeaPlant>();
   let offset = 0;
   let fetched = 0;
   for (let i = 0; i < 10; i++) {
     const q = new URLSearchParams({
-      where: "rptMStateKey='ES'",
+      where: `rptMStateKey='${country}'`,
       outFields: FIELDS,
       f: "geojson",
       resultRecordCount: "2000",

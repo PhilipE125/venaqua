@@ -56,6 +56,8 @@ function ringIcon(g: RegenPlant, annual: number): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect x="2" y="2" width="12" height="12" fill="#1a1a1a" stroke="#ffffff" stroke-width="2"/></svg>')}`;
+// Opening view per region: Spain, Catalonia, Germany (Berlin-Brandenburg is the German pilot).
+const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 13.5, latitude: 52.45, zoom: 8 } } as const;
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
 export default function MapView() {
@@ -70,7 +72,7 @@ export default function MapView() {
   const res = useReservoirs();
   const { matches, siteById, companyById } = useMatches();
   const setHover = useRef<(h: Hover) => void>(() => {});
-  useEffect(() => { mapRef.current?.flyTo({ center: region === "es" ? [-3.7, 40.2] : [1.75, 41.7], zoom: region === "es" ? 5.5 : 7.4, duration: 700 }); }, [region]);
+  useEffect(() => { const v = VIEWS[region]; mapRef.current?.flyTo({ center: [v.longitude, v.latitude], zoom: v.zoom, duration: 700 }); }, [region]);
 
   const selectedSite =
     selection && selection.kind !== "company" ? siteById.get(selection.id) : undefined;
@@ -255,7 +257,7 @@ export default function MapView() {
     <div className="relative h-full w-full">
       <Map
         ref={mapRef}
-        initialViewState={{ longitude: region === "es" ? -3.7 : 1.75, latitude: region === "es" ? 40.2 : 41.7, zoom: region === "es" ? 5.5 : 7.4 }}
+        initialViewState={VIEWS[region]}
         mapStyle={
           dark
             ? "https://tiles.openfreemap.org/styles/dark"
@@ -270,11 +272,11 @@ export default function MapView() {
           layers={deckLayers}
           getCursor={({ isHovering }) => (isHovering ? "pointer" : "grab")}
           onHover={(info) => {
-            const raw = info.object as { name?: string; kind?: string; fill?: number; g?: RegenPlant; buyer?: string; object?: string } | undefined;
+            const raw = info.object as { name?: string; kind?: string; fill?: number; note?: string; g?: RegenPlant; buyer?: string; object?: string } | undefined;
             const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
             const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
             if (!o?.name) return setHover.current(null);
-            const extra = o.kind === "reservoir" ? ` · ${o.fill}% full` : "";
+            const extra = o.kind === "reservoir" ? ` · ${o.note ?? `${o.fill}% full`}` : "";
             setHover.current({ x: info.x, y: info.y, text: o.name + extra });
           }}
           onClick={(info) => {
@@ -296,7 +298,7 @@ export default function MapView() {
         {layers.companies && <p>Dot = company: hollow potential, grey water-intensive, black confirmed.</p>}
         {layers.clusters && <p>Outlined area = companies that could share one pipe.</p>}
         {layers.projects && <p>Black square = reclaimed-water contract.</p>}
-        {layers.reservoirs && <p>Red, amber, green = reservoir fill.</p>}
+        {layers.reservoirs && <p>{region === "de" ? "Red, amber, green = river gauge at low, normal, high water." : "Red, amber, green = reservoir fill."}</p>}
         {selectedSite && <p>Dashed line = possible link from the selected plant.</p>}
       </div>
       {popup && (

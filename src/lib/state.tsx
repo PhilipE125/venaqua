@@ -11,6 +11,8 @@ export type Selection =
   | { kind: "region"; id: "catalonia" }
   | null;
 
+export type Region = "es" | "cat" | "de";
+
 export type Mode = "q1" | "q2" | "q3" | "q4" | "q5" | "all";
 
 export const QUESTIONS: { mode: Exclude<Mode, "all">; who: string; short: string; q: string }[] = [
@@ -77,8 +79,8 @@ const CONFIRMED_KEY = "reuse-match:confirmed";
 const DEMAND_KEY = "reuse-match:demand";
 
 interface AppState {
-  region: "es" | "cat";
-  setRegion: (r: "es" | "cat") => void;
+  region: Region;
+  setRegion: (r: Region) => void;
   panelOpen: boolean;
   setPanelOpen: (b: boolean) => void;
   layers: Record<LayerKey, boolean>;
@@ -121,7 +123,7 @@ function load<T>(k: string, fallback: T): T {
 }
 
 export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [region, setRegion] = useState<"es" | "cat">("es");
+  const [region, setRegion] = useState<Region>("es");
   const [panelOpen, setPanelOpen] = useState(false);
   const [layers, setLayers] = useState<Record<LayerKey, boolean>>(MODE_PRESETS.q2);
   const [mode, setModeState] = useState<Mode>("all");

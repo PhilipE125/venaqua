@@ -2,9 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import type { Tender } from "../types";
 
 // TED has no CORS, so this runs server-side (proxy).
-const BODY = {
+const body = (country: "ESP" | "DEU") => ({
   query:
-    "classification-cpv IN (45252127 45252100 45252126 90513800) AND buyer-country=ESP AND publication-date>=20240101",
+    `classification-cpv IN (45252127 45252100 45252126 90513800) AND buyer-country=${country} AND publication-date>=20240101`,
   fields: [
     "publication-number",
     "publication-date",
@@ -19,7 +19,7 @@ const BODY = {
     "deadline-receipt-tender-date-lot",
   ],
   limit: 250,
-};
+});
 
 function pickLang(v: unknown): string {
   if (v == null) return "";
@@ -27,19 +27,21 @@ function pickLang(v: unknown): string {
   if (Array.isArray(v)) return pickLang(v[0]);
   if (typeof v === "object") {
     const o = v as Record<string, unknown>;
-    const val = o["spa"] ?? o["eng"] ?? Object.values(o)[0];
+    const val = o["spa"] ?? o["deu"] ?? o["eng"] ?? Object.values(o)[0];
     return pickLang(val);
   }
   return String(v);
 }
 
-export const searchTenders = createServerFn({ method: "GET" }).handler(async () => {
+export const searchTenders = createServerFn({ method: "GET" })
+  .inputValidator((country: "ESP" | "DEU") => (country === "DEU" ? "DEU" : "ESP"))
+  .handler(async ({ data: country }) => {
   const notices: Record<string, unknown>[] = [];
   for (let page = 1; page <= 8; page++) {
     const r = await fetch("https://api.ted.europa.eu/v3/notices/search", {
       method: "POST",
       headers: { "content-type": "application/json", accept: "application/json" },
-      body: JSON.stringify({ ...BODY, page }),
+      body: JSON.stringify({ ...body(country), page }),
     });
     if (!r.ok) {
       if (page === 1) throw new Error(`TED returned HTTP ${r.status}`);
@@ -47,7 +49,7 @@ export const searchTenders = createServerFn({ method: "GET" }).handler(async () 
     }
     const j = (await r.json()) as { notices?: Record<string, unknown>[] };
     notices.push(...(j.notices ?? []));
-    if ((j.notices?.length ?? 0) < BODY.limit) break;
+    if ((j.notices?.length ?? 0) < 250) break;
   }
   const tenders: Tender[] = notices.map((n) => {
     const type = String(n["notice-type"] ?? "");
