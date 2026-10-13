@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { findClusters } from "./clusters";
 import { knownUserSource } from "./knownUsers";
 import { mergeCompanies } from "./merge";
@@ -42,9 +42,27 @@ function catalanOnly<T extends { data?: unknown; isLoading: boolean }>(q: T, reg
 }
 
 const useWwtpsRaw = () => useQuery({ queryKey: ["wwtp"], queryFn: fetchWwtps, ...opts });
+// Query definitions shared by the hooks and by usePrefetchRegion, so a prefetch fills the same cache entry.
+const eeaQuery = (c: "ES" | "DE") => ({ queryKey: ["eea", c], queryFn: () => fetchEea(c), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+const iedQuery = (c: "ES" | "DE", fn: (o: { data: "ES" | "DE" }) => ReturnType<typeof fetchIed> = fetchIed) => ({ queryKey: ["ied", c], queryFn: () => fn({ data: c }), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+const reservoirsQuery = (de: boolean) => ({ queryKey: ["reservoirs", de], queryFn: de ? fetchGauges : fetchReservoirs, ...opts, staleTime: de ? H / 4 : H });
+
+/** Start loading a region's national layers before it is picked (e.g. when the region menu opens). */
+export function usePrefetchRegion() {
+  const qc = useQueryClient();
+  return useCallback(
+    (r: Region) => {
+      const c = country(r);
+      void qc.prefetchQuery(eeaQuery(c));
+      void qc.prefetchQuery(iedQuery(c));
+      void qc.prefetchQuery(reservoirsQuery(r === "de"));
+    },
+    [qc],
+  );
+}
+
 export function useEea() {
-  const c = country(useApp().region);
-  return useQuery({ queryKey: ["eea", c], queryFn: () => fetchEea(c), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+  return useQuery(eeaQuery(country(useApp().region)));
 }
 
 export function useRegen() {
@@ -93,9 +111,8 @@ export function useWwtps() {
 
 const useAcaCompanies = () => useQuery({ queryKey: ["companies"], queryFn: fetchCompanies, ...opts });
 export function useIed() {
-  const c = country(useApp().region);
   const fn = useServerFn(fetchIed);
-  return useQuery({ queryKey: ["ied", c], queryFn: () => fn({ data: c }), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+  return useQuery(iedQuery(country(useApp().region), fn));
 }
 
 /** Catalan discharge permits merged with Spain-wide EEA industrial facilities. */
@@ -124,8 +141,7 @@ export function useCompanies() {
 
 /** Catalan reservoirs, or in Germany the federal river gauges (same shape, fill mapped from low/normal/high water). */
 export function useReservoirs() {
-  const de = useApp().region === "de";
-  return useQuery({ queryKey: ["reservoirs", de], queryFn: de ? fetchGauges : fetchReservoirs, ...opts, staleTime: de ? H / 4 : H });
+  return useQuery(reservoirsQuery(useApp().region === "de"));
 }
 export const useReservoirHistory = () =>
   catalanOnly(useQuery({ queryKey: ["reservoirs-90d"], queryFn: fetchReservoirHistory, ...opts }), useApp().region);

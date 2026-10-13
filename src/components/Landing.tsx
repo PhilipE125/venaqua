@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { ArrowRight, Building2, ChevronDown, Factory, Layers3, Search, MapPin, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -24,7 +24,10 @@ export function CompanySearch() {
   const { searchOpen, setSearchOpen, select } = useApp();
   const c = useCompanies(); const { sites } = useMatches(); const projects = useProjects();
   const [q, setQ] = useState("");
-  const results = useMemo(() => { const k = normalize(q); if (k.length < 2) return []; return [...sites.map(x => ({ id: x.id, name: x.name, location: x.municipi, kind: x.kind })), ...(c.data?.features ?? []).map(x => ({ id: x.id, name: x.name, location: x.municipi, kind: x.kind }))].filter(x => normalize(`${x.name} ${x.location}`).includes(k)).slice(0, 45); }, [q, c.data, sites]);
+  // Normalised once per data load; typing then only runs a substring scan, deferred so input stays responsive.
+  const index = useMemo(() => [...sites, ...(c.data?.features ?? [])].map(x => ({ id: x.id, name: x.name, location: x.municipi, kind: x.kind, key: normalize(`${x.name} ${x.municipi}`) })), [c.data, sites]);
+  const dq = useDeferredValue(q);
+  const results = useMemo(() => { const k = normalize(dq); if (k.length < 2) return []; const out: typeof index = []; for (const x of index) { if (x.key.includes(k)) out.push(x); if (out.length === 45) break; } return out; }, [dq, index]);
   const notices = (projects.data?.features ?? []).filter(p => q.length >= 2 && normalize(`${p.buyer} ${p.place} ${p.object}`).includes(normalize(q))).slice(0, 5);
   const choose = (kind: "wwtp" | "regen" | "company", id: string) => { setSearchOpen(false); select({ kind, id }); };
   return <Dialog open={searchOpen} onOpenChange={setSearchOpen}><DialogContent className="max-w-xl gap-0 p-0"><DialogTitle className="sr-only">Search a company, plant, city or project</DialogTitle><DialogDescription className="sr-only">Find public-data opportunities by name or municipality.</DialogDescription><div className="flex items-center gap-3 border-b p-4"><Search className="h-5 w-5 shrink-0 text-primary" /><Input autoFocus aria-label="Search opportunities" placeholder="Company, plant, city or project…" value={q} onChange={e => setQ(e.target.value)} className="h-10 border-0 bg-transparent shadow-none" /></div><div className="max-h-[60dvh] overflow-y-auto p-2">
