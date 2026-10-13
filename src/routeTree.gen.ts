@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 
@@ -36,6 +37,11 @@ const ExploreRoute = ExploreRouteImport.update({
   path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProjectsRoute = ProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/analysis': typeof AnalysisRoute
   '/app': typeof AppRoute
   '/explore': typeof ExploreRoute
+  '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/analysis': typeof AnalysisRoute
   '/app': typeof AppRoute
   '/explore': typeof ExploreRoute
+  '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
 }
@@ -69,21 +77,36 @@ export interface FileRoutesById {
   '/analysis': typeof AnalysisRoute
   '/app': typeof AppRoute
   '/explore': typeof ExploreRoute
+  '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/analysis' | '/app' | '/explore' | '/projects' | '/reset-password'
+    | '/'
+    | '/analysis'
+    | '/app'
+    | '/explore'
+    | '/pricing'
+    | '/projects'
+    | '/reset-password'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analysis' | '/app' | '/explore' | '/projects' | '/reset-password'
+  to:
+    | '/'
+    | '/analysis'
+    | '/app'
+    | '/explore'
+    | '/pricing'
+    | '/projects'
+    | '/reset-password'
   id:
     | '__root__'
     | '/'
     | '/analysis'
     | '/app'
     | '/explore'
+    | '/pricing'
     | '/projects'
     | '/reset-password'
   fileRoutesById: FileRoutesById
@@ -93,6 +116,7 @@ export interface RootRouteChildren {
   AnalysisRoute: typeof AnalysisRoute
   AppRoute: typeof AppRoute
   ExploreRoute: typeof ExploreRoute
+  PricingRoute: typeof PricingRoute
   ProjectsRoute: typeof ProjectsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
@@ -127,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/projects': {
       id: '/projects'
       path: '/projects'
@@ -149,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalysisRoute: AnalysisRoute,
   AppRoute: AppRoute,
   ExploreRoute: ExploreRoute,
+  PricingRoute: PricingRoute,
   ProjectsRoute: ProjectsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }

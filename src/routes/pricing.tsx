@@ -18,7 +18,7 @@ export const Route = createFileRoute("/pricing")({
 });
 
 type Plan = { name: string; price: string; for: string; items: string[]; cta: string; popular?: boolean };
-export const PLANS: Plan[] = [
+const PLANS: Plan[] = [
   { name: "Free Explorer", price: "Free", for: "Anyone exploring water-reuse opportunities", items: ["Public map", "Basic filters", "Compact public opportunity previews", "Water-stress and source visibility"], cta: "Explore the map" },
   { name: "Market Access", price: "From €12,000/year", for: "Advisors and developers screening opportunities in one market", items: ["Advanced Reuse Searches", "Saved searches", "Full Opportunity Cards", "Up to 10 active opportunities", "Standard analysis briefs", "Basic team workspace"], cta: "Book a demo" },
   { name: "Development Portfolio", price: "€30,000–45,000/year", popular: true, for: "Engineering teams, operators and industrial associations managing a development pipeline", items: ["Everything in Market Access", "Existing Projects workspace expanded into Reuse Pipeline", "Up to 25 active opportunities", "Project stages, owners, tasks and evidence logs", "Tender, permit, drought and data-change alerts", "Comparable-project intelligence", "Professional decision briefs"], cta: "Talk to the team" },
