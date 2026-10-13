@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { Country } from "./eea";
 
 // EEA discodata has no CORS guarantees, so it is proxied server-side and cached for 24h.
 export interface IedFacility {
@@ -27,7 +28,7 @@ async function sql<T>(query: string): Promise<T[]> {
 }
 
 export const fetchIed = createServerFn({ method: "GET" })
-  .validator((country: "ES" | "DE") => (country === "DE" ? "DE" : "ES"))
+  .validator((country: Country): Country => (country === "DE" || country === "FR" ? country : "ES"))
   .handler(async ({ data: country }) => {
   const hit = cache.get(country);
   if (hit && Date.now() - hit.at < DAY) return hit.data;

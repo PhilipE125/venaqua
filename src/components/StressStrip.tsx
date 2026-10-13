@@ -1,7 +1,8 @@
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { SourceInfo } from "./SourceInfo";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fmt, fmt1, usePrat, useReservoirHistory, useReservoirs } from "@/lib/queries";
+import { fmt, fmt1, usePrat, useReservoirHistory, useReservoirs, useVigieauDepartments } from "@/lib/queries";
+import { GRAVITE_LABEL, GRAVITES } from "@/lib/sources/vigieau";
 import { useApp } from "@/lib/state";
 
 function Spark({ data, color }: { data: { date: string; value: number }[]; color: string }) {
@@ -46,9 +47,36 @@ function GaugeStrip({ withSelection }: { withSelection: boolean }) {
   );
 }
 
+// France: official drought restrictions (VigiEau), highest level in force per department.
+function RestrictionStrip({ withSelection }: { withSelection: boolean }) {
+  const d = useVigieauDepartments();
+  const deps = d.data ?? [];
+  const count = (l: (typeof GRAVITES)[number]) => deps.filter((x) => x.level === l).length;
+  return (
+    <div className={`panel map-context pointer-events-auto absolute bottom-4 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${withSelection ? "with-selection" : ""}`}>
+      <div className="flex flex-col justify-center">
+        <p className="label-caps">Water stress now</p>
+        <p className="text-[11px] text-muted-foreground">France, drought restrictions</p>
+      </div>
+      <div className="flex min-w-0 items-center gap-3 border-l pl-4">
+        <div>
+          <p className="text-[11px] text-muted-foreground">Departments at the highest level, crise (VigiEau, live)</p>
+          {d.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : d.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
+            <p className="tnum text-xl font-medium">
+              {fmt.format(count("crise"))}<span className="text-sm text-muted-foreground"> of {fmt.format(deps.length)}</span>
+              <span className="ml-1.5 text-xs text-muted-foreground">{fmt.format(count("alerte_renforcee"))} {GRAVITE_LABEL.alerte_renforcee.toLowerCase()} · {fmt.format(count("alerte"))} alerte</span>
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function StressStrip() {
   const { selection, region } = useApp();
   if (region === "de") return <GaugeStrip withSelection={!!selection} />;
+  if (region === "fr") return <RestrictionStrip withSelection={!!selection} />;
   return <CatalanStrip />;
 }
 

@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { buyerStatus, STATUS_LABEL } from "@/lib/knownUsers";
 import { haversineKm } from "@/lib/score";
-import { eurK, fmt, fmt1, fmt2, useClusters, useCompanies, useDrought, useMatches, useMeteo, usePrat, useRegen, useStress, useTenders, useWwtps } from "@/lib/queries";
+import { GRAVITE_LABEL } from "@/lib/sources/vigieau";
+import { eurK, fmt, fmt1, fmt2, useClusters, useCompanies, useDrought, useMatches, useMeteo, usePrat, useRegen, useRestriction, useStress, useTenders, useWwtps } from "@/lib/queries";
 import { mid } from "@/lib/costs";
 import { currentPhase } from "@/lib/sources/drought";
 import { muniKey, normalize, sectorById } from "@/lib/sectors";
@@ -562,8 +563,23 @@ export function AnalysisWorkspace() {
 }
 
 
+// France: the drought restriction in force at this site (VigiEau, business profile).
+function RestrictionBadge({ at }: { at: { lat: number; lon: number } }) {
+  const r = useRestriction(at);
+  if (r.isLoading) return <p className="mt-1 text-xs text-muted-foreground">Drought restriction: loading…</p>;
+  if (r.isError || !r.data) return <p className="mt-1 text-xs text-muted-foreground">Drought restriction: unavailable</p>;
+  const { level, zone } = r.data;
+  return (
+    <p className="mt-1 text-xs">
+      <span className="text-muted-foreground">Drought restriction (VigiEau): </span>
+      <span className={level === "crise" || level === "alerte_renforcee" ? "font-medium text-destructive" : "font-medium"}>{level ? GRAVITE_LABEL[level] : "None in force"}</span>
+      {zone && <span className="text-muted-foreground"> · {zone}</span>}
+    </p>
+  );
+}
+
 export function Drawer() {
-  const { selection, select, settings, demandOverride, maxKm } = useApp();
+  const { selection, select, settings, demandOverride, maxKm, region } = useApp();
   const { siteById, companyById, matches } = useMatches();
   if (!selection) return null;
   const company = selection.kind === "company" ? companyById.get(selection.id) : undefined;
@@ -574,7 +590,7 @@ export function Drawer() {
   const supply = site ? (site.kind === "wwtp" ? site.supply?.availableReclaimed ?? 0 : Math.max(0, site.capacity - site.reusedVolume / 365)) : 0;
   const count = matches.filter(m => company ? m.companyId === company.id : m.siteId === site?.id).length;
   return <aside className="compact-preview rounded-lg border bg-card p-5 shadow-map-panel" aria-label="Opportunity preview">
-    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="label-caps">{company ? "Company" : site ? "Water treatment plant" : "Regional opportunity"}</p><h2 className="mt-1 text-base font-semibold break-words">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{company?.municipi ?? site?.municipi ?? "Catalonia"}</p></div><Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close preview"><X /></Button></div>
+    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="label-caps">{company ? "Company" : site ? "Water treatment plant" : "Regional opportunity"}</p><h2 className="mt-1 text-base font-semibold break-words">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{company?.municipi ?? site?.municipi ?? "Catalonia"}</p>{region === "fr" && (company ?? site) && <RestrictionBadge at={(company ?? site)!} />}</div><Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close preview"><X /></Button></div>
     <p className="mt-3 text-sm">{company || site ? count ? `${count} potential ${company ? "suppliers" : "buyers"} within ${maxKm} km. Validate supply and demand before investing.` : "Needs validation: no ranked link within the current filters." : "Compare potential links and shared-pipe opportunities."}</p>
     {(company || site) && <p className="tnum mt-3 text-xl font-semibold">{fmt.format(company ? demand : supply)} <span className="text-xs font-normal text-muted-foreground">m³/day · {company ? "indicative demand" : "potential supply"}</span></p>}
     <p className="mt-2 text-xs text-muted-foreground">{site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow · spare supply needs confirmation" : company && demandOverride[company.id] != null ? "Your demand figure · needs confirmation" : "Estimated · needs confirmation"}</p>

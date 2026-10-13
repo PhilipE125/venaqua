@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { crf, droughtLoss, mid, opportunityCost, optionA, optionB, optionC, type CostInputs, type Range } from "@/lib/costs";
-import { eurK, fmt, fmt1, fmt2, useDrought, useElevation, useWwtps } from "@/lib/queries";
+import { eurK, fmt, fmt1, fmt2, useDrought, useElevation, useRestriction, useWwtps } from "@/lib/queries";
 import { haversineKm } from "@/lib/score";
 import { muniKey } from "@/lib/sectors";
 import { currentPhase, phaseDaysInYear, PHASES, type Phase } from "@/lib/sources/drought";
@@ -72,9 +72,10 @@ const fmtR = (r: Range, f: (n: number) => string) => (Math.abs(r[0] - r[1]) < 1e
 const EFFLUENT = { light: { label: "Light (cooling, rinsing)", k: 0.8 }, medium: { label: "Medium (mixed process)", k: 1 }, heavy: { label: "Heavy (food, chemicals)", k: 1.4 } } as const;
 
 export function WaterOptions({ company, focus = "all", view = "economics", onSummary }: { company: Company; focus?: Mode; view?: "overview" | "economics"; onSummary?: ((p: OpportunitySnapshot) => void) | undefined }) {
-  const { settings, demandOverride, setDemandOverride, select } = useApp();
+  const { settings, demandOverride, setDemandOverride, select, region } = useApp();
   const w = useWwtps();
   const drought = useDrought();
+  const restriction = useRestriction(company);
   const [tariffShock, setTariffShock] = useScenarioState(`${company.id}:tariffShock`, "0");
   const [elec, setElec] = useScenarioState<"low" | "base" | "high">(`${company.id}:elec`, "base");
   const [phaseOverride, setPhaseOverride] = useScenarioState<Phase | "current">(`${company.id}:phaseOverride`, "current");
@@ -98,7 +99,8 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
   }, [w.data, company]);
   const elev = useElevation(candidate?.p, company);
 
-  const events = drought.data?.byMuni.get(muniKey(company.municipi));
+  // France: today's VigiEau restriction stands in for the Catalan drought-phase history.
+  const events = region === "fr" ? (restriction.data ? [restriction.data] : undefined) : drought.data?.byMuni.get(muniKey(company.municipi));
   const cur = currentPhase(events);
   const phase: Phase = phaseOverride === "current" ? (cur?.phase ?? "normal") : phaseOverride;
 
@@ -241,7 +243,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
           <Select value={phaseOverride} onValueChange={(v) => setPhaseOverride(v as Phase | "current")} disabled={replay}>
             <SelectTrigger className="h-7 w-44 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="current">Current: {drought.isLoading ? "loading" : cur ? cur.phase : "unknown"}</SelectItem>
+              <SelectItem value="current">Current: {drought.isLoading || restriction.isLoading ? "loading" : cur ? cur.phase : "unknown"}</SelectItem>
               {PHASES.map((p) => <SelectItem key={p} value={p} className="capitalize">{p}</SelectItem>)}
             </SelectContent>
           </Select>

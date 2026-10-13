@@ -56,8 +56,8 @@ function ringIcon(g: RegenPlant, annual: number): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect x="2" y="2" width="12" height="12" fill="#1a1a1a" stroke="#ffffff" stroke-width="2"/></svg>')}`;
-// Opening view per region: all of Spain, Catalonia, all of Germany.
-const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 10.4, latitude: 51.2, zoom: 5.6 } } as const;
+// Opening view per region: all of Spain, Catalonia, all of Germany, all of France.
+const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 10.4, latitude: 51.2, zoom: 5.6 }, fr: { longitude: 2.4, latitude: 46.6, zoom: 5.3 } } as const;
 // Circles shrink when zoomed out to a whole country, so dense areas (Ruhr, Madrid) stay readable.
 // radiusScale is a GPU uniform: changing it does not rebuild any per-point attributes.
 const zoomScale = (zoom: number) => Math.round(Math.min(1, Math.max(0.35, 2 ** ((zoom - 8) / 2))) * 20) / 20;

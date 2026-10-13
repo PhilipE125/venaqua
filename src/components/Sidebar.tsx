@@ -93,7 +93,7 @@ function LayersTab() {
           <span key={s.id} className="flex items-center gap-1.5"><Dot color={s.color} />{s.label}</span>
         ))}
       </LayerRow>
-      <LayerRow k="reservoirs" title={region === "de" ? "River gauges" : "Reservoirs"} q={res} count={res.data?.features.length}>
+      <LayerRow k="reservoirs" title={region === "de" ? "River gauges" : region === "fr" ? "Reservoirs (none in France)" : "Reservoirs"} q={res} count={res.data?.features.length}>
         <span className="flex items-center gap-1.5"><Dot color={fillColor(10)} />&lt;30%</span>
         <span className="flex items-center gap-1.5"><Dot color={fillColor(45)} />30-60%</span>
         <span className="flex items-center gap-1.5"><Dot color={fillColor(80)} />&gt;60%</span>
