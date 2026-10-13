@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Droplets } from "lucide-react";
+import { Droplets, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 import { useWorkspace } from "@/lib/workspace";
 
 type Key = "platform" | "how" | "pricing" | "resources" | "about";
+type Panel = Key | "menu";
 
 const ITEMS: { key: Key; label: string }[] = [
   { key: "platform", label: "Platform" },
@@ -23,7 +24,7 @@ const ITEMS: { key: Key; label: string }[] = [
 
 export function PublicHeader() {
   const { setAuthOpen, setContact } = useWorkspace();
-  const [open, setOpen] = useState<Key | null>(null);
+  const [open, setOpen] = useState<Panel | null>(null);
   const close = () => setOpen(null);
 
   const content: Record<Key, { title: string; body: string; actions: React.ReactNode }> = {
@@ -64,21 +65,21 @@ export function PublicHeader() {
     },
   };
 
-  const current = open ? content[open] : null;
+  const current = open && open !== "menu" ? content[open] : null;
 
   return (
     <header className="relative z-10 border-b border-border/60 bg-background/75 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-5">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-5">
         <Link to="/" className="flex shrink-0 items-center gap-2">
           <Droplets className="h-5 w-5 text-primary" />
           <span className="font-semibold tracking-tight">Venaqua</span>
         </Link>
-        <nav className="hidden items-center gap-0.5 text-sm text-muted-foreground lg:flex">
+        <nav className="hidden items-center gap-0 text-[13px] text-muted-foreground md:flex">
           {ITEMS.map((i) => (
             <button
               key={i.key}
               onClick={() => setOpen(i.key)}
-              className="whitespace-nowrap rounded-full px-3 py-1.5 transition-colors hover:bg-muted hover:text-foreground"
+              className="whitespace-nowrap rounded-full px-2.5 py-1.5 transition-colors hover:bg-muted hover:text-foreground"
             >
               {i.label}
             </button>
@@ -87,11 +88,32 @@ export function PublicHeader() {
         <div className="flex shrink-0 items-center gap-1.5">
           <Button variant="ghost" size="sm" className="whitespace-nowrap" onClick={() => setAuthOpen(true)}>Sign in</Button>
           <Button size="sm" className="whitespace-nowrap" onClick={() => setAuthOpen(true)}>Get started</Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden" aria-label="Open menu" onClick={() => setOpen("menu")}>
+            <Menu />
+          </Button>
         </div>
       </div>
-      <Dialog open={!!current} onOpenChange={(o) => !o && close()}>
+      <Dialog open={!!open} onOpenChange={(o) => !o && close()}>
         <DialogContent className="max-w-sm">
-          {current && (
+          {open === "menu" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Menu</DialogTitle>
+                <DialogDescription className="leading-relaxed">Short guides to what Venaqua does and how to start.</DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-0.5 pt-1">
+                {ITEMS.map((i) => (
+                  <button
+                    key={i.key}
+                    onClick={() => setOpen(i.key)}
+                    className="rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
+                  >
+                    {i.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : current && (
             <>
               <DialogHeader>
                 <DialogTitle>{current.title}</DialogTitle>
