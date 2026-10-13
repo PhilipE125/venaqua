@@ -1,0 +1,58 @@
+import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
+import { fmt, fmt1, usePrat, useReservoirHistory } from "@/lib/queries";
+
+function Spark({ data, color }: { data: { date: string; value: number }[]; color: string }) {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 2, bottom: 2, left: 0, right: 0 }}>
+        <YAxis hide domain={["dataMin", "dataMax"]} />
+        <Tooltip
+          contentStyle={{ fontSize: 11, padding: "2px 6px" }}
+          labelFormatter={(_, p) => p?.[0]?.payload?.date ?? ""}
+          formatter={(v) => fmt1.format(Number(v))}
+        />
+        <Area type="monotone" dataKey="value" stroke={color} fill={color} fillOpacity={0.12} strokeWidth={1.5} />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
+
+export function StressStrip() {
+  const res = useReservoirHistory();
+  const prat = usePrat();
+  const last = res.data?.series.at(-1);
+  const first = res.data?.series[0];
+  const pratTotal = prat.data?.series.reduce((s, d) => s + d.value, 0) ?? 0;
+  return (
+    <div className="panel pointer-events-auto absolute bottom-3 left-3 z-10 flex h-[76px] items-stretch gap-6 rounded-md px-4 py-2.5 shadow-md">
+      <div className="flex flex-col justify-center">
+        <p className="label-caps">Water stress now</p>
+        <p className="text-[11px] text-muted-foreground">Catalonia, internal basins</p>
+      </div>
+      <div className="flex items-center gap-3 border-l pl-5">
+        <div>
+          <p className="text-[11px] text-muted-foreground">Avg reservoir fill</p>
+          {res.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : res.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
+            <p className="tnum text-xl font-medium">
+              {fmt1.format(last?.value ?? 0)}%
+              {first && last && (
+                <span className="ml-1.5 text-xs text-muted-foreground">{last.value >= first.value ? "+" : ""}{fmt1.format(last.value - first.value)} pt / 90d</span>
+              )}
+            </p>
+          )}
+        </div>
+        <div className="h-12 w-40">{res.data && <Spark data={res.data.series} color="var(--chart-1)" />}</div>
+      </div>
+      <div className="flex items-center gap-3 border-l pl-5">
+        <div>
+          <p className="text-[11px] text-muted-foreground">El Prat reclaimed, 30d</p>
+          {prat.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : prat.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
+            <p className="tnum text-xl font-medium">{fmt.format(pratTotal / 1000)}<span className="ml-1 text-xs text-muted-foreground">k m³</span></p>
+          )}
+        </div>
+        <div className="h-12 w-40">{prat.data && <Spark data={prat.data.series} color="var(--chart-2)" />}</div>
+      </div>
+    </div>
+  );
+}

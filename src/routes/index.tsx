@@ -1,24 +1,53 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ClientOnly } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
+import { Drawer } from "@/components/Drawer";
+import { Sidebar } from "@/components/Sidebar";
+import { StressStrip } from "@/components/StressStrip";
+import { TopBar } from "@/components/TopBar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppStateProvider } from "@/lib/state";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+const MapView = lazy(() => import("@/components/map/MapView"));
+
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "Reuse Match · Reclaimed water for Catalan industry" },
+      { name: "description", content: "Map that matches reclaimed wastewater supply in Catalonia with nearby companies that need water, using live public data." },
+      { property: "og:title", content: "Reuse Match · Reclaimed water for Catalan industry" },
+      { property: "og:description", content: "Match treatment and regeneration plants with nearby water users, ranked by an opportunity score." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
+function MapFallback() {
+  return <div className="h-full w-full animate-pulse bg-muted" />;
+}
+
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <AppStateProvider>
+      <TooltipProvider delayDuration={200}>
+        <div className="flex h-screen min-w-[1280px] flex-col overflow-hidden">
+          <TopBar />
+          <div className="flex min-h-0 flex-1">
+            <Sidebar />
+            <main className="relative min-w-0 flex-1">
+              <ClientOnly fallback={<MapFallback />}>
+                <Suspense fallback={<MapFallback />}>
+                  <MapView />
+                </Suspense>
+              </ClientOnly>
+              <StressStrip />
+              <Drawer />
+            </main>
+          </div>
+        </div>
+      </TooltipProvider>
+    </AppStateProvider>
   );
 }
