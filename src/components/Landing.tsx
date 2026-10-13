@@ -1,57 +1,57 @@
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { fmt, useCompanies, useMatches, useWwtps } from "@/lib/queries";
+import { fmt, useCompanies, useMatches } from "@/lib/queries";
 import { normalize, sectorById } from "@/lib/sectors";
-import { useApp } from "@/lib/state";
+import { QUESTIONS, useApp, type Mode } from "@/lib/state";
 
-const QUESTIONS = [
-  { who: "Plant operator", q: "Who near my plant could use my reclaimed water?", cta: "Open a plant" },
-  { who: "Factory manager", q: "Is there reuse-ready water near me, and is it cheaper than my tariff?", cta: "Find my company" },
-  { who: "Factory manager, on site", q: "How much could reusing my own water save, compared with a grid solution?", cta: "Compare options" },
-  { who: "City or region", q: "Where does our wastewater go, and how stressed is supply?", cta: "Open a comarca" },
-] as const;
-
-export function Landing() {
-  const { landing, setLanding, select, setSearchOpen } = useApp();
+export function QuestionBar() {
+  const { mode, setMode, select, selection, setSearchOpen, tip, dismissTip } = useApp();
   const { filtered, siteById } = useMatches();
-  const w = useWwtps();
-  if (!landing) return null;
-  const top = filtered[0];
-  const go = (i: number) => {
-    if (i === 0 && top) select({ kind: siteById.get(top.siteId)!.kind as "wwtp" | "regen", id: top.siteId });
-    if (i === 1) {
-      setLanding(false);
-      setSearchOpen(true);
-    }
-    if (i === 2 && top) select({ kind: "company", id: top.companyId });
-    if (i === 3) {
-      const comarca = w.data?.features.find((p) => p.comarca === "Baix Llobregat")?.comarca ?? w.data?.features[0]?.comarca;
-      if (comarca) select({ kind: "comarca", id: comarca });
-    }
+  const pick = (m: Mode) => {
+    setMode(m);
+    if (m === "q1") {
+      const top = filtered[0];
+      if (top && selection?.kind !== "wwtp" && selection?.kind !== "regen") select({ kind: siteById.get(top.siteId)!.kind as "wwtp" | "regen", id: top.siteId });
+    } else if (m === "q4") select({ kind: "region", id: "catalonia" });
+    else if (m !== "all" && selection?.kind !== "company") setSearchOpen(true);
   };
+  const active = QUESTIONS.find((q) => q.mode === mode);
   return (
-    <div className="panel absolute left-1/2 top-6 z-20 w-[640px] -translate-x-1/2 rounded-md p-5 shadow-xl">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="label-caps">Start with a question</p>
-          <h2 className="mt-1 text-lg font-semibold">What do you want to know?</h2>
-        </div>
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setLanding(false)} aria-label="Close">
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        {QUESTIONS.map((x, i) => (
-          <button key={x.who} onClick={() => go(i)} className="flex flex-col rounded-sm border bg-background p-3 text-left transition-colors hover:bg-accent disabled:opacity-50" disabled={(i === 0 || i === 2) && !top}>
-            <span className="label-caps">{x.who}</span>
-            <span className="mt-1.5 flex-1 text-sm leading-snug">{x.q}</span>
-            <span className="mt-3 text-xs font-medium underline-offset-2 hover:underline">{x.cta} →</span>
+    <div className="relative z-30 shrink-0">
+      <div className="panel flex items-center gap-3 border-x-0 border-t-0 px-3 py-1.5">
+        <span className="label-caps shrink-0">Your question</span>
+      <div className="flex flex-wrap items-stretch gap-1">
+        {QUESTIONS.map((q, i) => (
+          <button
+            key={q.mode}
+            onClick={() => pick(q.mode)}
+            className={`flex flex-col rounded-sm px-2.5 py-1.5 text-left transition-colors ${mode === q.mode ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}
+          >
+            <span className={`text-[10px] uppercase tracking-wide ${mode === q.mode ? "opacity-80" : "text-muted-foreground"}`}>{i + 1} · {q.who}</span>
+            <span className="text-xs font-medium">{q.short}</span>
           </button>
         ))}
+        <button
+          onClick={() => pick("all")}
+          className={`rounded-sm px-2.5 py-1.5 text-xs ${mode === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent"}`}
+        >
+          Explore everything
+        </button>
       </div>
+      {active && <p className="hidden min-w-0 flex-1 truncate text-xs text-muted-foreground xl:block">“{active.q}”</p>}
+      </div>
+      {tip && (
+        <div className="panel absolute left-[392px] top-full mt-2 flex max-w-[560px] items-start gap-3 rounded-md p-3 text-xs shadow-md">
+          <ol className="flex-1 list-inside list-decimal space-y-0.5">
+            <li>Pick the question that matches your role above.</li>
+            <li>Click a plant or a company on the map, or use “Find a company”.</li>
+            <li>Read the answer at the top of the panel on the right; details open below it.</li>
+          </ol>
+          <Button size="sm" className="h-7 text-xs" onClick={dismissTip}>Got it</Button>
+        </div>
+      )}
     </div>
   );
 }

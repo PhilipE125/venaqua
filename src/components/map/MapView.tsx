@@ -2,11 +2,11 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
-import { IconLayer, PathLayer, ScatterplotLayer } from "@deck.gl/layers";
+import { IconLayer, PathLayer, PolygonLayer, ScatterplotLayer } from "@deck.gl/layers";
 import { PathStyleExtension } from "@deck.gl/extensions";
-import { useMemo, useState } from "react";
-import Map, { NavigationControl, useControl } from "react-map-gl/maplibre";
-import { eur, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useWwtps } from "@/lib/queries";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Map, { NavigationControl, useControl, type MapRef } from "react-map-gl/maplibre";
+import { eur, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useWwtps } from "@/lib/queries";
 import { buyerStatus, KNOWN_USERS } from "@/lib/knownUsers";
 import { normalize } from "@/lib/sectors";
 import { sectorById } from "@/lib/sectors";
@@ -47,6 +47,8 @@ export default function MapView() {
   const { layers, selection, select, dark, sector, confirmed } = useApp();
   const pr = useProjects();
   const [popup, setPopup] = useState<ReuseProject | null>(null);
+  const clusters = useClusters();
+  const mapRef = useRef<MapRef>(null);
   const w = useWwtps();
   const r = useRegen();
   const c = useCompanies();
@@ -89,7 +91,30 @@ export default function MapView() {
       .map((x) => ({ path: [[src.lon, src.lat], [x.lon, x.lat]] as [number, number][] }));
   }, [r.data, c.data, confirmed]);
 
+  // Fly to whatever is selected, from the map, a list or search.
+  useEffect(() => {
+    if (!selection || selection.kind === "comarca" || selection.kind === "region") return;
+    const f = selection.kind === "company" ? companyById.get(selection.id) : siteById.get(selection.id);
+    if (!f) return;
+    const m = mapRef.current;
+    if (!m) return;
+    const z = m.getZoom();
+    m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [-180, 0], duration: 900 });
+  }, [selection, companyById, siteById]);
+
   const deckLayers = [
+    layers.clusters &&
+      new PolygonLayer({
+        id: "clusters",
+        data: clusters.slice(0, 40),
+        getPolygon: (d: (typeof clusters)[number]) => d.hull,
+        filled: true,
+        getFillColor: [11, 110, 138, 25],
+        stroked: true,
+        getLineColor: [11, 110, 138, 200],
+        lineWidthMinPixels: 1.5,
+        pickable: true,
+      }),
     layers.reservoirs &&
       new ScatterplotLayer<Reservoir>({
         id: "reservoirs",
@@ -202,6 +227,7 @@ export default function MapView() {
   return (
     <div className="relative h-full w-full">
       <Map
+        ref={mapRef}
         initialViewState={{ longitude: 1.75, latitude: 41.7, zoom: 7.4 }}
         mapStyle={
           dark
@@ -218,7 +244,8 @@ export default function MapView() {
           getCursor={({ isHovering }) => (isHovering ? "pointer" : "grab")}
           onHover={(info) => {
             const raw = info.object as { name?: string; kind?: string; fill?: number; g?: RegenPlant; buyer?: string; object?: string } | undefined;
-            const o = raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
+            const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
+            const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
             if (!o?.name) return setHover(null);
             const extra = o.kind === "reservoir" ? ` · ${o.fill}% full` : "";
             setHover({ x: info.x, y: info.y, text: o.name + extra });
@@ -227,6 +254,8 @@ export default function MapView() {
             const raw = info.object as { id: string; kind: string; g?: RegenPlant; plant?: Plant; buyer?: string } | undefined;
             setPopup(null);
             if (raw?.buyer) return setPopup(raw as unknown as ReuseProject);
+            const cc = info.object as { plantId?: string; companyIds?: string[] } | undefined;
+            if (cc?.plantId && cc.companyIds) return select({ kind: "wwtp", id: cc.plantId });
             const o = raw?.plant ? raw.plant : raw;
             if (!o) return select(null);
             if (o.kind === "wwtp" || o.kind === "regen" || o.kind === "company")
@@ -234,10 +263,14 @@ export default function MapView() {
           }}
         />
       </Map>
-      <div className="panel absolute right-14 bottom-3 z-10 rounded-sm px-2.5 py-1.5 text-[10px] text-muted-foreground">
-        <span className="mr-2"><span className="mr-1 inline-block w-4 border-t border-foreground align-middle" />measured</span>
-        <span className="mr-2"><span className="mr-1 inline-block w-4 border-t border-dashed border-foreground align-middle" />modelled</span>
-        <span><span className="mr-1 inline-block w-4 border-t border-dotted border-foreground align-middle" />assumption / potential</span>
+      <div className="panel absolute right-14 bottom-3 z-10 max-w-[360px] space-y-0.5 rounded-sm px-2.5 py-1.5 text-[10px] text-muted-foreground">
+        {layers.wwtp && <p>Circle = treatment plant; bigger = more water treated; hollow = our estimate.</p>}
+        {layers.regen && <p>Ring = recycled water already used (accent = industry); gap = unused.</p>}
+        {layers.companies && <p>Dot = company: hollow potential, grey water-intensive, black confirmed.</p>}
+        {layers.clusters && <p>Outlined area = companies that could share one pipe.</p>}
+        {layers.projects && <p>Black square = reclaimed-water contract.</p>}
+        {layers.reservoirs && <p>Red, amber, green = reservoir fill.</p>}
+        {selectedSite && <p>Dashed line = possible link from the selected plant.</p>}
       </div>
       {popup && (
         <div className="panel absolute left-3 top-3 z-20 w-80 rounded-md p-3 text-xs shadow-md">

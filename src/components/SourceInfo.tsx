@@ -4,6 +4,21 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { META, type Quality, type SourceId } from "@/lib/sources/contract";
 import { cn } from "@/lib/utils";
 
+const QUALITY_LABEL: Record<string, string> = {
+  measured: "Measured",
+  modelled: "Calculated",
+  assumption: "Our estimate",
+  estimate: "Our estimate",
+  "your figure": "Your figure",
+};
+const QUALITY_HINT: Record<string, string> = {
+  measured: "Reported by a public body from real readings.",
+  modelled: "Calculated by a model from measured inputs.",
+  assumption: "A placeholder or benchmark we chose; replace it if you know better.",
+  estimate: "A placeholder or benchmark we chose; replace it if you know better.",
+  "your figure": "A number you entered.",
+};
+
 export function QualityBadge({ q, className }: { q: Quality | "estimate" | "your figure"; className?: string }) {
   // Evidence language: solid = measured, dashed = modelled, dotted = assumption/estimate.
   const style =
@@ -15,9 +30,10 @@ export function QualityBadge({ q, className }: { q: Quality | "estimate" | "your
   return (
     <Badge
       variant="outline"
+      title={QUALITY_HINT[q]}
       className={cn("h-4 shrink-0 border-[1.5px] px-1.5 text-[10px] font-normal text-muted-foreground", style, className)}
     >
-      {q}
+      {QUALITY_LABEL[q]}
     </Badge>
   );
 }

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { Drawer } from "@/components/Drawer";
-import { CompanySearch, Landing } from "@/components/Landing";
+import { CompanySearch, QuestionBar } from "@/components/Landing";
 import { Sidebar } from "@/components/Sidebar";
 import { StressStrip } from "@/components/StressStrip";
 import { TopBar } from "@/components/TopBar";
@@ -35,6 +35,7 @@ function Index() {
       <TooltipProvider delayDuration={200}>
         <div className="flex h-screen min-w-[1280px] flex-col overflow-hidden">
           <TopBar />
+          <QuestionBar />
           <div className="flex min-h-0 flex-1">
             <Sidebar />
             <main className="relative min-w-0 flex-1">
@@ -44,7 +45,6 @@ function Index() {
                 </Suspense>
               </ClientOnly>
               <StressStrip />
-              <Landing />
               <Drawer />
               <CompanySearch />
             </main>

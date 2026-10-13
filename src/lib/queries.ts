@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo } from "react";
+import { findClusters } from "./clusters";
 import { knownUserSource } from "./knownUsers";
 import { mergeCompanies } from "./merge";
 import { effectiveSupply, scorePairs, type Match } from "./score";
@@ -175,3 +176,20 @@ export const fmt2 = new Intl.NumberFormat("en-GB", { minimumFractionDigits: 2, m
 export const eur = new Intl.NumberFormat("en-GB", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 export const eurK = (v: number) =>
   Math.abs(v) >= 1e6 ? `€${fmt1.format(v / 1e6)}M` : Math.abs(v) >= 1e3 ? `€${fmt.format(v / 1e3)}k` : `€${fmt.format(v)}`;
+
+/** Shared-pipe clusters around plants with available reclaimed water. */
+export function useClusters() {
+  const { maxKm, settings } = useApp();
+  const w = useWwtps();
+  const c = useCompanies();
+  return useMemo(() => {
+    if (!w.data || !c.data) return [];
+    const plants = w.data.features
+      .filter((p) => p.supply && p.supply.availableReclaimed > 0)
+      .map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, available: p.supply!.availableReclaimed }));
+    const companies = c.data.features
+      .filter((x) => x.lat > 40 && x.lat < 43.2 && x.lon > 0 && x.lon < 3.5)
+      .map((x) => ({ id: x.id, lat: x.lat, lon: x.lon, demand: settings.sectorDemand[x.sector] ?? 0 }));
+    return findClusters(plants, companies, { maxKm, pipeCostPerKm: settings.pipeCostPerKm, rate: settings.rate, years: settings.years });
+  }, [w.data, c.data, maxKm, settings]);
+}
