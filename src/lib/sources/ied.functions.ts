@@ -27,7 +27,7 @@ async function sql<T>(query: string): Promise<T[]> {
 }
 
 export const fetchIed = createServerFn({ method: "GET" })
-  .inputValidator((country: "ES" | "DE") => (country === "DE" ? "DE" : "ES"))
+  .validator((country: "ES" | "DE") => (country === "DE" ? "DE" : "ES"))
   .handler(async ({ data: country }) => {
   const hit = cache.get(country);
   if (hit && Date.now() - hit.at < DAY) return hit.data;

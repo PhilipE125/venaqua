@@ -136,7 +136,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [scenarioValues, setScenarioValues] = useState<Record<string, unknown>>({});
   const [region, setRegion] = useState<Region>("es");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(MODE_PRESETS.q2);
+  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(MODE_PRESETS.all); // matches the initial mode below
   const [mode, setModeState] = useState<Mode>("all");
   const [tip, setTip] = useState(false);
   const [selection, select] = useState<Selection>(null);

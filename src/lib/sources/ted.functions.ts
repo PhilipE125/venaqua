@@ -34,7 +34,7 @@ function pickLang(v: unknown): string {
 }
 
 export const searchTenders = createServerFn({ method: "GET" })
-  .inputValidator((country: "ESP" | "DEU") => (country === "DEU" ? "DEU" : "ESP"))
+  .validator((country: "ESP" | "DEU") => (country === "DEU" ? "DEU" : "ESP"))
   .handler(async ({ data: country }) => {
   const notices: Record<string, unknown>[] = [];
   for (let page = 1; page <= 8; page++) {
