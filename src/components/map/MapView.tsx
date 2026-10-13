@@ -1,4 +1,6 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import { setWorkerUrl } from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
 import { ArcLayer, ScatterplotLayer } from "@deck.gl/layers";
 import { useMemo, useState } from "react";
@@ -8,6 +10,8 @@ import { sectorById } from "@/lib/sectors";
 import { useApp } from "@/lib/state";
 import type { Company, Plant, RegenPlant, Reservoir } from "@/lib/types";
 import { LEVEL_COLORS, REGEN_COLOR, fillColor } from "./colors";
+
+setWorkerUrl(workerUrl);
 
 function DeckOverlay(props: MapboxOverlayProps) {
   const overlay = useControl<MapboxOverlay>(() => new MapboxOverlay(props));
