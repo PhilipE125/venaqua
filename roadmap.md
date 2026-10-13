@@ -16,3 +16,4 @@
 - [ ] Expand to Spain with Catalonia detail preserved; exclude Germany as requested
 - [ ] Regional stress and tariff files (blocked on verified source data if not supplied)
 - [ ] Verify existing question flows and project/contact actions
+- [ ] Provide a prompt separating detailed plant/company analysis from the map without applying that change yet
