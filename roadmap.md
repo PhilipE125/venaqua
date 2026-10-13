@@ -1,12 +1,12 @@
 # Roadmap — iteration 2 (Q2/Q3 factory manager)
-- [ ] 1a Source contract + "i" popovers
-- [ ] 1b EEA supply join (actual flow, available reclaimed, sanity flags, match rate)
-- [ ] 1c Spain-wide IED companies via server fn, merge with ACA permits
-- [ ] 1d Data quality tab
-- [ ] 1e Fixes: volume-weighted stress, terciari/lagoon levels, TED paging, El Prat reuse vs river
-- [ ] 2 costs.ts + A/B/C comparison range bars (tests)
-- [ ] 3 Scenarios: tariff, electricity, drought phase, replay 2023
-- [ ] Potential buyers rename, buyer status, Reuse today
-- [ ] Map evidence language: plant glyph ring, company status, dashed links, legend
-- [ ] Sankey in plant drawer; tenders (ybgg-dgi6) layer
-- [ ] Landing four-question cards
+- [x] 1a Source contract + "i" popovers
+- [x] 1b EEA supply join (actual flow, available reclaimed, sanity flags, match rate)
+- [x] 1c Spain-wide IED companies via server fn, merge with ACA permits
+- [x] 1d Data quality tab
+- [x] 1e Fixes: volume-weighted stress, terciari/lagoon levels, TED paging, El Prat reuse vs river
+- [x] 2 costs.ts + A/B/C comparison range bars (tests)
+- [x] 3 Scenarios: tariff, electricity, drought phase, replay 2023
+- [x] Potential buyers rename, buyer status, Reuse today
+- [x] Map evidence language: plant glyph ring, company status, dashed links, legend
+- [x] Sankey in plant drawer; tenders (ybgg-dgi6) layer
+- [x] Landing four-question cards
