@@ -30,26 +30,34 @@ export function eeaJoinKey(codiAglomeracio: string): string | null {
   return `ES${rest.startsWith("0") ? rest.slice(1) : rest}E`;
 }
 
+type EeaPage = {
+  features: { properties: Record<string, unknown>; geometry?: { coordinates: number[] } }[];
+  exceededTransferLimit?: boolean;
+  properties?: { exceededTransferLimit?: boolean };
+};
+
+async function fetchPage(country: string, offset: number): Promise<EeaPage> {
+  const q = new URLSearchParams({
+    where: `rptMStateKey='${country}'`,
+    outFields: FIELDS,
+    f: "geojson",
+    resultRecordCount: "2000",
+    resultOffset: String(offset),
+    outSR: "4326",
+  });
+  const r = await fetch(`${BASE}?${q}`);
+  if (!r.ok) throw new Error(`EEA HTTP ${r.status}`);
+  return (await r.json()) as EeaPage;
+}
+
 export async function fetchEea(country: "ES" | "DE"): Promise<{ plants: Map<string, EeaPlant>; fetched: number; fetchedAt: string }> {
+  // Spain and Germany both need two pages (2,138 and 3,776 plants), so fetch the first two together.
+  const pages = await Promise.all([fetchPage(country, 0), fetchPage(country, 2000)]);
+  const more = (j: EeaPage) => j.exceededTransferLimit || j.properties?.exceededTransferLimit;
+  for (let offset = 4000; offset < 20000 && more(pages.at(-1)!); offset += 2000) pages.push(await fetchPage(country, offset));
   const plants = new Map<string, EeaPlant>();
-  let offset = 0;
   let fetched = 0;
-  for (let i = 0; i < 10; i++) {
-    const q = new URLSearchParams({
-      where: `rptMStateKey='${country}'`,
-      outFields: FIELDS,
-      f: "geojson",
-      resultRecordCount: "2000",
-      resultOffset: String(offset),
-      outSR: "4326",
-    });
-    const r = await fetch(`${BASE}?${q}`);
-    if (!r.ok) throw new Error(`EEA HTTP ${r.status}`);
-    const j = (await r.json()) as {
-      features: { properties: Record<string, unknown>; geometry?: { coordinates: number[] } }[];
-      exceededTransferLimit?: boolean;
-      properties?: { exceededTransferLimit?: boolean };
-    };
+  for (const j of pages) {
     for (const f of j.features) {
       const p = f.properties;
       const t = p["uwwWasteWaterTreated"];
@@ -70,8 +78,6 @@ export async function fetchEea(country: "ES" | "DE"): Promise<{ plants: Map<stri
       });
     }
     fetched += j.features.length;
-    if (!(j.exceededTransferLimit || j.properties?.exceededTransferLimit)) break;
-    offset += 2000;
   }
   return { plants, fetched, fetchedAt: new Date().toISOString() };
 }
