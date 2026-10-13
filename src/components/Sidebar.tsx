@@ -6,9 +6,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { fmt, fmt1, useCompanies, useMatches, useRegen, useReservoirs, useTenders, useWwtps } from "@/lib/queries";
+import { fmt, fmt1, useCompanies, useDrought, useEea, useMatches, usePrat, useProjects, useRegen, useReservoirHistory, useReservoirs, useTenders, useWwtps } from "@/lib/queries";
 import { SECTORS, sectorById, type SectorId } from "@/lib/sectors";
-import { SOURCES } from "@/lib/sources/meta";
+import { META, type SourceId } from "@/lib/sources/contract";
+import { QualityBadge } from "./SourceInfo";
 import { useApp, type LayerKey } from "@/lib/state";
 import { LEVEL_COLORS, REGEN_COLOR, fillColor, rgb } from "./map/colors";
 
@@ -71,13 +72,14 @@ function LayersTab() {
   const c = useCompanies();
   const res = useReservoirs();
   const t = useTenders();
+  const pr = useProjects();
   return (
     <div className="px-4">
       <LayerRow k="wwtp" title="Treatment plants" q={w} count={w.data?.features.length}>
         <span className="flex items-center gap-1.5"><Dot color={LEVEL_COLORS.primary} />Primary</span>
         <span className="flex items-center gap-1.5"><Dot color={LEVEL_COLORS.secondary} />Secondary</span>
         <span className="flex items-center gap-1.5"><Dot color={LEVEL_COLORS.tertiary} />Tertiary (N/P removal)</span>
-        <span>Size = design capacity</span>
+        <span>Size = actual outflow; ring = reuse by use</span>
       </LayerRow>
       <LayerRow k="regen" title="Regeneration plants" q={r.isLoading || !r.data ? { ...r, isLoading: !r.isError } : r} count={r.data?.features.length}>
         <span className="flex items-center gap-1.5"><Dot color={REGEN_COLOR} ring />Reuse-ready</span>
@@ -95,6 +97,14 @@ function LayersTab() {
       <LayerRow k="tenders" title="Tenders" q={t} count={t.data?.tenders.length}>
         <span>Reuse and treatment tenders in Spain (TED)</span>
       </LayerRow>
+      <LayerRow k="projects" title="Reuse projects (tenders)" q={pr.isLoading || !pr.data ? { ...pr, isLoading: !pr.isError } : pr} count={pr.data?.features.length}>
+        <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 bg-foreground" />Catalan contracts for reclaimed water</span>
+      </LayerRow>
+      <div className="border-b py-3 text-xs text-muted-foreground">
+        <p className="label-caps mb-1.5">Evidence</p>
+        <p>Solid = measured · dashed = modelled · dotted or hollow = assumption or potential.</p>
+        <p className="mt-1">Companies: hollow = potential, grey = water-intensive, black = confirmed.</p>
+      </div>
       <TenderList />
     </div>
   );
@@ -192,42 +202,82 @@ function OpportunitiesTab() {
   );
 }
 
-function AboutTab() {
+function DataQualityTab() {
+  const w = useWwtps();
+  const e = useEea();
+  const g = useRegen();
   const c = useCompanies();
+  const res = useReservoirHistory();
+  const prat = usePrat();
+  const dr = useDrought();
+  const t = useTenders();
+  const pr = useProjects();
+  const pct = (a: number, b: number) => (b > 0 ? `${fmt.format((a / b) * 100)}%` : "–");
+  const time = (n: number) => (n > 0 ? new Date(n).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "…");
+  const rows: { id: SourceId; fetched: number; latest?: string | undefined; coverage?: string | undefined; error?: boolean }[] = [
+    { id: "wwtp", fetched: w.dataUpdatedAt, latest: w.data?.latestDataDate, coverage: w.data ? `${fmt.format(w.data.features.length)} / ${fmt.format(w.data.fetchedCount ?? 0)}` : undefined, error: w.isError },
+    { id: "eea", fetched: e.dataUpdatedAt, latest: "2022", coverage: e.data ? `${fmt.format(e.data.plants.size)} ES plants` : undefined, error: e.isError },
+    { id: "regen", fetched: g.dataUpdatedAt, latest: g.data?.latestDataDate, coverage: g.data ? `${fmt.format(g.data.features.length)} / ${fmt.format(g.data.fetchedCount ?? 0)}` : undefined, error: g.isError },
+    { id: "companies", fetched: c.dataUpdatedAt, coverage: c.data ? `${fmt.format((c.data.fetchedCount ?? 0) - (c.data.excludedCount ?? 0))} / ${fmt.format(c.data.fetchedCount ?? 0)}` : undefined, error: c.isError },
+    { id: "ied", fetched: c.ied.dataUpdatedAt, latest: "2024", coverage: c.mergeStats ? `${fmt.format(c.mergeStats.iedFetched - c.mergeStats.iedExcluded)} / ${fmt.format(c.mergeStats.iedFetched)}` : undefined, error: c.ied.isError },
+    { id: "reservoirs", fetched: res.dataUpdatedAt, latest: res.data?.series.at(-1)?.date, error: res.isError },
+    { id: "prat", fetched: prat.dataUpdatedAt, latest: prat.data?.series.at(-1)?.date, error: prat.isError },
+    { id: "drought", fetched: dr.dataUpdatedAt, latest: dr.data?.latestDataDate, coverage: dr.data ? `${fmt.format(dr.data.byMuni.size)} municipalities` : undefined, error: dr.isError },
+    { id: "ted", fetched: t.dataUpdatedAt, coverage: t.data ? `${fmt.format(t.data.tenders.length)} notices` : undefined, error: t.isError },
+    { id: "projects", fetched: pr.dataUpdatedAt, coverage: pr.data ? `${fmt.format(pr.data.features.length)} / ${fmt.format(pr.data.fetchedCount ?? 0)}` : undefined, error: pr.isError },
+    { id: "meteo", fetched: 0 },
+    { id: "demand", fetched: 0 },
+    { id: "costs", fetched: 0 },
+  ];
   return (
     <div className="space-y-4 px-4 py-4 text-xs">
-      {c.data?.excludedCount != null && (
-        <p className="rounded-sm border bg-muted/50 p-3 text-muted-foreground">
-          Company register: {fmt.format(c.data.excludedCount)} rows excluded — non-discharge records, water utilities
-          (AIGÜES RESIDUALS / CAPTACIÓ D'AIGUA) and public bodies (AJUNTAMENT, CONSELL COMARCAL, CONSORCI, AGÈNCIA
-          CATALANA DE L'AIGUA).
-        </p>
-      )}
+      <div className="rounded-sm border bg-muted/50 p-3">
+        <p className="label-caps mb-1.5">Join stats</p>
+        <div className="grid grid-cols-[1fr_auto] gap-y-1">
+          <span className="text-muted-foreground">EEA ↔ Catalan plants matched</span>
+          <span className="tnum">{w.join ? `${pct(w.join.matched, w.join.total)} (${fmt.format(w.join.matched)} / ${fmt.format(w.join.total)})` : "…"}</span>
+          <span className="text-muted-foreground">Plants flagged as suspect</span>
+          <span className="tnum">{w.data ? fmt.format(w.data.features.filter((p) => p.supply?.suspect).length) : "…"}</span>
+          <span className="text-muted-foreground">Companies deduplicated (ACA + EEA)</span>
+          <span className="tnum">{c.mergeStats ? fmt.format(c.mergeStats.merged) : c.ied.isError ? "EEA unavailable" : "…"}</span>
+          <span className="text-muted-foreground">Waste/wastewater facilities excluded</span>
+          <span className="tnum">{c.mergeStats ? fmt.format(c.mergeStats.iedExcluded) : "…"}</span>
+          <span className="text-muted-foreground">Permit rows excluded</span>
+          <span className="tnum">{c.data?.excludedCount != null ? fmt.format(c.data.excludedCount) : "…"}</span>
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">Unmatched plants use design flow × 0.6, labelled assumption. Permit exclusions: non-discharge records, water utilities and public bodies.</p>
+      </div>
+      <table className="w-full">
+        <thead>
+          <tr className="text-left text-muted-foreground">
+            <th className="pb-1.5 font-normal">Source</th>
+            <th className="pb-1.5 text-right font-normal">Coverage</th>
+            <th className="pb-1.5 text-right font-normal">Quality</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => {
+            const m = META[r.id] as (typeof META)[SourceId];
+            return (
+              <tr key={r.id} className="border-t align-top">
+                <td className="py-2 pr-2">
+                  <a href={m.url} target="_blank" rel="noreferrer" className="font-medium hover:text-primary">{m.name}</a>
+                  <p className="text-[11px] text-muted-foreground">{m.publisher} · {m.updateFrequency}{r.latest ? ` · data ${r.latest}` : ""}{r.fetched ? ` · fetched ${time(r.fetched)}` : ""}</p>
+                  {r.error && <p className="text-[11px] text-destructive">Could not load</p>}
+                  {"knownIssues" in m && m.knownIssues && <p className="mt-0.5 text-[11px] text-muted-foreground">Known issues: {m.knownIssues.join("; ")}.</p>}
+                </td>
+                <td className="tnum py-2 text-right text-[11px]">{r.coverage ?? "–"}</td>
+                <td className="py-2 text-right"><QualityBadge q={m.quality} /></td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
       <div className="rounded-sm border bg-muted/50 p-3">
         <p className="label-caps mb-1.5">Opportunity score</p>
         <p className="font-mono text-[11px] leading-relaxed">score = min(supply, demand) × (1 + stress) / (1 + distance_km)</p>
-        <ul className="mt-2 space-y-0.5 text-muted-foreground">
-          <li>supply: plant design capacity, m³/day (regeneration plants ×2)</li>
-          <li>demand: sector estimate, m³/day (editable)</li>
-          <li>stress: 1 − average Catalan reservoir fill</li>
-          <li>Normalised to 0-100 across all pairs within the distance limit.</li>
-        </ul>
+        <p className="mt-1 text-muted-foreground">stress = 1 − volume-weighted reservoir fill. Water options use the cost model in settings.</p>
       </div>
-      <ul className="space-y-3">
-        {SOURCES.map((s) => (
-          <li key={s.key} className="border-b pb-3">
-            <div className="flex items-start justify-between gap-2">
-              <a href={s.url} target="_blank" rel="noreferrer" className="font-medium hover:text-primary">{s.name}</a>
-              <Badge variant={s.quality === "measured" ? "secondary" : "outline"} className="h-4 shrink-0 px-1.5 text-[10px]">
-                {s.quality}
-              </Badge>
-            </div>
-            <p className="mt-1 text-muted-foreground">{s.note}</p>
-            <p className="mt-0.5 text-muted-foreground">EU-wide equivalent: {s.euEquivalent}</p>
-          </li>
-        ))}
-      </ul>
-      <p className="text-muted-foreground">All sources are fetched live; data is cached for one hour.</p>
     </div>
   );
 }
@@ -240,12 +290,12 @@ export function Sidebar() {
         <TabsList className="mx-4 mt-3 grid grid-cols-3">
           <TabsTrigger value="layers">Layers</TabsTrigger>
           <TabsTrigger value="opps">Opportunities</TabsTrigger>
-          <TabsTrigger value="about">About the data</TabsTrigger>
+          <TabsTrigger value="about">Data quality</TabsTrigger>
         </TabsList>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <TabsContent value="layers" className="mt-0"><LayersTab /></TabsContent>
           <TabsContent value="opps" className="mt-0"><OpportunitiesTab /></TabsContent>
-          <TabsContent value="about" className="mt-0"><AboutTab /></TabsContent>
+          <TabsContent value="about" className="mt-0"><DataQualityTab /></TabsContent>
         </div>
       </Tabs>
     </aside>
