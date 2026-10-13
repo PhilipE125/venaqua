@@ -139,6 +139,16 @@ export const META = {
     knownIssues: ["Mostly municipalities, not companies", "Located by municipality"],
     euEquivalent: "TED",
   },
+  aqueduct: {
+    id: "aqueduct",
+    name: "Future water stress (Aqueduct 4.0)",
+    publisher: "World Resources Institute",
+    url: "https://www.wri.org/applications/aqueduct/water-risk-atlas/",
+    unitNotes: "Relative change in water stress, 2030 and 2050, business as usual. Used to scale drought frequency.",
+    updateFrequency: "Static",
+    quality: "modelled",
+    knownIssues: ["Rounded basin-level values typed in by hand; verify before use"],
+  },
   demand: {
     id: "demand",
     name: "Sector water demand",

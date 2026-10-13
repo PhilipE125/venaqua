@@ -30,11 +30,6 @@ export function bearingDeg(a: LatLon, b: LatLon) {
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 }
 
-const angDiff = (a: number, b: number) => {
-  const d = Math.abs(a - b) % 360;
-  return d > 180 ? 360 - d : d;
-};
-
 /** Monotone-chain convex hull over [lon, lat] points. */
 export function convexHull(pts: [number, number][]): [number, number][] {
   const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
@@ -71,7 +66,7 @@ export function findClusters(
     const used = new Set<string>();
     for (const seed of near) {
       if (used.has(seed.c.id)) continue;
-      const group = near.filter((x) => !used.has(x.c.id) && angDiff(x.b, seed.b) <= sectorDeg / 2 + 0.0001 && angDiff(x.b, seed.b) >= 0 && x.b >= seed.b - 0.0001 ? true : !used.has(x.c.id) && angDiff(x.b, seed.b) <= sectorDeg / 2 && x.b >= seed.b);
+      const group = near.filter((x) => !used.has(x.c.id) && x.b >= seed.b && x.b - seed.b <= sectorDeg);
       if (group.length < minSize) continue;
       group.forEach((x) => used.add(x.c.id));
       const axis = group.reduce((s, x) => s + x.b, 0) / group.length;
