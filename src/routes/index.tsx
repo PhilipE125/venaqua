@@ -14,10 +14,10 @@ const MapView = lazy(() => import("@/components/map/MapView"));
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Reuse Match · Is reclaimed water cheaper than your tariff?" },
-      { name: "description", content: "Map that matches reclaimed wastewater supply in Catalonia with nearby companies that need water, using live public data." },
-      { property: "og:title", content: "Reuse Match · Is reclaimed water cheaper than your tariff?" },
-      { property: "og:description", content: "Match treatment and regeneration plants with nearby water users, ranked by an opportunity score." },
+      { title: "Reuse Match · Industrial water reuse opportunities" },
+      { name: "description", content: "Find water reuse opportunities across Spain, evaluate project economics and develop a feasibility case with the Reuse Match team." },
+      { property: "og:title", content: "Reuse Match · Industrial water reuse opportunities" },
+      { property: "og:description", content: "Explore supply and buyers, compare water options and turn promising opportunities into validated projects." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

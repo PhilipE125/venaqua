@@ -187,6 +187,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
         ))}
       </div>
 
+      {site.kind === "wwtp" && site.national && <p className="mt-3 border-l-2 border-warning pl-3 text-xs text-muted-foreground">Potential only. {site.reuseReported == null ? "No reuse reported; existing reuse may be missing from public data." : `${fmt1.format(site.reuseReported)}% reuse reported by EEA.`} Firm available supply needs operator confirmation.</p>}
       <div className="mt-3">
         <Answer eyebrow="Answer" big={<>{fmt.format(totalDemand)} <span className="text-sm font-normal text-muted-foreground">m³/day of possible demand</span></>}>
           {buyers.length === 0
@@ -244,24 +245,24 @@ function SiteDetail({ site }: { site: SupplySite }) {
       </Section>
 
       <Details>
-      <ReuseToday regen={regenForSite} />
+      {!(site.kind === "wwtp" && site.national) && <ReuseToday regen={regenForSite} />}
 
       {supply && plant && (
         <Section title="Supply" note="m³/day">
-          <Row k="Design flow" info={<SourceInfo id="wwtp" date={plant.year} />} v={fmt.format(supply.designFlow)} />
+          <Row k={plant.national ? "Capacity-based flow · our estimate" : "Design flow"} info={<SourceInfo id={plant.national ? "eea" : "wwtp"} date={plant.year} />} v={fmt.format(supply.designFlow)} />
           <Row
             k="Actual flow"
-            info={<SourceInfo id="eea" quality={supply.actualQuality} note={supply.actualQuality === "assumption" ? "No EEA match: design flow × 0.6." : `EEA code ${supply.eeaCode}`} date="2022" />}
+            info={<SourceInfo id="eea" quality={supply.actualQuality} note={supply.actualQuality === "assumption" ? plant.national ? "No treated volume: population capacity × 0.2 m³/day." : "No EEA match: design flow × 0.6." : `EEA code ${supply.eeaCode}`} date="2022" />}
             v={<span className="inline-flex items-center gap-1.5"><QualityBadge q={supply.actualQuality} />{fmt.format(supply.actualFlow)}</span>}
           />
           <Row k="How full the plant runs" v={supply.utilisation != null ? `${fmt.format(supply.utilisation * 100)}%` : "–"} />
-          <Row k="Already reused" info={<SourceInfo id="regen" />} v={fmt.format(supply.alreadyReused)} />
+          <Row k="Already reused" info={<SourceInfo id={plant.national ? "eea" : "regen"} />} v={plant.national && plant.reuseReported == null ? "No reuse reported" : fmt.format(supply.alreadyReused)} />
           <Row k="Available reclaimed" v={<span className="font-medium">{fmt.format(supply.availableReclaimed)}</span>} />
           {supply.suspect && <p className="mt-1.5 text-[11px] text-destructive">Suspect value: {supply.suspect}. Excluded from costs.</p>}
         </Section>
       )}
 
-      {plant && supply && (
+      {plant && supply && !plant.national && (
         <Section title="Where this plant's water goes" note="m³/yr">
           <Sankey source={plant.name} flows={plantFlows(supply.actualFlow * 365, supply.actualQuality, regenForSite, plant.receiving)} />
           <p className="mt-1 text-[11px] text-muted-foreground">
@@ -275,7 +276,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
       <Section title="Plant">
         <Row k="Municipality" v={site.municipi} />
         <Row k="Operator" v={site.operator} />
-        <Row k="Design capacity" info={<SourceInfo id={site.kind === "regen" ? "regen" : "wwtp"} />} v={`${fmt.format(site.capacity)} m³/day`} />
+        <Row k={site.kind === "wwtp" && site.national ? "Treated flow" : "Design capacity"} info={<SourceInfo id={site.kind === "regen" ? "regen" : site.national ? "eea" : "wwtp"} />} v={`${fmt.format(site.capacity)} m³/day`} />
         {site.kind === "wwtp" ? (
           <>
             <Row k="Population equivalent" v={fmt.format(site.pe)} />
