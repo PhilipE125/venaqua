@@ -349,7 +349,7 @@ function ComarcaDetail({ comarca }: { comarca: string }) {
       <Section title="Summary">
         <Row k="Treatment plants" v={fmt.format(agg.plants)} />
         <Row k="Regeneration plants" info={<SourceInfo id="regen" />} v={fmt.format(agg.regens)} />
-        <Row k="Treated outflow" info={<SourceInfo id="eea" />} v={`${fmt.format(agg.actual / 1e6 * 10) / 10} Mm³/yr`} />
+        <Row k="Treated outflow" info={<SourceInfo id="eea" />} v={`${fmt1.format(agg.actual / 1e6)} Mm³/yr`} />
         <Row k="Reused" v={`${agg.actual > 0 ? fmt.format((agg.reused / agg.actual) * 100) : 0}%`} />
         <Row k="Companies in plant municipalities" v={fmt.format(agg.companies)} />
         <Row k="Reservoir fill, Catalonia" info={<SourceInfo id="reservoirs" />} v={fill != null ? `${fmt1.format(fill)}%` : "–"} />
