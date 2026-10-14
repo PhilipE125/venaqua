@@ -11,21 +11,23 @@ import { useWorkspace } from "@/lib/workspace";
 
 const money = (v: number) => new Intl.NumberFormat("en", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
 const fields = [
-  { key: "dailyDemand", label: "Water demand · m³/day", initial: "1000", max: 100000000, step: "1" },
+  { key: "dailyDemand", label: "Water demand · m³/day", initial: "50000", max: 100000000, step: "1" },
   { key: "restrictionDays", label: "Restriction days per event", initial: "90", max: 365, step: "1" },
-  { key: "lossPerM3", label: "Lost contribution · €/unmet m³", initial: "10", max: 1000000, step: "0.1" },
+  { key: "lossPerM3", label: "Lost contribution · €/unmet m³", initial: "50", max: 1000000, step: "0.1" },
   { key: "backupPercent", label: "Restricted volume covered by backup · %", initial: "40", max: 100, step: "1" },
   { key: "backupPremium", label: "Extra backup cost · €/m³", initial: "3", max: 1000000, step: "0.1" },
-  { key: "responseCost", label: "One-off response cost · €/event", initial: "2000", max: 1000000000, step: "100" },
+  { key: "responseCost", label: "One-off response cost · €/event", initial: "250000", max: 1000000000, step: "100" },
   { key: "protectedPercent", label: "Demand on independent supply · %", initial: "0", max: 100, step: "1" },
 ] as const;
 type FieldKey = typeof fields[number]["key"];
 const defaults = Object.fromEntries(fields.map((f) => [f.key, f.initial])) as Record<FieldKey, string>;
 const investmentFields = [
-  { key: "reusePercent", label: "Additional demand protected by reuse · %", initial: "50", max: 100, step: "1" },
-  { key: "capital", label: "Installed investment · €", initial: "250000", max: 1000000000, step: "1000" },
-  { key: "operating", label: "Incremental annual running cost · €", initial: "15000", max: 1000000000, step: "100" },
+  { key: "reusePercent", label: "Additional demand protected by reuse · %", initial: "60", max: 100, step: "1" },
+  { key: "capital", label: "Installed investment · €", initial: "8000000", max: 1000000000, step: "1000" },
+  { key: "operating", label: "Incremental annual running cost · €", initial: "600000", max: 1000000000, step: "100" },
   { key: "frequency", label: "Assumed restriction events per year", initial: "0.5", max: 1, step: "0.1" },
+  { key: "waterSales", label: "Annual sales of cleaned water to neighbours · €", initial: "1500000", max: 1000000000, step: "1000" },
+  { key: "energySales", label: "Annual energy sales to neighbours · €", initial: "2500000", max: 1000000000, step: "1000" },
 ] as const;
 type InvestmentKey = typeof investmentFields[number]["key"];
 
