@@ -7,7 +7,7 @@ import { PathStyleExtension } from "@deck.gl/extensions";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Map, { NavigationControl, useControl, type MapRef } from "react-map-gl/maplibre";
-import { eur, fmt1, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useRoadRoute, useSourcing, useWwtps } from "@/lib/queries";
+import { eur, fmt1, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useRiverFlows, useRoadRoute, useSourcing, useWwtps } from "@/lib/queries";
 import { useScenarioState } from "@/lib/state";
 import { buyerStatus, KNOWN_USERS } from "@/lib/knownUsers";
 import { normalize } from "@/lib/sectors";
@@ -132,6 +132,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
   const r = useRegen();
   const c = useCompanies();
   const res = useReservoirs();
+  const riverFlows = useRiverFlows();
   // Federal waterways keyed by gauge uuid (scripts/de-waterways.py); loaded as its own chunk, Germany only.
   const waterways = useQuery({
     queryKey: ["de-waterways"],
@@ -334,6 +335,21 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         getLineColor: [255, 255, 255],
         lineWidthMinPixels: region === "de" ? 1.5 : 2,
         updateTriggers: { getFillColor: [region] },
+        pickable: true,
+      }),
+    // Catalan and French river flow points share the German river colours (orange low, blue normal, navy high).
+    layers.rivers &&
+      region !== "de" &&
+      new ScatterplotLayer<Reservoir>({
+        id: "river-flows",
+        data: riverFlows.data?.features ?? [],
+        getPosition: (d) => [d.lon, d.lat],
+        getRadius: region === "fr" ? 3.5 : 5.5,
+        radiusUnits: "pixels",
+        getFillColor: (d) => riverColor(d.fill),
+        stroked: true,
+        getLineColor: [255, 255, 255],
+        lineWidthMinPixels: 1.2,
         pickable: true,
       }),
     confirmedLinks.length > 0 &&
@@ -555,7 +571,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
               o.kind === "wwtp" ? "Treatment plant" :
               o.kind === "company" ? "Company" :
               o.kind === "regen" ? "Reuse-ready plant" :
-              o.kind === "reservoir" ? (region === "de" ? "River gauge" : "Reservoir") : "";
+              o.kind === "reservoir" ? (region === "de" || (o as { id?: string }).id?.startsWith("river-") ? "River gauge" : "Reservoir") : "";
             const extra = o.kind === "reservoir" ? ` · ${o.note ?? `${o.fill}% full`}` : "";
             setHover.current({ x: info.x, y: info.y, text: `${label ? label + " · " : ""}${o.name}${extra}` });
           }}
@@ -612,6 +628,14 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
                   {Object.values(RIVER_COLORS).map((c) => <span key={c.join()} className="inline-block h-1 w-3 rounded-full" style={{ background: rgb(c) }} />)}
                 </span>
                 River levels from the nearest federal gauge: orange is low, blue is normal, and navy is high.
+              </p>
+            )}
+            {layers.rivers && region !== "de" && (riverFlows.data?.features.length ?? 0) > 0 && (
+              <p className="flex items-center gap-2">
+                <span className="flex shrink-0 items-center gap-1">
+                  {Object.values(RIVER_COLORS).map((c) => <span key={c.join()} className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(c) }} />)}
+                </span>
+                {region === "fr" ? "Stream checks: orange is weak, no flow or dry; blue is flowing." : "River flow vs its 60-day median: orange is low, blue is normal, navy is high."}
               </p>
             )}
             {layers.reservoirs && region !== "de" && (res.data?.features.length ?? 0) > 0 && (

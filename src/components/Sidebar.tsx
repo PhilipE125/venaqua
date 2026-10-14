@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { fmt, fmt1, fmt2, useCompanies, useFlipTable, useDrought, useEea, useMatches, usePrat, useProjects, useRegen, useReservoirHistory, useReservoirs, useTenders, useWwtps } from "@/lib/queries";
+import { fmt, fmt1, fmt2, useCompanies, useFlipTable, useDrought, useEea, useMatches, usePrat, useProjects, useRegen, useReservoirHistory, useReservoirs, useRiverFlows, useTenders, useWwtps } from "@/lib/queries";
 import { SECTORS, sectorById, type SectorId } from "@/lib/sectors";
 import { META, type SourceId } from "@/lib/sources/contract";
 import { QualityBadge, SourceInfo } from "./SourceInfo";
@@ -97,6 +97,7 @@ function LayersTab() {
   const r = useRegen();
   const c = useCompanies();
   const res = useReservoirs();
+  const rf = useRiverFlows();
   const t = useTenders();
   const pr = useProjects();
   return (
@@ -116,6 +117,11 @@ function LayersTab() {
         ))}
       </LayerRow>
       {spain && <FutureLayers />}
+      {region !== "de" && <LayerRow k="rivers" title={region === "fr" ? "Rivers (field flow checks)" : "Rivers (live flow, Catalonia)"} q={rf} count={rf.data?.features.length}>
+        <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.low} />{region === "fr" ? "Weak, none or dry" : "Low flow"}</span>
+        <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.normal} />{region === "fr" ? "Flowing" : "Normal"}</span>
+        {region !== "fr" && <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.high} />High flow</span>}
+      </LayerRow>}
       {region !== "fr" && <LayerRow k="reservoirs" title={region === "de" ? "Rivers (live gauge levels)" : "Reservoirs"} q={res} count={res.data?.features.length}>
         {region === "de" ? (
           <>

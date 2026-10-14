@@ -30,3 +30,4 @@
 - The Explorer starts from CALM_LAYERS in src/lib/state.tsx and keeps stress-horizon/pipe toggles in app state (shown in the Layers tab, Spain only) — keeps the first view quiet and removes floating panels.
 - Clicking a company opens SourcingPanel (five buyer questions); the chosen supply plant is per-company scenario state read by useSupplyPlant, so panel, map and full cost-benefit always use the same plant — prevents the views disagreeing.
 - The sourcing panel's build-or-connect, risk and footprint logic lives in pure modules (screening.ts, footprint.ts) and candidate rows use evaluateCandidate — keeps panel, list and cost-benefit numbers identical and testable.
+- River flow points (ACA Catalonia, ONDE France) live in src/lib/sources/rivers.ts, normalised to the PEGELONLINE gauge shape and shown as a separate "rivers" layer; they are context only and never feed scores or costs — keeps one river colour scale across countries without changing calculations.

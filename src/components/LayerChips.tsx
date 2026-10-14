@@ -17,6 +17,7 @@ export function LayerChips() {
           {spain && <label className="flex cursor-pointer items-center justify-between gap-2"><span><span className="block text-sm font-medium">Illustrative pipe layout</span><span className="text-[11px] text-muted-foreground">Sketch, not real routes · town zoom</span></span><Switch checked={showPipes} onCheckedChange={setShowPipes} /></label>}
           {spain && <label className="flex cursor-pointer items-center justify-between gap-2"><span><span className="block text-sm font-medium">Signed reuse contracts</span><span className="text-[11px] text-muted-foreground">Catalan procurement projects</span></span><Switch checked={layers.projects} onCheckedChange={() => toggleLayer("projects")} /></label>}
           {region === "de" && <label className="flex cursor-pointer items-center justify-between gap-2"><span className="text-sm font-medium">River gauges</span><Switch checked={layers.reservoirs} onCheckedChange={() => toggleLayer("reservoirs")} /></label>}
+          {region !== "de" && <label className="flex cursor-pointer items-center justify-between gap-2"><span><span className="block text-sm font-medium">River flow now</span><span className="text-[11px] text-muted-foreground">{region === "fr" ? "ONDE field checks" : "ACA gauges · Catalonia"}</span></span><Switch checked={layers.rivers} onCheckedChange={() => toggleLayer("rivers")} /></label>}
           <p className="text-[11px] text-muted-foreground">Road routes appear for the selected site.</p>
         </PopoverContent>
       </Popover>
