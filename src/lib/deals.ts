@@ -141,4 +141,4 @@ export function toTeaser(d: Deal) {
 }
 
 export const formatEur = (v: number | null) =>
-  v == null ? "—" : v >= 1e9 ? `€${(v / 1e9).toFixed(1)}bn` : v >= 1e6 ? `€${(v / 1e6).toFixed(1)}M` : `€${Math.round(v / 1e3)}k`;
+  v == null ? "-" : v >= 1e9 ? `€${(v / 1e9).toFixed(1)}bn` : v >= 1e6 ? `€${(v / 1e6).toFixed(1)}M` : `€${Math.round(v / 1e3)}k`;

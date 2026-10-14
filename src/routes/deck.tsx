@@ -72,7 +72,7 @@ function Deck() {
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.5);
   const go = (n: number) => navigate({ search: { slide: Math.min(2, Math.max(1, n)) }, replace: true });
-  useEffect(() => { document.title = `${slide}/2 — Venaqua deck`; }, [slide]);
+  useEffect(() => { document.title = `${slide}/2: Venaqua deck`; }, [slide]);
   useEffect(() => {
     const el = box.current; if (!el) return;
     const ro = new ResizeObserver(([e]) => { if (e) setScale(Math.min(e.contentRect.width / 1920, e.contentRect.height / 1080)); });

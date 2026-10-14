@@ -62,11 +62,11 @@ export function FuturePanel({ inputs }: { inputs: FutureInputs }) {
         <Slider min={START} max={END} step={1} value={[year]} onValueChange={([v]) => setYear(v ?? 2035)} />
         <div className="tnum grid grid-cols-3 gap-2 text-xs">
           <div><p className="label-caps">A by {year}</p><p>{eurK(row["A"]!)}</p></div>
-          <div><p className="label-caps">B by {year}</p><p>{row["B"] != null ? eurK(row["B"]) : "–"}</p></div>
+          <div><p className="label-caps">B by {year}</p><p>{row["B"] != null ? eurK(row["B"]) : "-"}</p></div>
           <div><p className="label-caps">C by {year}</p><p>{eurK(row["C"]!)}</p></div>
         </div>
         <p className="text-[11px] text-muted-foreground">
-          In {year}: tariff {fmt1.format(f.tariffFor(year))} €/m³, expected supply cut {fmt1.format(f.cutFor(year) * 100)}% (historic drought frequency 2008–2025 × climate factor {fmt1.format(climateFactor(year))}).
+          In {year}: tariff {fmt1.format(f.tariffFor(year))} €/m³, expected supply cut {fmt1.format(f.cutFor(year) * 100)}% (historic drought frequency 2008-2025 × climate factor {fmt1.format(climateFactor(year))}).
         </p>
       </div>
     </div>

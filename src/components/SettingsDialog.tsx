@@ -15,7 +15,7 @@ const CITATIONS: { label: string; url: string }[] = [
   { label: "INE table 01003, 2022: water supply and sewerage €/m³, Spain and Catalonia", url: "https://www.ine.es/jaxi/files/_px/csv_bd/t26/p069/p03/l0/serie/01003.csv" },
   { label: "OFB/SISPEA 2025: average water price in France, 1 Jan 2024", url: "https://www.ofb.gouv.fr/sites/default/files/Fichiers/Presse/CP_SISPEA_2025_VF.pdf" },
   { label: "ZfK 2024: water and sewerage charges, Baden-Württemberg", url: "https://www.zfk.de/wasser-abwasser/wasser/ba-wue-wassergebuehren-steigen-staerker-als-die-inflation" },
-  { label: "Iglesias et al. 2017, Water Sci. Technol.: MBR and reclamation capex 700–1,250 € per m³/day at 8–15k m³/day (smaller industrial plants cost more)", url: "https://www.thembrsite.com/features/cost-comparison-of-full-scale-water-reclamation-technologies-with-an-emphasis-on-membrane-bioreactors" },
+  { label: "Iglesias et al. 2017, Water Sci. Technol.: MBR and reclamation capex 700-1,250 € per m³/day at 8-15k m³/day (smaller industrial plants cost more)", url: "https://www.thembrsite.com/features/cost-comparison-of-full-scale-water-reclamation-technologies-with-an-emphasis-on-membrane-bioreactors" },
   { label: "Echevarría et al. 2022, Sci. Total Environ.: UF/RO polishing of municipal effluent for industry, Barcelona", url: "https://doi.org/10.1016/j.scitotenv.2021.152842" },
   { label: "Calle et al. 2023, npj Clean Water: reclaimed-water network construction costs, Catalonia", url: "https://www.nature.com/articles/s41545-023-00222-4" },
   { label: "Hilbig et al. 2020, J. Water Reuse Desal.: modular cost functions for industrial reuse", url: "https://iwaponline.com/jwrd/article/10/4/419/77806/Economic-evaluation-of-different-treatment-options" },

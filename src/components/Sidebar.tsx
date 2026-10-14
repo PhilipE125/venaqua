@@ -324,7 +324,7 @@ function DataQualityTab() {
   const dr = useDrought();
   const t = useTenders();
   const pr = useProjects();
-  const pct = (a: number, b: number) => (b > 0 ? `${fmt.format((a / b) * 100)}%` : "–");
+  const pct = (a: number, b: number) => (b > 0 ? `${fmt.format((a / b) * 100)}%` : "-");
   const time = (n: number) => (n > 0 ? new Date(n).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "…");
   const rows: { id: SourceId; fetched: number; latest?: string | undefined; coverage?: string | undefined; error?: boolean }[] = [
     { id: "wwtp", fetched: w.dataUpdatedAt, latest: w.data?.latestDataDate, coverage: w.data ? `${fmt.format(w.data.features.length)} / ${fmt.format(w.data.fetchedCount ?? 0)}` : undefined, error: w.isError },
@@ -378,7 +378,7 @@ function DataQualityTab() {
                   {r.error && <p className="text-[11px] text-destructive">Could not load</p>}
                   {"knownIssues" in m && m.knownIssues && <p className="mt-0.5 text-[11px] text-muted-foreground">Known issues: {m.knownIssues.join("; ")}.</p>}
                 </td>
-                <td className="tnum py-2 text-right text-[11px]">{r.coverage ?? "–"}</td>
+                <td className="tnum py-2 text-right text-[11px]">{r.coverage ?? "-"}</td>
                 <td className="py-2 text-right"><QualityBadge q={m.quality} /></td>
               </tr>
             );

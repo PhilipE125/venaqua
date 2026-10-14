@@ -35,7 +35,7 @@ export function TopBar() {
         </DropdownMenuContent>
       </DropdownMenu>
       {!user && <FreePill onSignup={() => setAuthOpen(true)} />}
-      {!user && <><Button variant="ghost" size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button><Button size="sm" onClick={() => setAuthOpen(true)}><span className="hidden sm:inline">Get started — full version</span><span className="sm:hidden">Get started</span></Button></>}
+      {!user && <><Button variant="ghost" size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button><Button size="sm" onClick={() => setAuthOpen(true)}><span className="hidden sm:inline">Get full access</span><span className="sm:hidden">Get started</span></Button></>}
     </div>
     <ExportDialog open={exportOpen} onOpenChange={setExportOpen} />
     <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />

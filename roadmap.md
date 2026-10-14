@@ -1,4 +1,7 @@
 # Roadmap — iteration 3 (clarity + five questions)
+## Website wording cleanup
+- [x] Remove long dashes from visible copy and make sentences natural; preserve facts, prices and logic; browser-verified six public pages with no page errors
+
 - [x] A1 question bar + mode presets
 - [x] A2 answer-first cards, collapsible details
 - [x] A3/A4 plain words, quality labels

@@ -31,10 +31,10 @@ export const Route = createFileRoute("/deal-flow")({
   }),
   head: () => ({
     meta: [
-      { title: "Venaqua · Reuse Pipeline — water reuse deals in Spain" },
+      { title: "Venaqua · Reuse Pipeline: water reuse deals in Spain" },
       { name: "description", content: "Filter sourced, scored wastewater-reuse tenders, programmes and projects across Spain, with value, volume, deadlines and sources." },
       { property: "og:title", content: "Venaqua Reuse Pipeline" },
-      { property: "og:description", content: "Sourced, scored water reuse deals in Spain — from first signal to tender." },
+      { property: "og:description", content: "Sourced, scored water reuse deals in Spain: from first signal to tender." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -105,7 +105,7 @@ function DealFlow() {
                 <div key={l} className="rounded-xl border bg-card p-4"><p className="label-caps">{l}</p><p className="tnum mt-1 text-xl font-semibold">{v}</p></div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">Values have different bases — budget, award, announced, estimate. Hover a value to see its basis.</p>
+            <p className="mt-2 text-xs text-muted-foreground">Values may be budgets, awarded amounts, announced figures or estimates. Each value includes its basis.</p>
 
             <div className="mt-6 grid gap-6 lg:grid-cols-[260px_1fr]">
               <aside className="space-y-4 text-xs">
@@ -141,8 +141,8 @@ function DealFlow() {
                             <tr key={d.id} className="cursor-pointer border-b last:border-0 hover:bg-muted/50" onClick={() => set({ deal: d.id })}>
                               <td className="px-3 py-2.5 font-medium">{d.name}</td><td className="px-3 py-2.5 text-muted-foreground">{d.region}</td>
                               <td className="px-3 py-2.5 text-muted-foreground">{KIND_LABELS[d.kind]}</td><td className="px-3 py-2.5">{STAGE_LABELS[d.stage]}</td>
-                              <td className="tnum px-3 py-2.5" title={VALUE_BASIS[d.value_basis]}>{formatEur(d.value_eur)}</td><td className="tnum px-3 py-2.5">{d.volume_hm3 ?? "—"}</td>
-                              <td className={`tnum px-3 py-2.5 ${n == null ? "text-muted-foreground" : n < 0 ? "text-muted-foreground line-through" : n <= 30 ? "font-medium text-destructive" : ""}`}>{d.deadline ?? "—"}</td>
+                              <td className="tnum px-3 py-2.5" title={VALUE_BASIS[d.value_basis]}>{formatEur(d.value_eur)}</td><td className="tnum px-3 py-2.5">{d.volume_hm3 ?? "-"}</td>
+                              <td className={`tnum px-3 py-2.5 ${n == null ? "text-muted-foreground" : n < 0 ? "text-muted-foreground line-through" : n <= 30 ? "font-medium text-destructive" : ""}`}>{d.deadline ?? "-"}</td>
                               <td className="px-3 py-2.5"><span className={`tnum rounded-full px-2 py-0.5 text-xs font-semibold ${scoreClass(d.opportunity_score)}`}>{Math.round(d.opportunity_score)}</span></td>
                             </tr>); })}</tbody>
                         </table>
@@ -186,15 +186,15 @@ function DealSheet({ deal: d, onClose }: { deal?: Deal | undefined; onClose: () 
             {([
               ["Buyer", d.buyer], ["Water users", d.offtakers], ["Deal model", d.deal_model],
               ["Value", `${formatEur(d.value_eur)} · ${VALUE_BASIS[d.value_basis]}`], ["Volume", d.volume_hm3 != null ? `${d.volume_hm3} hm³/yr · ${d.volume_basis}` : "Unknown"],
-              ["Deadline", d.deadline ?? "—"], ["Follow-on expected", d.follow_on_expected ? "Yes" : "No"],
+              ["Deadline", d.deadline ?? "-"], ["Follow-on expected", d.follow_on_expected ? "Yes" : "No"],
               ["Scope", d.scope.map((s) => SCOPE_LABELS[s]).join(", ")], ["Sectors", d.offtaker_sectors.map((s) => SECTOR_LABELS[s]).join(", ")],
-            ] as const).map(([k, v]) => <div key={k}><dt className="label-caps">{k}</dt><dd className="mt-0.5">{v || "—"}</dd></div>)}
+            ] as const).map(([k, v]) => <div key={k}><dt className="label-caps">{k}</dt><dd className="mt-0.5">{v || "-"}</dd></div>)}
           </dl>
           <div className="mt-6 rounded-xl border p-4">
             <div className="flex items-baseline justify-between"><p className="label-caps">Opportunity score</p><span className="tnum text-2xl font-semibold">{Math.round(d.opportunity_score)}</span></div>
             <div className="mt-3 space-y-1.5">{(Object.keys(SCORE_LABELS) as (keyof typeof SCORE_LABELS)[]).map((k) => { const v = d[`score_${k}` as keyof Deal] as number; return (
               <div key={k} className="grid grid-cols-[1fr_90px_16px] items-center gap-2 text-xs"><span>{SCORE_LABELS[k]}</span><span className="h-1.5 rounded-full bg-muted"><span className="block h-full rounded-full bg-primary" style={{ width: `${(v / 5) * 100}%` }} /></span><span className="tnum text-right">{v}</span></div>); })}</div>
-            <p className="mt-3 text-[11px] text-muted-foreground">Analyst judgement, 1–5. Weights: reuse impact 25%, buyers 20%, funding 15%, timing 15%, margin 15%, water stress 10%.</p>
+            <p className="mt-3 text-[11px] text-muted-foreground">Analyst judgement, 1-5. Weights: reuse impact 25%, buyers 20%, funding 15%, timing 15%, margin 15%, water stress 10%.</p>
           </div>
           {d.notes && <p className="mt-4 text-sm">{d.notes}</p>}
           <p className="label-caps mt-5">Sources</p>

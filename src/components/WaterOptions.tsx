@@ -42,7 +42,7 @@ function RangeBars({ rows, tariff, max }: { rows: { key: string; label: string; 
               <div
                 className={`absolute top-0 h-4 rounded-sm ${r.best ? "bg-primary" : "bg-foreground/35"}`}
                 style={{ left: x(r.perM3[0]), width: `max(3px, calc(${x(r.perM3[1])} - ${x(r.perM3[0])}))` }}
-                title={`${fmt2.format(r.perM3[0])}–${fmt2.format(r.perM3[1])} €/m³`}
+                title={`${fmt2.format(r.perM3[0])}-${fmt2.format(r.perM3[1])} €/m³`}
               />
             </div>
           </div>
@@ -65,7 +65,7 @@ function RangeBars({ rows, tariff, max }: { rows: { key: string; label: string; 
   );
 }
 
-const fmtR = (r: Range, f: (n: number) => string) => (Math.abs(r[0] - r[1]) < 1e-9 ? f(r[0]) : `${f(r[0])}–${f(r[1])}`);
+const fmtR = (r: Range, f: (n: number) => string) => (Math.abs(r[0] - r[1]) < 1e-9 ? f(r[0]) : `${f(r[0])}-${f(r[1])}`);
 
 export function WaterOptions({ company, focus = "all", view = "economics", onSummary }: { company: Company; focus?: Mode; view?: "overview" | "economics"; onSummary?: ((p: OpportunitySnapshot) => void) | undefined }) {
   const { settings, demandOverride, setDemandOverride, select, region } = useApp();
@@ -123,8 +123,8 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
   }, [Q, local, tariffShock, elec, settings, candidate, elev.data, road.data, phase, replay, events, effluent, dischargePct]);
 
   const { A, B, C } = calc;
-  const deliveredCost = B ? `€${fmt2.format(B.perM3[0])}–${fmt2.format(B.perM3[1])}/m³` : "No connection identified";
-  const savings = calc.cheapest === "A" ? "No saving under current assumptions" : `${eurK(Math.max(0, A.annualCost[0] - (calc.cheapest === "B" && B ? B.annualCost[1] : C.annualCost[1])))}–${eurK(Math.max(0, A.annualCost[1] - (calc.cheapest === "B" && B ? B.annualCost[0] : C.annualCost[0])))} / year`;
+  const deliveredCost = B ? `€${fmt2.format(B.perM3[0])}-${fmt2.format(B.perM3[1])}/m³` : "No connection identified";
+  const savings = calc.cheapest === "A" ? "No saving under current assumptions" : `${eurK(Math.max(0, A.annualCost[0] - (calc.cheapest === "B" && B ? B.annualCost[1] : C.annualCost[1])))}-${eurK(Math.max(0, A.annualCost[1] - (calc.cheapest === "B" && B ? B.annualCost[0] : C.annualCost[0])))} / year`;
   const verdict = calc.cheapest === "A" ? "Keep mains water for now: alternatives do not beat your current cost under these assumptions." : `Potential savings with ${calc.cheapest === "B" ? "a recycled-water connection" : "on-site reuse"}; firm demand and engineering costs need validation.`;
   useEffect(() => { onSummary?.({ id: company.id, kind: "company", name: company.name, location: company.municipi, plant: candidate?.p.name ?? "", buyer: company.name, volume: Q / 365, distance: candidate?.d ?? null, confidence: userQ != null ? "Needs user confirmation · demand supplied by you" : "Estimated demand · modelled economics", blocker: "Demand, water quality and final pipe route are not validated.", nextAction: "Confirm annual demand and water-quality requirements with the site team.", cost: deliveredCost, value: savings, verdict }); }, [onSummary, company.id, company.name, company.municipi, candidate?.p.name, candidate?.d, Q, userQ, deliveredCost, savings, verdict]);
   if (w.isLoading || !w.data) return <Skeleton className="h-60 w-full" />;
@@ -146,7 +146,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
         big={B ? (B.perM3[1] < calc.tariff + inputs0(local, dischargePct) ? "Yes" : B.perM3[0] < calc.tariff + inputs0(local, dischargePct) ? "Maybe" : "Not yet") : "No"}
       >
         {B && candidate
-          ? `${candidate.p.name}, ${fmt1.format(calc.distanceKm)} km away, could supply ${fmt.format(B.coverage * 100)}% of your water for €${fmt2.format(B.perM3[0])}–${fmt2.format(B.perM3[1])}/m³, against €${fmt2.format(A.perM3[0])} today.`
+          ? `${candidate.p.name}, ${fmt1.format(calc.distanceKm)} km away, could supply ${fmt.format(B.coverage * 100)}% of your water for €${fmt2.format(B.perM3[0])}-${fmt2.format(B.perM3[1])}/m³, against €${fmt2.format(A.perM3[0])} today.`
           : `No plant with spare recycled water within ${SEARCH_KM} km.`}
         {confidence}
       </Answer>
@@ -154,7 +154,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
       <Answer eyebrow="Economic outlook" big={calc.cheapest === "A" ? "Keep mains water for now" : `Cheapest: ${names[calc.cheapest as "B" | "C"]}`}>
         {calc.cheapest === "A"
           ? "Neither recycled water nor on-site reuse beats your current bill under these assumptions."
-          : `Saves about ${eurK(Math.max(0, saving[0]!))}–${eurK(Math.max(0, saving[1]!))} a year compared with today.`}
+          : `Saves about ${eurK(Math.max(0, saving[0]!))}-${eurK(Math.max(0, saving[1]!))} a year compared with today.`}
         {confidence}
       </Answer>
     );
@@ -179,7 +179,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
       <div className="border-y py-4">
         <p className="label-caps flex items-center gap-1.5">Opportunity cost of waiting <SourceInfo id="costs" quality="modelled" /></p>
         <p className="tnum mt-1 text-2xl font-medium">
-          {calc.opp[1] <= 0 ? "None" : `${eurK(Math.max(0, calc.opp[0]))}–${eurK(calc.opp[1])}`}
+          {calc.opp[1] <= 0 ? "None" : `${eurK(Math.max(0, calc.opp[0]))}-${eurK(calc.opp[1])}`}
           <span className="ml-1 text-sm font-normal text-muted-foreground">/ yr</span>
         </p>
         <p className="mt-0.5 text-[11px] text-muted-foreground">
@@ -189,7 +189,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
 
       <div className="mt-3">
         <RangeBars rows={rows} tariff={calc.tariff} max={max} />
-        <p className="text-[11px] text-muted-foreground">Effective € per m³ of demand, low–high. Line = today's tariff{tariffShock !== "0" ? ` +${tariffShock}%` : ""}.</p>
+        <p className="text-[11px] text-muted-foreground">Effective € per m³ of demand, from low to high. The line shows today's tariff{tariffShock !== "0" ? ` +${tariffShock}%` : ""}.</p>
       </div>
 
       <Details label="What if… adjust scenarios"><div className="mt-4 space-y-3">
@@ -241,12 +241,12 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
           </tr>
         </thead>
         <tbody className="tnum">
-          <tr className="border-t"><td className="py-1.5 text-muted-foreground">€ per m³</td><td className="text-right">{fmtR(A.perM3, fmt2.format)}</td><td className="text-right">{B ? fmtR(B.perM3, fmt2.format) : "–"}</td><td className="text-right">{fmtR(C.perM3, fmt2.format)}</td></tr>
-          <tr className="border-t"><td className="py-1.5 text-muted-foreground">Annual cost</td><td className="text-right">{fmtR(A.annualCost, eurK)}</td><td className="text-right">{B ? fmtR(B.annualCost, eurK) : "–"}</td><td className="text-right">{fmtR(C.annualCost, eurK)}</td></tr>
-          <tr className="border-t"><td className="py-1.5 text-muted-foreground">Capex</td><td className="text-right">–</td><td className="text-right">{B ? fmtR(B.capex, eurK) : "–"}</td><td className="text-right">{fmtR(C.capex, eurK)}</td></tr>
-          <tr className="border-t"><td className="py-1.5 text-muted-foreground">Payback, yr</td><td className="text-right">–</td><td className="text-right">{B?.payback ? fmtR(B.payback, (n) => (Number.isFinite(n) ? fmt1.format(n) : "never")) : "never"}</td><td className="text-right">{C.payback ? fmtR(C.payback, (n) => (Number.isFinite(n) ? fmt1.format(n) : "never")) : "never"}</td></tr>
+          <tr className="border-t"><td className="py-1.5 text-muted-foreground">€ per m³</td><td className="text-right">{fmtR(A.perM3, fmt2.format)}</td><td className="text-right">{B ? fmtR(B.perM3, fmt2.format) : "-"}</td><td className="text-right">{fmtR(C.perM3, fmt2.format)}</td></tr>
+          <tr className="border-t"><td className="py-1.5 text-muted-foreground">Annual cost</td><td className="text-right">{fmtR(A.annualCost, eurK)}</td><td className="text-right">{B ? fmtR(B.annualCost, eurK) : "-"}</td><td className="text-right">{fmtR(C.annualCost, eurK)}</td></tr>
+          <tr className="border-t"><td className="py-1.5 text-muted-foreground">Capex</td><td className="text-right">-</td><td className="text-right">{B ? fmtR(B.capex, eurK) : "-"}</td><td className="text-right">{fmtR(C.capex, eurK)}</td></tr>
+          <tr className="border-t"><td className="py-1.5 text-muted-foreground">Payback, yr</td><td className="text-right">-</td><td className="text-right">{B?.payback ? fmtR(B.payback, (n) => (Number.isFinite(n) ? fmt1.format(n) : "never")) : "never"}</td><td className="text-right">{C.payback ? fmtR(C.payback, (n) => (Number.isFinite(n) ? fmt1.format(n) : "never")) : "never"}</td></tr>
           {calc.lossA > 0 && (
-            <tr className="border-t"><td className="py-1.5 text-muted-foreground">Drought loss</td><td className="text-right">{eurK(calc.lossA)}</td><td className="text-right">{B ? eurK(calc.lossB) : "–"}</td><td className="text-right">{eurK(calc.lossC)}</td></tr>
+            <tr className="border-t"><td className="py-1.5 text-muted-foreground">Drought loss</td><td className="text-right">{eurK(calc.lossA)}</td><td className="text-right">{B ? eurK(calc.lossB) : "-"}</td><td className="text-right">{eurK(calc.lossC)}</td></tr>
           )}
         </tbody>
       </table>
@@ -271,7 +271,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
         )}
         <p className="label-caps pt-2">C · on-site reuse</p>
         <p className="text-muted-foreground">
-          Recycles {fmt.format(settings.recoveryRate[0] * 100)}–{fmt.format(settings.recoveryRate[1] * 100)}% of demand. On-site reuse cuts both purchased water and discharge: a double saving.
+          Recycles {fmt.format(settings.recoveryRate[0] * 100)}-{fmt.format(settings.recoveryRate[1] * 100)}% of demand. On-site reuse cuts both purchased water and discharge: a double saving.
         </p>
       </div>
 

@@ -11,7 +11,7 @@ export const Route = createFileRoute("/platform")({
       { title: "Venaqua · Platform" },
       { name: "description", content: "Source, risk and proof for industrial water: what is live in Venaqua today, what is in beta and what is coming." },
       { property: "og:title", content: "Venaqua · Platform" },
-      { property: "og:description", content: "The neutral system of record for industrial water — every module with its real status and every number with its source." },
+      { property: "og:description", content: "Explore Venaqua’s industrial-water tools, with clear availability labels and sources for every figure." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

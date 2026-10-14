@@ -144,7 +144,7 @@
      "url": "https://www.elnacional.cat/oneconomia/es/empresas/aitasa-amplia-planta-regeneracion-agua-industria-quimica-tarragona_1636594_102.html"
     }
    ],
-   "notes": "Reclaimed water = 18–19% of AITASA supply; path to 40%; 12.6 hm³ supplied in 2024",
+   "notes": "Reclaimed water = 18-19% of AITASA supply; path to 40%; 12.6 hm³ supplied in 2024",
    "score_reuse_impact": 4,
    "score_offtaker": 5,
    "score_funding": 4,
@@ -161,7 +161,7 @@
   },
   {
    "id": "ES-009",
-   "name": "Huelva chemical pole – industrial regeneration plant (greenfield)",
+   "name": "Huelva chemical pole: industrial regeneration plant (greenfield)",
    "kind": "private_opportunity",
    "stage": "signal",
    "region": "Andalucía",
@@ -265,7 +265,7 @@
   },
   {
    "id": "ES-021",
-   "name": "Aragón data-centre campuses – reclaimed cooling water",
+   "name": "Aragón data-centre campuses: reclaimed cooling water",
    "kind": "private_opportunity",
    "stage": "signal",
    "region": "Aragón",
@@ -463,7 +463,7 @@
   },
   {
    "id": "ES-015",
-   "name": "EPSAR plan – 21 tertiary systems",
+   "name": "EPSAR plan: 21 tertiary systems",
    "kind": "programme",
    "stage": "planning",
    "region": "Comunitat Valenciana",
@@ -561,7 +561,7 @@
   },
   {
    "id": "ES-022",
-   "name": "Madrid data-centre corridor – reclaimed water supply",
+   "name": "Madrid data-centre corridor: reclaimed water supply",
    "kind": "private_opportunity",
    "stage": "signal",
    "region": "Comunidad de Madrid",
@@ -610,7 +610,7 @@
   },
   {
    "id": "ES-007",
-   "name": "Andalusia strategy – Almería tertiaries (El Bobar, El Toyo, Vera, Mojácar, Huércal-Overa, Cuevas)",
+   "name": "Andalusia strategy: Almería tertiaries (El Bobar, El Toyo, Vera, Mojácar, Huércal-Overa, Cuevas)",
    "kind": "programme",
    "stage": "planning",
    "region": "Andalucía",
@@ -725,7 +725,7 @@
     "agriculture",
     "municipal_green"
    ],
-   "buyer": "Gobierno de Canarias – DG Aguas",
+   "buyer": "Gobierno de Canarias: DG Aguas",
    "offtakers": "Primary sector irrigation, green areas",
    "deal_model": "EPC works",
    "value_eur": 14195881,
@@ -809,7 +809,7 @@
   },
   {
    "id": "ES-024",
-   "name": "Canal de Isabel II – Arroyo Culebro industrial water + hydrogen",
+   "name": "Canal de Isabel II: Arroyo Culebro industrial water + hydrogen",
    "kind": "project",
    "stage": "operating",
    "region": "Comunidad de Madrid",
@@ -907,7 +907,7 @@
   },
   {
    "id": "ES-019",
-   "name": "Parc Sagunt II – reuse supply for other industrial tenants",
+   "name": "Parc Sagunt II: reuse supply for other industrial tenants",
    "kind": "private_opportunity",
    "stage": "signal",
    "region": "Comunitat Valenciana",
@@ -1070,7 +1070,7 @@
     "agriculture"
    ],
    "buyer": "Municipalities / concession holders",
-   "offtakers": "—",
+   "offtakers": "-",
    "deal_model": "Consulting",
    "value_eur": null,
    "value_basis": "unknown",
@@ -1102,7 +1102,7 @@
   },
   {
    "id": "ES-020",
-   "name": "Cartagena Escombreras – reclaimed water for hydrogen and industry",
+   "name": "Cartagena Escombreras: reclaimed water for hydrogen and industry",
    "kind": "private_opportunity",
    "stage": "signal",
    "region": "Región de Murcia",
@@ -1151,7 +1151,7 @@
   },
   {
    "id": "ES-023",
-   "name": "Talavera de la Reina – data-centre water",
+   "name": "Talavera de la Reina: data-centre water",
    "kind": "private_opportunity",
    "stage": "signal",
    "region": "Castilla-La Mancha",
@@ -1199,7 +1199,7 @@
   },
   {
    "id": "ES-025",
-   "name": "Aena airports in stressed areas – ultrafiltered water lines (replicate Málaga)",
+   "name": "Aena airports in stressed areas: ultrafiltered water lines (replicate Málaga)",
    "kind": "private_opportunity",
    "stage": "signal",
    "region": "Multiple",
@@ -1247,7 +1247,7 @@
   },
   {
    "id": "ES-003",
-   "name": "Artà EDAR upgrade – project drafting (reuse-ready)",
+   "name": "Artà EDAR upgrade: project drafting (reuse-ready)",
    "kind": "tender",
    "stage": "awarded",
    "region": "Illes Balears",
@@ -1312,7 +1312,7 @@
     "municipal_green",
     "environmental"
    ],
-   "buyer": "Promedio – Diputación de Badajoz",
+   "buyer": "Promedio: Diputación de Badajoz",
    "offtakers": "Pilot garden irrigation",
    "deal_model": "Small works",
    "value_eur": 99999,

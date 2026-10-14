@@ -62,7 +62,7 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
       <DialogContent className="max-h-[90dvh] w-[calc(100%-24px)] max-w-4xl gap-4 overflow-y-auto rounded-md p-5 sm:p-6">
         <DialogHeader className="pr-5 text-left">
           <DialogTitle>Commercial drought-cost outlook</DialogTitle>
-          <DialogDescription>Could water reuse protect your operations—and justify an infrastructure investment?</DialogDescription>
+          <DialogDescription>Could water reuse protect your operations and make an infrastructure investment worthwhile?</DialogDescription>
         </DialogHeader>
         <section className="border-b pb-4">
           <p className="text-xs font-medium text-primary">Resilience as an investment case</p>
@@ -75,7 +75,7 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {fields.map((f) => <label key={f.key} className="text-xs font-medium" htmlFor={`drought-${f.key}`}>{f.label}<Input id={`drought-${f.key}`} type="number" min="0" max={f.max} step={f.step} className="mt-1.5 tnum" value={values[f.key]} onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))} aria-invalid={values[f.key].trim() === "" || !Number.isFinite(Number(values[f.key])) || Number(values[f.key]) < 0 || Number(values[f.key]) > f.max} /></label>)}
           </div>
-          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">Lost contribution is margin lost per unmet m³, not turnover or the water tariff. Backup cost is incremental to normal supply. Independent supply is assumed available and legally usable during drought—not guaranteed by reuse status.</p>
+          <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">Lost contribution is margin lost per unmet m³, not turnover or the water tariff. Backup cost is incremental to normal supply. This assumes independent supply is available and legally usable during drought. Reuse status alone does not guarantee this.</p>
         </section>
         {!valid && <p role="alert" className="text-xs text-destructive">Enter non-negative numbers within the displayed limits; percentages up to 100 and restriction days up to 365.</p>}
         {event && <section className="grid grid-cols-2 gap-3 border-b pb-4 sm:grid-cols-4" aria-label="Emergency event cost breakdown">
@@ -84,11 +84,11 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
         </section>}
         <section className="border-b pb-4" aria-label="Reuse investment comparison">
           <h3 className="text-sm font-medium">What could investing in reuse change?</h3>
-          <p className="mt-1 text-[11px] text-muted-foreground">Illustrative project inputs—not supplier quotes. Protected demand means additional supply that remains available, fit for purpose and permitted during restrictions.</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">These project inputs are illustrative, not supplier quotes. Protected demand means additional supply that remains available, fit for purpose and permitted during restrictions.</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {investmentFields.map(f => <label key={f.key} htmlFor={`reuse-${f.key}`} className="text-xs font-medium">{f.label}<Input id={`reuse-${f.key}`} type="number" min="0" max={f.max} step={f.step} className="mt-1.5 tnum" value={investment[f.key]} onChange={e => setInvestment(v => ({ ...v, [f.key]: e.target.value }))} aria-invalid={investment[f.key].trim() === "" || !Number.isFinite(Number(investment[f.key])) || Number(investment[f.key]) < 0 || Number(investment[f.key]) > f.max} /></label>)}
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">0.5 events/year means one event every two years on average—your assumption, not a forecast. Running cost is net of normal supply costs displaced.</p>
+          <p className="mt-2 text-[11px] text-muted-foreground">0.5 events/year means one event every two years on average. This is your assumption, not a forecast. Running cost is net of normal supply costs displaced.</p>
           <div className="my-3 flex flex-wrap gap-2" role="group" aria-label="Investment restriction scenario">
             {DROUGHT_COST_SCENARIOS.map(s => <Button key={s.id} size="sm" variant={scenarioId === s.id ? "secondary" : "outline"} aria-pressed={scenarioId === s.id} onClick={() => setScenarioId(s.id)}>{s.label}</Button>)}
           </div>
@@ -127,18 +127,18 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {DROUGHT_COST_SCENARIOS.map((s) => <Button key={s.id} variant={visible.includes(s.id) ? "secondary" : "outline"} aria-pressed={visible.includes(s.id)} className="h-auto items-start justify-start gap-2 whitespace-normal px-3 py-2 text-left" onClick={() => setVisible((v) => v.includes(s.id) ? v.filter((id) => id !== s.id) : [...v, s.id])}>
               <span className={s.id === "contained" ? "mt-1 h-5 w-1 shrink-0 bg-chart-1" : s.id === "prolonged" ? "mt-1 h-5 w-1 shrink-0 bg-chart-3" : "mt-1 h-5 w-1 shrink-0 bg-chart-4"} />
-              <span className="min-w-0"><span className="block text-xs font-medium">{s.label}</span><span className="block text-[11px] font-normal text-muted-foreground">{s.cut * 100}% cut · {s.durationGrowth ? `duration +${s.durationGrowth * 100}%/year` : "unchanged duration"}</span><span className="mt-1 block text-xs tnum">{valid ? `${money(droughtEventCost(inputs, s.cut, restrictionDaysAt(inputs.restrictionDays, s.durationGrowth, ahead)).total)} · ${year}` : "—"}</span></span>
+              <span className="min-w-0"><span className="block text-xs font-medium">{s.label}</span><span className="block text-[11px] font-normal text-muted-foreground">{s.cut * 100}% cut · {s.durationGrowth ? `duration +${s.durationGrowth * 100}%/year` : "unchanged duration"}</span><span className="mt-1 block text-xs tnum">{valid ? `${money(droughtEventCost(inputs, s.cut, restrictionDaysAt(inputs.restrictionDays, s.durationGrowth, ahead)).total)} · ${year}` : "-"}</span></span>
             </Button>)}
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">Sensitivity assumptions, not predictions: 15% or 25% cuts are historical industrial benchmarks. Future event duration stays constant or compounds by 2% or 5% per year, capped at 365 days. Unit losses and backup costs stay fixed; inflation, fines and reuse investment costs are excluded.</p>
         </section>
         <section className="border-t pt-4">
           <h3 className="flex items-center gap-2 text-sm font-medium">Past real drought restrictions in Spain <SourceInfo id="droughtCases" /></h3>
-          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">Two documented Catalan episodes—not a national history or rules for every business sector. Costs below replay those industrial cuts using your same duration and site inputs; they are not recorded historical losses.</p>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">These are two documented Catalan episodes, not a national history. The rules do not apply to every business sector. Costs below replay those industrial cuts using your same duration and site inputs; they are not recorded historical losses.</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {SPANISH_DROUGHT_CASES.map((c) => <article key={c.id} className="rounded-md border p-3">
               <p className="text-[11px] text-muted-foreground">{c.period} · documented restriction</p><h4 className="mt-1 text-sm font-medium">{c.name}</h4><p className="mt-1 text-[11px] text-muted-foreground">{c.area}</p>
-              <div className="my-3 flex flex-wrap items-baseline justify-between gap-2"><span className="text-xl font-semibold tnum">{c.industrialCut * 100}% <span className="text-xs font-normal">industrial cut</span></span><span className="text-sm font-medium tnum">{valid ? money(droughtEventCost(inputs, c.industrialCut).total) : "—"}<span className="block text-[10px] font-normal text-muted-foreground">Your estimated event cost</span></span></div>
+              <div className="my-3 flex flex-wrap items-baseline justify-between gap-2"><span className="text-xl font-semibold tnum">{c.industrialCut * 100}% <span className="text-xs font-normal">industrial cut</span></span><span className="text-sm font-medium tnum">{valid ? money(droughtEventCost(inputs, c.industrialCut).total) : "-"}<span className="block text-[10px] font-normal text-muted-foreground">Your estimated event cost</span></span></div>
               <p className="text-[11px] leading-relaxed text-muted-foreground">{c.note}</p><a href={c.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1 text-xs text-primary">Official source <ExternalLink className="h-3 w-3" /></a>
             </article>)}
           </div>
