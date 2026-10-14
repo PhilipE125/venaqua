@@ -4,6 +4,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
 import { IconLayer, PathLayer, PolygonLayer, ScatterplotLayer } from "@deck.gl/layers";
 import { PathStyleExtension } from "@deck.gl/extensions";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Map, { NavigationControl, useControl, type MapRef } from "react-map-gl/maplibre";
 import { eur, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useWwtps } from "@/lib/queries";
@@ -12,7 +13,7 @@ import { normalize } from "@/lib/sectors";
 import { sectorById } from "@/lib/sectors";
 import { useApp } from "@/lib/state";
 import type { Company, Plant, RegenPlant, Reservoir, ReuseProject } from "@/lib/types";
-import { LEVEL_COLORS, REGEN_COLOR, fillColor, rgb } from "./colors";
+import { LEVEL_COLORS, REGEN_COLOR, RIVER_COLORS, fillColor, riverColor, rgb } from "./colors";
 import droughtData from "@/data/drought-comarques.json";
 import { predictPipes, type PipeSeg } from "@/lib/pipes";
 
@@ -121,6 +122,21 @@ export default function MapView() {
   const r = useRegen();
   const c = useCompanies();
   const res = useReservoirs();
+  // Federal waterways keyed by gauge uuid (scripts/de-waterways.py); loaded as its own chunk, Germany only.
+  const waterways = useQuery({
+    queryKey: ["de-waterways"],
+    queryFn: () => import("@/data/de-waterways.json").then((m) => m.default as unknown as Record<string, [number, number][][]>),
+    staleTime: Infinity,
+    enabled: region === "de",
+  });
+  const rivers = useMemo(() => {
+    if (region !== "de" || !waterways.data) return [];
+    const out: { path: [number, number][]; gauge: Reservoir }[] = [];
+    for (const g of res.data?.features ?? []) {
+      for (const path of waterways.data[g.id.replace(/^gauge-/, "")] ?? []) out.push({ path, gauge: g });
+    }
+    return out;
+  }, [region, waterways.data, res.data]);
   const { matches, siteById, companyById } = useMatches();
   const setHover = useRef<(h: Hover) => void>(() => {});
   const [scale, setScale] = useState(() => zoomScale((camera ?? VIEWS[region]).zoom));
@@ -253,17 +269,20 @@ export default function MapView() {
         lineWidthMinPixels: 1.5,
         pickable: true,
       }),
+    // In Germany the river colour carries the level; gauge dots only appear once zoomed in.
     layers.reservoirs &&
+      (region !== "de" || scale >= 0.7) &&
       new ScatterplotLayer<Reservoir>({
         id: "reservoirs",
         data: res.data?.features ?? [],
         getPosition: (d) => [d.lon, d.lat],
-        getRadius: 9,
+        getRadius: region === "de" ? 4 : 9,
         radiusUnits: "pixels",
-        getFillColor: (d) => fillColor(d.fill),
+        getFillColor: (d) => (region === "de" ? riverColor(d.fill) : fillColor(d.fill)),
         stroked: true,
         getLineColor: [255, 255, 255],
-        lineWidthMinPixels: 2,
+        lineWidthMinPixels: region === "de" ? 1.5 : 2,
+        updateTriggers: { getFillColor: [region] },
         pickable: true,
       }),
     confirmedLinks.length > 0 &&
@@ -310,6 +329,31 @@ export default function MapView() {
         },
         pickable: true,
         updateTriggers: { getRadius: [arcCompanyIds, selection], getFillColor: [arcCompanyIds, selectedSite, confirmed, dark], getLineColor: [arcCompanyIds, selectedSite] },
+      }),
+    layers.reservoirs &&
+      rivers.length > 0 &&
+      new PathLayer<(typeof rivers)[number]>({
+        id: "rivers-casing",
+        data: rivers,
+        getPath: (d) => d.path,
+        getColor: dark ? [20, 20, 20, 220] : [255, 255, 255, 230],
+        getWidth: 7,
+        widthUnits: "pixels",
+        capRounded: true,
+        jointRounded: true,
+      }),
+    layers.reservoirs &&
+      rivers.length > 0 &&
+      new PathLayer<(typeof rivers)[number]>({
+        id: "rivers",
+        data: rivers,
+        getPath: (d) => d.path,
+        getColor: (d) => riverColor(d.gauge.fill),
+        getWidth: 4,
+        widthUnits: "pixels",
+        capRounded: true,
+        jointRounded: true,
+        pickable: true,
       }),
     layers.wwtp &&
       new ScatterplotLayer<Plant>({
@@ -389,6 +433,8 @@ export default function MapView() {
           onHover={(info) => {
             const st = info.object as { kind?: string; name?: string; risk?: Record<string, number> } | undefined;
             if (st?.kind === "stress" && st.risk && stressYear) return setHover.current({ x: info.x, y: info.y, text: `${st.name} · stress index ${Math.round(st.risk[stressYear] ?? 0)} in ${stressYear}` });
+            const river = info.object as { gauge?: Reservoir } | undefined;
+            if (river?.gauge) return setHover.current({ x: info.x, y: info.y, text: `${river.gauge.name} · ${river.gauge.note} at the nearest gauge` });
             const raw = info.object as { name?: string; kind?: string; fill?: number; note?: string; g?: RegenPlant; buyer?: string; object?: string } | undefined;
             const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
             const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
@@ -397,7 +443,7 @@ export default function MapView() {
               o.kind === "wwtp" ? "Treatment plant" :
               o.kind === "company" ? "Company" :
               o.kind === "regen" ? "Reuse-ready plant" :
-              o.kind === "reservoir" ? "Reservoir" : "";
+              o.kind === "reservoir" ? (region === "de" ? "River gauge" : "Reservoir") : "";
             const extra = o.kind === "reservoir" ? ` · ${o.note ?? `${o.fill}% full`}` : "";
             setHover.current({ x: info.x, y: info.y, text: `${label ? label + " · " : ""}${o.name}${extra}` });
           }}
@@ -453,7 +499,15 @@ export default function MapView() {
             Signed reclaimed-water contract.
           </p>
         )}
-        {layers.reservoirs && (
+        {layers.reservoirs && region === "de" && (
+          <p className="flex items-center gap-2">
+            <span className="flex shrink-0 items-center gap-1">
+              {Object.values(RIVER_COLORS).map((c) => <span key={c.join()} className="inline-block h-1 w-3 rounded-full" style={{ background: rgb(c) }} />)}
+            </span>
+            River — colour = level at the nearest federal gauge: orange low, blue normal, navy high water.
+          </p>
+        )}
+        {layers.reservoirs && region !== "de" && (res.data?.features.length ?? 0) > 0 && (
           <p className="flex items-center gap-2">
             <span className="flex shrink-0 items-center gap-1">
               <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(15)) }} />

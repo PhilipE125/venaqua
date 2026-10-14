@@ -14,7 +14,7 @@ import { SECTORS, sectorById, type SectorId } from "@/lib/sectors";
 import { META, type SourceId } from "@/lib/sources/contract";
 import { QualityBadge } from "./SourceInfo";
 import { useApp, type LayerKey } from "@/lib/state";
-import { LEVEL_COLORS, REGEN_COLOR, fillColor, rgb } from "./map/colors";
+import { LEVEL_COLORS, REGEN_COLOR, RIVER_COLORS, fillColor, rgb } from "./map/colors";
 
 function Dot({ color, ring }: { color: [number, number, number]; ring?: boolean }) {
   return (
@@ -93,10 +93,20 @@ function LayersTab() {
           <span key={s.id} className="flex items-center gap-1.5"><Dot color={s.color} />{s.label}</span>
         ))}
       </LayerRow>
-      <LayerRow k="reservoirs" title={region === "de" ? "River gauges" : region === "fr" ? "Reservoirs (none in France)" : "Reservoirs"} q={res} count={res.data?.features.length}>
-        <span className="flex items-center gap-1.5"><Dot color={fillColor(10)} />&lt;30%</span>
-        <span className="flex items-center gap-1.5"><Dot color={fillColor(45)} />30-60%</span>
-        <span className="flex items-center gap-1.5"><Dot color={fillColor(80)} />&gt;60%</span>
+      <LayerRow k="reservoirs" title={region === "de" ? "Rivers (live gauge levels)" : region === "fr" ? "Reservoirs (none in France)" : "Reservoirs"} q={res} count={res.data?.features.length}>
+        {region === "de" ? (
+          <>
+            <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.low} />Low water</span>
+            <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.normal} />Normal</span>
+            <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.high} />High water</span>
+          </>
+        ) : (
+          <>
+            <span className="flex items-center gap-1.5"><Dot color={fillColor(10)} />&lt;30%</span>
+            <span className="flex items-center gap-1.5"><Dot color={fillColor(45)} />30-60%</span>
+            <span className="flex items-center gap-1.5"><Dot color={fillColor(80)} />&gt;60%</span>
+          </>
+        )}
       </LayerRow>
       <LayerRow k="tenders" title="Tenders" q={t} count={t.data?.tenders.length}>
         <span>Reuse and treatment tenders in Spain (TED)</span>
