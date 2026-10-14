@@ -89,3 +89,4 @@
 - [x] Own-plant risk and liability: residual mains exposure made explicit, on-site feed coupling added as an editable assumption with tests (Philip, 13:35)
 - [x] Redesign the uploaded pitch deck to the platform's visual design, content, structure and outline unchanged; delivered as .pptx and .pdf in Files (Adwoa, 13:35)
 - [x] Reorder the modules: 1 Future water costs, 2 Connect or build, 3 Share cost, 4 Find buyers, 5 Find supply, wording kept, numbering updated (Niamh, 13:44)
+- [ ] Brand kit for Adwoa: platform colour codes (hex), font list, and wordmark + icon PNGs (13:56)
