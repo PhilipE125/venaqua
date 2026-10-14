@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useState } from "react";
-import { X } from "lucide-react";
-import { useWorkspace } from "@/lib/workspace";
+import { lazy, Suspense } from "react";
 import { Drawer } from "@/components/Drawer";
-import { CompanySearch, QuestionBar } from "@/components/Landing";
+import { CompanySearch } from "@/components/Landing";
+import { ModuleBar } from "@/components/ModuleBar";
+import { ResultsPanel } from "@/components/ResultsPanel";
+import { LayerChips } from "@/components/LayerChips";
 import { Sidebar } from "@/components/Sidebar";
 import { StressStrip } from "@/components/StressStrip";
 import { TopBar } from "@/components/TopBar";
@@ -30,22 +31,6 @@ function MapFallback() {
   return <div className="h-full w-full animate-pulse bg-muted" />;
 }
 
-const BANNER_KEY = "venaqua:free-banner-dismissed";
-function FreeMapBanner() {
-  const { user, setAuthOpen } = useWorkspace();
-  const [dismissed, setDismissed] = useState(true);
-  useEffect(() => { setDismissed(localStorage.getItem(BANNER_KEY) === "1"); }, []);
-  if (user || dismissed) return null;
-  const close = () => { localStorage.setItem(BANNER_KEY, "1"); setDismissed(true); };
-  return (
-    <div className="pointer-events-auto absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-card/95 py-1 pl-3 pr-1.5 text-xs shadow-md backdrop-blur">
-      <span className="text-muted-foreground">Free map</span>
-      <button className="font-medium text-primary hover:underline" onClick={() => setAuthOpen(true)}>Save projects with an account</button>
-      <button aria-label="Dismiss" className="rounded-full p-1 text-muted-foreground hover:text-foreground" onClick={close}><X className="h-3.5 w-3.5" /></button>
-    </div>
-  );
-}
-
 function Index() {
   return (
       <TooltipProvider delayDuration={200}>
@@ -58,8 +43,9 @@ function Index() {
                   <MapView />
                 </Suspense>
               </ClientOnly>
-              <FreeMapBanner />
-              <QuestionBar />
+              <ModuleBar />
+              <ResultsPanel />
+              <LayerChips />
               <Sidebar />
               <StressStrip />
               <Drawer />

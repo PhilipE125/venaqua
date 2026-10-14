@@ -57,3 +57,9 @@
 ## Pricing product clarity
 - [x] Remove internal badge wording, group Deal File / Deal Flow as a solution family, and give each product a distinct enquiry
 - [x] Align descriptions with implemented features and distinguish proposed deal-flow automation; pricing, three enquiry prompts and free-map link browser-verified with no runtime errors or smaller-screen overflow
+
+# Deck-aligned map (five modules)
+- [x] Module bar 1–5 replacing the dropdown; results panel ranked by €/m³ vs alternative with flip year; two layer chips + More layers; header free-map pill; warm deck palette with orange flip accent
+- [ ] Site panel reordered by deck (answer → options → Treatment/Location/Rules levers → supply risk → route → exports)
+- [ ] Landing/platform in deck order with module links into /explore; pricing export names
+- [ ] Stress strip as one compact expandable chip

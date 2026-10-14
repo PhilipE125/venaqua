@@ -30,7 +30,8 @@ export const MODE_PRESETS: Record<Mode, Record<LayerKey, boolean>> = {
   q3: { wwtp: false, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
   q4: { wwtp: true, regen: true, companies: false, reservoirs: true, tenders: false, projects: true, clusters: true },
   q5: { wwtp: false, regen: true, companies: true, reservoirs: true, tenders: false, projects: false, clusters: false },
-  all: { wwtp: true, regen: true, companies: true, reservoirs: true, tenders: true, projects: true, clusters: true },
+  // No module selected = calm neutral explore view (same as the first load).
+  all: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
 };
 // Calm first view: plants first; companies fade in once zoomed in; extras stay off until switched on.
 export const CALM_LAYERS: Record<LayerKey, boolean> = { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false
