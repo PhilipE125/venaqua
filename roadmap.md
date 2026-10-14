@@ -43,6 +43,6 @@
 - [x] Six tests pass; browser verified Now, Hide, graph, scenario toggles and invalid-price validation at 949×693; build OK
 
 ## Commercial drought-cost outlook
-- [ ] Replace purchase-price outlook with restriction-cost scenarios and editable commercial exposure assumptions
-- [ ] Compare with sourced past Spanish restrictions, without inventing observed business losses
-- [ ] Test cost arithmetic and verify the map dialog end to end
+- [x] Replace purchase-price outlook with restriction-cost scenarios and editable commercial exposure assumptions
+- [x] Compare with sourced 2023/2024 Catalan industrial restrictions in Spain, without inventing observed business losses
+- [x] Nine tests pass; browser-verified editable totals, graph, scenario toggles, validation, historical cases and close; build OK
