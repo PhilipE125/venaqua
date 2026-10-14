@@ -187,3 +187,50 @@ export const AUDIENCES: { icon: AudienceIcon; title: string; text: string; acces
 /** Label for any sample / demo record shown on the site. */
 export const SAMPLE_LABEL = "Sample — illustrative";
 
+
+// Positioning against the categories reviewers compare us with. Categories, not named brands — we only state what each category typically does.
+export const LANDSCAPE_POSITION = {
+  eyebrow: "Where Venaqua fits",
+  title: "Others track projects, own the pipes or map the risk. Nobody sits in the middle.",
+  intro: "A reuse project needs a plant owner, an industrial buyer, a funder, a builder and an authority to agree on the same numbers. Each existing tool serves one of them. Venaqua is the shared, neutral screen they can all use.",
+  columns: ["Market-intelligence databases", "Utilities’ in-house teams", "Water-risk maps", "Public map viewers", "Venaqua"],
+  rows: [
+    { q: "Matches a specific plant with specific buyers", v: ["—", "Own plants only", "—", "—", "Every plant, every site"] },
+    { q: "Cost per m³ vs the alternative, and the year it flips", v: ["—", "Internal", "—", "—", "Per site, editable"] },
+    { q: "Neutral: trusted by buyer, seller and funder", v: ["Yes", "No — a party to the deal", "Yes", "Yes", "Yes, flat prices, no success fees"] },
+    { q: "Permit and funding route per project", v: ["Partial", "Internal", "—", "Permits only", "Built into every Investment Case"] },
+    { q: "Industrial sites can start for free", v: ["—", "—", "Yes", "Yes", "Yes, the free map"] },
+  ],
+  note: "Comparison by category, based on what these tools typically offer; individual products vary.",
+};
+
+// Why the product gets harder to copy over time.
+export const MOAT = [
+  { title: "Confirmed site data", text: "Every customer who confirms a demand figure or adds a private site makes the next screening better. That data never exists in public viewers or analyst reports.", status: "live" as ModuleStatus },
+  { title: "A record of how deals actually move", text: "Each tracked deal keeps its history from first signal to tender: which permits took how long, which funding was used, what stalled. That history is what turns screening into forecasting.", status: "live" as ModuleStatus },
+  { title: "The neutral position", text: "Utilities can't be neutral about their own plants; consultancies are paid per project. A flat-price screen every party trusts is a position, not a feature, and it compounds with every party that joins.", status: "live" as ModuleStatus },
+  { title: "Verified m³ replaced", text: "Meter-backed records of freshwater replaced, checkable by auditors and lenders — the step from screening to proof.", status: "coming" as ModuleStatus },
+];
+
+// Working with incumbents rather than against them.
+export const PARTNERS = {
+  title: "Built to work with the big players, not to replace them",
+  points: [
+    { who: "Utilities and operators", text: "Use Venaqua to find industrial buyers for plants they already run — and to show authorities a neutral case, rather than their own." },
+    { who: "Analysts and data providers", text: "License our per-site Spain reuse layer through the Data API instead of building it from scratch." },
+    { who: "Engineering and research teams", text: "Start feasibility studies from a screened shortlist with costs, routes and permits already laid out." },
+  ],
+};
+
+// The big picture. Ambition, clearly labelled as such.
+export const AMBITION = {
+  eyebrow: "Where this goes",
+  title: "The neutral market layer for Europe’s reused water.",
+  text: "Today: Spain, with Catalonia as the pilot. Every layer is built on EU-wide sources, so the same screen can open in any European region as water stress spreads north. The aim is for reused water to be found, priced, permitted and proven the way electricity is traded — with Venaqua as the shared ground every party trusts.",
+  steps: [
+    { when: "Now", what: "Spain screened site by site; Catalonia pilot with live drought data" },
+    { when: "Next", what: "Portugal, Italy, southern France — same EU sources, same model" },
+    { when: "Then", what: "Verified m³ replaced, accepted by lenders, insurers and auditors" },
+  ],
+  label: "Ambition, not a forecast.",
+};

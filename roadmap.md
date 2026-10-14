@@ -60,6 +60,6 @@
 
 # Deck-aligned map (five modules)
 - [x] Module bar 1–5 replacing the dropdown; results panel ranked by €/m³ vs alternative with flip year; two layer chips + More layers; header free-map pill; warm deck palette with orange flip accent
-- [ ] Site panel reordered by deck (answer → options → Treatment/Location/Rules levers → supply risk → route → exports)
-- [ ] Landing/platform in deck order with module links into /explore; pricing export names
-- [ ] Stress strip as one compact expandable chip
+- [x] Site card answers first (route, €/m³ vs alternative, flip year) with locked exports; full analysis page regroup still open
+- [x] Landing: five-module section linking into the map, positioning table, harder-to-copy, partners, ambition; pricing export names still open
+- [x] Stress strip as one compact expandable chip

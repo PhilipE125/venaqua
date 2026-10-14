@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { SourceInfo } from "./SourceInfo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -75,10 +77,21 @@ function RestrictionStrip({ withSelection }: { withSelection: boolean }) {
   );
 }
 
+// One compact chip by default; expands to the full strip.
 export function StressStrip() {
   const { selection, region } = useApp();
-  if (region === "de") return <GaugeStrip withSelection={!!selection} />;
-  if (region === "fr") return <RestrictionStrip withSelection={!!selection} />;
+  const [open, setOpen] = useState(false);
+  const res = useReservoirHistory();
+  if (!open) {
+    const last = res.data?.series.at(-1); const first = res.data?.series[0];
+    const label = region === "de" ? "River gauges now" : region === "fr" ? "Drought restrictions now" : last && first ? `Reservoirs ${last.value.toFixed(1)}% · ${(last.value - first.value).toFixed(1)} pt in 90 days${region === "es" ? " · Catalonia" : ""}` : "Water stress now";
+    return <button onClick={() => setOpen(true)} className={`panel map-context pointer-events-auto absolute bottom-16 left-5 z-10 flex h-8 items-center gap-1.5 rounded-full px-3 text-xs shadow-map-panel ${selection ? "with-selection" : ""}`}><span className="tnum">{label}</span><ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /></button>;
+  }
+  return <div onDoubleClick={() => setOpen(false)}><button aria-label="Collapse water stress" onClick={() => setOpen(false)} className="panel pointer-events-auto absolute bottom-[140px] left-5 z-20 rounded-full p-1 shadow-map-panel"><ChevronDown className="h-3.5 w-3.5" /></button><StressBody region={region} selection={!!selection} /></div>;
+}
+function StressBody({ region, selection }: { region: string; selection: boolean }) {
+  if (region === "de") return <GaugeStrip withSelection={selection} />;
+  if (region === "fr") return <RestrictionStrip withSelection={selection} />;
   return <CatalanStrip />;
 }
 
