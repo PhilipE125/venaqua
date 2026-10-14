@@ -96,8 +96,8 @@ function CatalanStrip() {
       <div className="flex flex-col justify-center">
         <p className="label-caps">Water stress now</p>
         <p className="text-[11px] text-muted-foreground">{region === "es" ? "Live data: Catalonia only" : "Catalonia, internal basins"}</p>
-        <div className="mt-1"><WaterPricePanel horizon={ahead} /></div>
       </div>
+      <div className="flex items-center border-l pl-4"><WaterPricePanel horizon={ahead} /></div>
       <div className="flex min-w-0 items-center gap-3 border-l pl-4">
         <div>
           <p className="flex items-center gap-1 text-[11px] text-muted-foreground">Reservoir fill, volume-weighted <SourceInfo id="reservoirs" date={last?.date} /></p>
