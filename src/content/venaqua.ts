@@ -15,47 +15,49 @@ export type Plan = {
   popular?: boolean;
 };
 
+// Max three paid options: two deal-flow products and one data product. The free map is a footnote, not a plan.
 export const PLANS: Plan[] = [
   {
-    name: "Free Explorer",
-    price: "Free",
-    for: "Anyone exploring water-reuse opportunities",
-    features: ["Public map", "Basic filters", "Compact public opportunity previews", "Water-stress and source visibility"],
-    cta: "Explore the map",
-    href: "/explore",
-  },
-  {
-    name: "Market Access",
+    name: "Deal Flow",
     price: "From €12,000/year",
-    for: "Advisors and developers screening opportunities in one market",
-    features: ["Advanced reuse searches", "Saved searches", "Full opportunity cards", "Up to 10 active opportunities", "Standard analysis briefs", "Basic team workspace"],
+    for: "Advisors, developers and engineering teams sourcing and qualifying reuse opportunities",
+    features: [
+      "Market Access — one market, up to 10 active opportunities (from €12,000/year)",
+      "Development Portfolio — reuse pipeline, up to 25 opportunities, alerts (€30,000–45,000/year)",
+      "Full opportunity cards and economics",
+      "Project stages, owners and evidence logs",
+      "Professional decision briefs",
+    ],
     cta: "Book a demo",
-    topic: "Booking a demo — Market Access",
-  },
-  {
-    name: "Development Portfolio",
-    price: "€30,000–45,000/year",
+    topic: "Booking a demo — Deal Flow",
     popular: true,
-    for: "Engineering teams, operators and industrial associations managing a development pipeline",
-    features: ["Everything in Market Access", "Reuse pipeline workspace", "Up to 25 active opportunities", "Project stages, owners, tasks and evidence logs", "Tender, permit, drought and data-change alerts", "Comparable-project intelligence", "Professional decision briefs"],
-    cta: "Talk to the team",
-    topic: "Talk to the team — Development Portfolio",
   },
   {
-    name: "Asset Intelligence",
+    name: "Deal File",
+    price: "Scoped per project",
+    for: "Teams that need one opportunity worked up for an internal or investor decision",
+    features: [
+      "Indicative feasibility pack for one opportunity",
+      "Supply, demand, route and economics ranges",
+      "Drought-cost and payback scenarios",
+      "Open questions for engineering review",
+      "Not an engineering design",
+    ],
+    cta: "Request a Deal File",
+    topic: "Deal File request",
+  },
+  {
+    name: "Data & API",
     price: "€60,000–100,000/year",
-    for: "Operators and planning teams managing private asset and demand data",
-    features: ["Everything in Development Portfolio", "Portfolio dashboard", "Private data layers", "Custom scoring", "Controlled project rooms", "API and export options"],
-    cta: "Design your workspace",
-    topic: "Design your workspace — Asset Intelligence",
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    for: "Multi-region operators, agencies and infrastructure teams",
-    features: ["Multi-region access", "Integrations", "SSO", "Security and governance", "Custom data products"],
-    cta: "Contact Venaqua",
-    topic: "Enterprise enquiry",
+    for: "Operators, agencies and platforms plugging Venaqua data into their own tools",
+    features: [
+      "Normalised plant, demand and stress layers",
+      "Export and API access",
+      "Private data layers and custom scoring",
+      "Enterprise: multi-region, SSO and integrations — custom pricing",
+    ],
+    cta: "Talk to the team",
+    topic: "Data / API enquiry",
   },
 ];
 
