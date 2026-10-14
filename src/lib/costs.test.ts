@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { crf, droughtLoss, evaluateOptions, opportunityCost, optionA, optionB, optionC, pumpingKWhPerM3, supplyCostPerM3, type CostInputs } from "./costs";
+import { crf, droughtLoss, evaluateOptions, onSiteProtection, opportunityCost, optionA, optionB, optionC, pumpingKWhPerM3, supplyCostPerM3, type CostInputs } from "./costs";
 import { FUTURE_START, projectFuture } from "./projection";
 import { eeaJoinKey } from "./sources/eea";
 import { DEFAULT_SETTINGS } from "./state";
@@ -56,6 +56,14 @@ describe("opportunity cost and drought", () => {
   it("drought loss shrinks with protected share", () => {
     expect(droughtLoss(1000, 0.25, 5)).toBe(1250);
     expect(droughtLoss(1000, 0.25, 5, 0.5)).toBe(625);
+  });
+  it("an on-site plant protects less than its recovery rate when its feed falls with the cut", () => {
+    expect(onSiteProtection(0.6, 0)).toBeCloseTo(0.6);
+    expect(onSiteProtection(0.6, 0.5)).toBeCloseTo(0.3);
+    expect(onSiteProtection(0.6, 1)).toBe(0);
+    expect(onSiteProtection(0.6, 2)).toBe(0);
+    expect(onSiteProtection(1.5, 0)).toBeCloseTo(1);
+    expect(droughtLoss(1000, 0.25, 5, onSiteProtection(0.6, 0.5))).toBeCloseTo(875);
   });
   it("counts days per phase in a year", () => {
     const d = phaseDaysInYear([{ date: "2022-12-01", phase: "alert" }, { date: "2023-07-02", phase: "emergency" }], 2023);

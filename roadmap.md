@@ -81,6 +81,11 @@
 - [x] Water sourcing panel, data additions A-C, model changes 1-3, sourcing map mode
 - [ ] Optional D: river flow near the site (not built)
 
-- [ ] Live river layers: Catalonia ACA flow (hprm-xuw7) and France Hub'Eau ONDE on the map (brief: river-data upload)
+- [x] Live river layers: Catalonia ACA flow (hprm-xuw7) and France Hub'Eau ONDE on the map (brief: river-data upload)
 - [x] Restore the full right-hand plant panel (supply volume and plant statistics) when a treatment plant is clicked
 - [ ] Make river and water flows clearly visible on the map in every region, as a follow-up to the river layers
+- [x] Rename the five modules to the buyer/supply/connect/share-cost/future-cost wording (map bar, landing cards, results panel)
+- [x] Remove "Live" status labels site-wide; everything shown is simply available
+- [x] Own-plant risk and liability: residual mains exposure made explicit, on-site feed coupling added as an editable assumption with tests (Philip, 13:35)
+- [x] Redesign the uploaded pitch deck to the platform's visual design, content, structure and outline unchanged; delivered as .pptx and .pdf in Files (Adwoa, 13:35)
+- [x] Reorder the modules: 1 Future water costs, 2 Connect or build, 3 Share cost, 4 Find buyers, 5 Find supply, wording kept, numbering updated (Niamh, 13:44)

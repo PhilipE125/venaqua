@@ -12,7 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { crf, defaultEffluent, droughtLoss, EFFLUENT, mid, pumpingKWhPerM3, type Range } from "@/lib/costs";
+import { crf, defaultEffluent, droughtLoss, EFFLUENT, mid, onSiteProtection, pumpingKWhPerM3, type Range } from "@/lib/costs";
 import { droughtRecordLabel, GROWTH, historicFrequencies, projectFuture } from "@/lib/projection";
 import { evaluateCandidate, type CompanyEvalInput } from "@/lib/companyEval";
 import { comarcaKey, footprint, mainsShare, type Choice } from "@/lib/footprint";
@@ -170,7 +170,8 @@ export function SourcingPanel({ company }: { company: Company }) {
 
   // Exposure per option, used by the summary line and the risk matrix.
   const cols = useMemo(() => {
-    const list: { key: Choice; protect: number; mains: number }[] = [{ key: "status", protect: 0, mains: 1 }, { key: "own", protect: recovery, mains: 1 - recovery }];
+    const ownProtect = onSiteProtection(recovery, settings.ownFeedCoupling);
+    const list: { key: Choice; protect: number; mains: number }[] = [{ key: "status", protect: 0, mains: 1 }, { key: "own", protect: ownProtect, mains: 1 - recovery }];
     if (B) list.push({ key: "connect", protect: B.coverage, mains: 1 - B.coverage });
     if (shared) list.push({ key: "shared", protect: shared.coverage, mains: 1 - shared.coverage });
     return list.map((c) => {
@@ -183,7 +184,7 @@ export function SourcingPanel({ company }: { company: Company }) {
   const col = (k: Choice) => cols.find((c) => c.key === k);
 
   const lossWhy = `Uses €${fmt.format(settings.valuePerM3Lost)} lost per m³ cut and the cut per phase, both settings`;
-  const assumptionCount = 9 + (userQ == null ? 1 : 0);
+  const assumptionCount = 10 + (userQ == null ? 1 : 0);
   const dataCount = 2 + (selected ? 1 : 0) + (road.data ? 1 : 0) + (heightM != null ? 1 : 0);
 
   return (
@@ -225,6 +226,7 @@ export function SourcingPanel({ company }: { company: Company }) {
               k: ({ pipeCostPerKm: "Pipe cost €/km", polishing: "Polishing €/m³", reclaimedPrice: "Reclaimed-water price €/m³", onsiteCapex: "On-site capex € per m³/day", recoveryRate: "Recovery rate" })[k],
               v: <RangeEdit value={settings[k]} onSave={(x) => setSettings({ ...settings, [k]: x })} />, q: "assumption" as const, src: "costs" as SourceId,
             })),
+            { k: "On-site output cut with mains", v: <NumEdit value={settings.ownFeedCoupling} onSave={(x) => setSettings({ ...settings, ownFeedCoupling: Math.min(1, Math.max(0, x)) })} />, q: "assumption" as const, src: "costs" as SourceId },
             { k: "Scale exponent", v: <NumEdit value={settings.onsiteScaleExponent} onSave={(x) => setSettings({ ...settings, onsiteScaleExponent: Math.min(1, Math.max(0.4, x)) })} />, q: "assumption", src: "costs" },
             { k: "Value lost per m³ cut", v: <NumEdit value={settings.valuePerM3Lost} onSave={(x) => setSettings({ ...settings, valuePerM3Lost: x })} />, q: "assumption", src: "costs" },
             { k: "Drought cut alert / exceptional / emergency", v: <span className="flex gap-1">{(["alert", "exceptional", "emergency"] as const).map((p) => <NumEdit key={p} value={settings.droughtCut[p]} onSave={(x) => setSettings({ ...settings, droughtCut: { ...settings.droughtCut, [p]: Math.min(1, x) } })} />)}</span>, q: "assumption", src: "droughtCases" },
@@ -240,7 +242,7 @@ export function SourcingPanel({ company }: { company: Company }) {
       {/* Exposure summary, visible without scrolling */}
       <p className="mt-3 text-xs leading-snug">
         <span className="font-medium">Status quo:</span> <Figure value={eurK(col("status")!.expected)} quality="assumption" source="costs" why={lossWhy} /> a year at risk, up to <Figure value={eurK(col("status")!.worst)} quality="assumption" source="costs" why={lossWhy} /> in an emergency.{" "}
-        <span className="font-medium">Own plant:</span> <Figure value={eurK(col("own")!.expected)} quality="assumption" source="costs" why={lossWhy} />.{" "}
+        <span className="font-medium">Own plant:</span> <Figure value={eurK(col("own")!.expected)} quality="assumption" source="costs" why={lossWhy} /> a year at risk, with <Figure value={`${fmt.format((1 - recovery) * 100)}%`} quality="assumption" source="costs" why="100% minus the recovery rate: the share of your demand the plant cannot cover, so it stays on mains water" /> of demand still bought from mains.{" "}
         {col("connect") && <><span className="font-medium">Connect:</span> <Figure value={eurK(col("connect")!.expected)} quality="assumption" source="costs" why={lossWhy} />.</>}
       </p>
 
@@ -305,6 +307,7 @@ export function SourcingPanel({ company }: { company: Company }) {
 
         <Section value="own" title="Your own reuse plant" note={<>estimate <SourceInfo id="costs" /></>}>
           <Kv k="Recovery rate" v={<Figure value={`${fmt.format(settings.recoveryRate[0] * 100)}-${fmt.format(settings.recoveryRate[1] * 100)}%`} quality="assumption" source="costs" />} />
+          <Kv k="Demand still on mains" v={<Figure value={`${fmt.format((1 - recovery) * 100)}%`} quality="assumption" source="costs" why="100% minus the recovery rate. This share is still cut in a drought and still pays the mains tariff." />} />
           <Kv k="Capacity" v={<Figure value={`${fmt.format(qDay * settings.recoveryRate[0])}-${fmt.format(qDay * settings.recoveryRate[1])} m³/day`} quality={weakest([demandQ, "assumption"])} source="costs" why="Your demand × recovery rate" />} />
           <Kv k="Capex after scale curve and grants" v={<Figure value={`${eurK(C.capex[0])}-${eurK(C.capex[1])}`} quality="assumption" source="costs" why={`Scale exponent ${settings.onsiteScaleExponent}, grants ${fmt.format(settings.capexGrantShare * 100)}%`} />} />
           <Kv k="Opex" v={<Figure value={`${rng([settings.onsiteOpex[0] * EFFLUENT[effluent].k, settings.onsiteOpex[1] * EFFLUENT[effluent].k])}/m³ recycled`} quality="assumption" source="costs" />} />
@@ -330,7 +333,7 @@ export function SourcingPanel({ company }: { company: Company }) {
                 <div className="mt-2">
                   <Kv k="Cut to mains water for industry" v={<Figure value={`${fmt.format(cut * 100)}% · ${fmt.format(qDay * cut)} m³/day`} quality="assumption" source="droughtCases" why="Cut per phase is a setting, based on the 2023-24 Catalan restrictions" />} />
                   <Kv k="Value at risk if it lasted a year" v={<Figure value={eurK(droughtLoss(q, cut, settings.valuePerM3Lost))} quality="assumption" source="costs" why={lossWhy} />} />
-                  <Kv k="With your own plant" v={<Figure value={`${eurK(droughtLoss(q, cut, settings.valuePerM3Lost, recovery))} (covers ${fmt.format(recovery * 100)}%)`} quality="assumption" source="costs" why={lossWhy} />} />
+                  <Kv k="With your own plant" v={<Figure value={`${eurK(droughtLoss(q, cut, settings.valuePerM3Lost, onSiteProtection(recovery, settings.ownFeedCoupling)))} (protects ${fmt.format(onSiteProtection(recovery, settings.ownFeedCoupling) * 100)}%)`} quality="assumption" source="costs" why={`${lossWhy}. The plant's own feed falls with the mains cut: ${fmt.format(settings.ownFeedCoupling * 100)}% of its output is assumed lost (setting).`} />} />
                   <Kv k="With the recycled connection" v={B ? <Figure value={`${eurK(droughtLoss(q, cut, settings.valuePerM3Lost, cover))} (covers ${fmt.format(cover * 100)}%)`} quality="assumption" source="costs" why={lossWhy} /> : "no plant in reach"} />
                   <p className="mt-1 text-[11px] text-muted-foreground">Recycled water may also be prioritised for other uses in a drought: El Prat sent most of its reclaimed water back to the Llobregat for drinking-water supply. Whether industrial reuse is exempt from cuts is to confirm with the water authority.</p>
                 </div>
@@ -821,6 +824,7 @@ function RiskMatrix({ company, cols, bill, events, qDay, plantName, choice }: {
         </table>
       </div>
       <p className="mt-1 text-[10px] text-muted-foreground">Reuse permit and quality class depend on the use (RD 1085/2024 in Spain). Confirm with the water authority.</p>
+      <p className="mt-1 text-[10px] text-muted-foreground">Own plant: its feed is your own discharge, which exists only because mains water was drawn, so a mains cut also lowers what the plant can make. {fmt.format(settings.ownFeedCoupling * 100)}% of its output is assumed to fall with the cut (setting).</p>
       {c.muni && c.muni.series.length > 1 && (
         <div className="mt-2">
           <p className="flex items-center gap-1 text-[11px] text-muted-foreground">Water price in {company.municipi}, household tariff, for reference <SourceInfo id="muniWaterPrice" /></p>

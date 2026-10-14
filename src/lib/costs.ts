@@ -130,6 +130,18 @@ export function droughtLoss(q: number, cutShare: number, valuePerM3: number, pro
   return q * Math.max(0, cutShare) * valuePerM3 * (1 - Math.max(0, Math.min(1, protectedShare)));
 }
 
+/**
+ * Share of demand an on-site reuse plant actually protects in a drought.
+ * Its feed is the site's own discharge, which exists only because mains water was drawn, so a
+ * cut to the mains supply also lowers what the plant can make. coupling 0 means the plant keeps
+ * running at full output; 1 means its output falls in step with the cut.
+ */
+export function onSiteProtection(recovery: number, coupling: number) {
+  const r = Math.max(0, Math.min(1, recovery));
+  const c = Math.max(0, Math.min(1, coupling));
+  return r * (1 - c);
+}
+
 /** A − min(B, C) plus drought loss avoided. */
 export function opportunityCost(a: Range, b: Range, c: Range, droughtA: number, droughtBest: number): Range {
   const best = b[0] <= c[0] ? b : c;

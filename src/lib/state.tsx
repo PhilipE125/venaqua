@@ -60,6 +60,7 @@ export interface Settings {
   riskMediumShare: number;
   visibleShare: number; // local visibility: share of comarca business water
   visibleResidents: number; // local visibility: resident-equivalents
+  ownFeedCoupling: number; // 0-1: share of an on-site plant's output that falls with the mains cut
 }
 
 export interface Tariff {
@@ -104,10 +105,11 @@ export const DEFAULT_SETTINGS: Settings = {
   riskMediumShare: 0.005,
   visibleShare: 0.01,
   visibleResidents: 5000,
+  ownFeedCoupling: 0.5,
 };
 
-// v3: tariffs became per region; older saved settings would keep the double-counted 1.92 + 0.8.
-const KEY = "reuse-match:settings:v3";
+// v4: added ownFeedCoupling; older saved settings would leave it undefined.
+const KEY = "reuse-match:settings:v4";
 const CONFIRMED_KEY = "reuse-match:confirmed";
 const DEMAND_KEY = "reuse-match:demand";
 
