@@ -8,8 +8,10 @@ import { MODULES } from "./ModuleBar";
 
 const REGION_NAME = { es: "Spain", cat: "Catalonia", fr: "France", de: "Germany" } as const;
 
-function flipLabel(y: number | null) {
-  return y == null ? "Not by 2050" : y <= 2026 ? "Cheaper now" : `Flips ${y}`;
+// The chip answers the buyer's question: when does it become cheaper to install your own
+// on-site reuse system? What connecting costs is shown separately as its own price.
+function ownPlantLabel(y: number | null) {
+  return y == null ? "Own plant not by 2050" : y <= 2026 ? "Own plant cheaper now" : `Own plant cheaper in ${y}`;
 }
 
 // Headline output: reuse projects ranked by cost per m³ vs the alternative, with the year the math flips.
@@ -29,7 +31,7 @@ export function ResultsPanel() {
   }, [rows, mode]);
 
   if (selection && selection.kind !== "region") return null;
-  const early = rows?.filter(r => r.flipYear != null && r.flipYear < 2035).length ?? 0;
+  const early = rows?.filter(r => r.ownFlipYear != null && r.ownFlipYear < 2035).length ?? 0;
 
   return (
     <aside className="results-panel panel flex flex-col overflow-hidden rounded-lg">
@@ -37,7 +39,7 @@ export function ResultsPanel() {
         <span>
           <span className="label-caps block">{module ? `Module ${module.n} · ${module.title}` : "Ranked projects"}</span>
           <span className="mt-0.5 block text-sm font-semibold">{mode === "q4" ? "Shared pipes by cost per m³" : "Cost per m³ vs the alternative"}</span>
-          {rows && <span className="tnum mt-0.5 block text-[11px] text-muted-foreground">{fmt.format(rows.length)} sites screened in {REGION_NAME[region]} · <span className="font-medium text-flip">{fmt.format(early)} flip before 2035</span><span className="block">Straight-line distance; open a site for the road route.</span></span>}
+          {rows && <span className="tnum mt-0.5 block text-[11px] text-muted-foreground">{fmt.format(rows.length)} sites screened in {REGION_NAME[region]} · <span className="font-medium text-flip">{fmt.format(early)} own plant cheaper before 2035</span><span className="block">Straight-line distance; open a site for the road route.</span></span>}
         </span>
         {open ? <ChevronUp className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />}
       </button>
@@ -61,7 +63,7 @@ export function ResultsPanel() {
               <li key={r.company.id} className="rounded-md px-2 py-2 hover:bg-muted">
                 <div className="flex items-baseline justify-between gap-2 text-xs">
                   <span className="truncate font-medium"><span className="tnum mr-1.5 text-muted-foreground">{i + 1}</span>{r.company.name}</span>
-                  <span className="tnum shrink-0 text-sm font-semibold text-flip">{flipLabel(r.flipYear)}{r.flipYear != null && r.flipYear <= 2026 ? (r.option === "B" ? " · connect" : " · own plant") : ""}</span>
+                  <span className="tnum shrink-0 text-sm font-semibold text-flip">{ownPlantLabel(r.ownFlipYear)}</span>
                 </div>
                 <div className="mt-0.5 flex justify-between gap-2 text-[11px] text-muted-foreground">
                   <span className="truncate">{r.option === "B" ? `Connect to ${r.plant}` : "Own reuse facility"}</span>
