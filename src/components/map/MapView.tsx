@@ -2,7 +2,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { setWorkerUrl, type StyleSpecification } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
-import { IconLayer, PathLayer, PolygonLayer, ScatterplotLayer } from "@deck.gl/layers";
+import { BitmapLayer, IconLayer, PathLayer, PolygonLayer, ScatterplotLayer } from "@deck.gl/layers";
 import { PathStyleExtension } from "@deck.gl/extensions";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -16,6 +16,10 @@ import type { Company, Plant, RegenPlant, Reservoir, ReuseProject } from "@/lib/
 import { LEVEL_COLORS, REGEN_COLOR, RIVER_COLORS, fillColor, riverColor, rgb } from "./colors";
 import droughtData from "@/data/drought-comarques.json";
 import { predictPipes, type PipeSeg } from "@/lib/pipes";
+import { STRESS_BOUNDS, STRESS_HORIZONS, stressAt, stressImage } from "@/lib/stressGrid";
+import { Button } from "@/components/ui/button";
+import { WaterPricePanel } from "./WaterPricePanel";
+import { SourceInfo } from "@/components/SourceInfo";
 
 setWorkerUrl(workerUrl);
 
@@ -63,15 +67,11 @@ const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmln
 const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 10.4, latitude: 51.2, zoom: 5.6 }, fr: { longitude: 2.4, latitude: 46.6, zoom: 5.3 } } as const;
 // Circles shrink when zoomed out to a whole country, so dense areas (Ruhr, Madrid) stay readable.
 // radiusScale is a GPU uniform: changing it does not rebuild any per-point attributes.
+const PIPE_MIN_ZOOM = 9.5;
 const zoomScale = (zoom: number) => Math.round(Math.min(1, Math.max(0.35, 2 ** ((zoom - 8) / 2))) * 20) / 20;
 
 // Indicative future water-stress scenario per comarca (not an official forecast).
-const HORIZONS = [
-  { key: "2y", label: "2 yrs", year: "2028" },
-  { key: "5y", label: "5 yrs", year: "2031" },
-  { key: "10y", label: "10 yrs", year: "2036" },
-  { key: "15y", label: "15 yrs", year: "2041" },
-] as const;
+const HORIZONS = STRESS_HORIZONS;
 const STRESS = (droughtData as unknown as { name: string; risk: Record<string, number>; polygons: [number, number][][] }[]).flatMap((f) =>
   f.polygons.map((polygon) => ({ name: f.name, risk: f.risk, polygon, kind: "stress" })),
 );
@@ -140,6 +140,7 @@ export default function MapView() {
   const { matches, siteById, companyById } = useMatches();
   const setHover = useRef<(h: Hover) => void>(() => {});
   const [scale, setScale] = useState(() => zoomScale((camera ?? VIEWS[region]).zoom));
+  const [zoomLvl, setZoomLvl] = useState(() => Math.floor((camera ?? VIEWS[region]).zoom * 2) / 2);
   const basemap = useBasemapStyle(dark);
   // Fly to the region when it changes; on first mount keep a saved camera (e.g. coming back from /analysis).
   const firstRun = useRef(true);
@@ -218,21 +219,26 @@ export default function MapView() {
   }, [selection, companyById, siteById]);
 
   const stressYear = HORIZONS.find((h) => h.key === horizon)?.year;
+  const stressAhead = HORIZONS.find((h) => h.key === horizon)?.ahead ?? 0;
+  const stressUrl = useMemo(() => (stressYear && typeof document !== "undefined" ? stressImage(stressYear, (v) => stressColor(v, 255).slice(0, 3).map(Math.round) as [number, number, number]) : null), [stressYear]);
+  const pipesVisible = showPipes && zoomLvl >= PIPE_MIN_ZOOM;
   const deckLayers = [
-    stressYear &&
+    !!stressUrl &&
+      new BitmapLayer({ id: "future-stress-raster", image: stressUrl, bounds: STRESS_BOUNDS, opacity: 0.62 }),
+    stressYear && horizon !== "now" &&
       new PolygonLayer<(typeof STRESS)[number]>({
         id: "future-stress",
         data: STRESS,
         getPolygon: (d) => d.polygon,
-        getFillColor: (d) => stressColor(d.risk[stressYear] ?? 0, 150),
-        getLineColor: (d) => stressColor(d.risk[stressYear] ?? 0, 230),
-        lineWidthMinPixels: 0.6,
+        getFillColor: [0, 0, 0, 0],
+        getLineColor: (d) => stressColor(d.risk[stressYear] ?? 0, 90),
+        lineWidthMinPixels: 0.4,
         stroked: true,
         pickable: true,
         updateTriggers: { getFillColor: [stressYear], getLineColor: [stressYear] },
         transitions: { getFillColor: 500 },
       }),
-    showPipes &&
+    pipesVisible &&
       new PathLayer<PipeSeg>({
         id: "pipes-glow",
         data: pipes,
@@ -243,7 +249,7 @@ export default function MapView() {
         jointRounded: true,
         capRounded: true,
       }),
-    showPipes &&
+    pipesVisible &&
       new PathLayer<PipeSeg>({
         id: "pipes",
         data: pipes,
@@ -414,7 +420,7 @@ export default function MapView() {
       <Map
         ref={mapRef}
         onMoveEnd={e => setCamera(e.viewState)}
-        onZoom={e => setScale(zoomScale(e.viewState.zoom))}
+        onZoom={e => { setScale(zoomScale(e.viewState.zoom)); setZoomLvl(Math.floor(e.viewState.zoom * 2) / 2); }}
         initialViewState={camera ?? VIEWS[region]}
         mapStyle={
           basemap ??
@@ -432,13 +438,19 @@ export default function MapView() {
           getCursor={({ isHovering }) => (isHovering ? "pointer" : "grab")}
           onHover={(info) => {
             const st = info.object as { kind?: string; name?: string; risk?: Record<string, number> } | undefined;
-            if (st?.kind === "stress" && st.risk && stressYear) return setHover.current({ x: info.x, y: info.y, text: `${st.name} · stress index ${Math.round(st.risk[stressYear] ?? 0)} in ${stressYear}` });
+            if (st?.kind === "stress" && stressYear) return setHover.current({ x: info.x, y: info.y, text: `${st.name} · illustrative stress scenario · ${stressYear}` });
             const river = info.object as { gauge?: Reservoir } | undefined;
             if (river?.gauge) return setHover.current({ x: info.x, y: info.y, text: `${river.gauge.name} · ${river.gauge.note} at the nearest gauge` });
             const raw = info.object as { name?: string; kind?: string; fill?: number; note?: string; g?: RegenPlant; buyer?: string; object?: string } | undefined;
             const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
             const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
-            if (!o?.name) return setHover.current(null);
+            if (!o?.name) {
+              const coordinate = info.coordinate;
+              if (stressYear && coordinate && coordinate[0] != null && coordinate[1] != null) {
+                return setHover.current({ x: info.x, y: info.y, text: `Illustrative stress index · ${Math.round(stressAt(coordinate[0], coordinate[1], stressAhead))}/100 · ${stressYear}` });
+              }
+              return setHover.current(null);
+            }
             const label =
               o.kind === "wwtp" ? "Treatment plant" :
               o.kind === "company" ? "Company" :
@@ -537,31 +549,39 @@ export default function MapView() {
         </div>
       )}
       <HoverTip bind={setHover} />
-      <div className="panel future-controls absolute right-3 top-3 z-20 w-60 rounded-xl p-3 text-xs shadow-md">
-        <p className="label-caps">Future water stress</p>
+      <div className="panel future-controls absolute right-3 top-3 z-20 w-60 max-w-[calc(100%-24px)] rounded-md p-3 text-xs shadow-md">
+        <div className="flex items-center justify-between gap-2">
+          <p className="label-caps">Water stress</p>
+          <SourceInfo id="stressScenario" />
+        </div>
         <div className="mt-2 grid grid-cols-5 gap-1">
-          <button onClick={() => setHorizon(null)} className={`rounded-md px-1 py-1 ${!horizon ? "bg-foreground text-background" : "bg-muted hover:bg-accent"}`}>Now</button>
           {HORIZONS.map((h) => (
-            <button key={h.key} onClick={() => setHorizon(h.key)} className={`rounded-md px-1 py-1 tnum ${horizon === h.key ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-accent"}`}>{h.label}</button>
+            <Button key={h.key} size="sm" variant={horizon === h.key ? "default" : "secondary"} aria-pressed={horizon === h.key} onClick={() => setHorizon(h.key)} className="h-7 min-w-0 px-0 text-[10px] tnum">{h.label}</Button>
           ))}
         </div>
         {stressYear && (
           <div className="mt-2">
-            <div className="h-2 rounded-full" style={{ background: "linear-gradient(90deg, rgb(254,240,180), rgb(253,174,97), rgb(240,59,32), rgb(128,0,38))" }} />
+            <div className="stress-ramp h-2 rounded-full" />
             <div className="mt-0.5 flex justify-between text-[10px] text-muted-foreground"><span>Low</span><span>{stressYear}</span><span>Severe</span></div>
+            <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
+              <span>{horizon === "now" ? "Present-day illustration · not live readings" : "Illustrative future scenario"}</span>
+              <Button variant="ghost" size="sm" onClick={() => setHorizon(null)} className="h-6 px-1 text-[10px]">Hide</Button>
+            </div>
           </div>
         )}
         <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 border-t pt-2">
           <span className="font-medium">Predicted pipe network</span>
           <input type="checkbox" className="accent-[var(--primary)]" checked={showPipes} onChange={(e) => setShowPipes(e.target.checked)} />
         </label>
-        {showPipes && (
+        {showPipes && !pipesVisible && <p className="mt-1.5 text-[10px] text-muted-foreground">Zoom in closer to see pipe routes.</p>}
+        {pipesVisible && (
           <div className="mt-1.5 space-y-1 text-[10px] text-muted-foreground">
             <p className="flex items-center gap-2"><span className="inline-block h-[3px] w-5 rounded" style={{ background: "rgb(2,132,199)" }} />Rural trunk / branch (priority)</p>
             <p className="flex items-center gap-2"><span className="inline-block h-[2px] w-5 rounded" style={{ background: "rgba(11,110,138,0.55)" }} />Urban</p>
           </div>
         )}
         <p className="mt-2 text-[10px] leading-snug text-muted-foreground">Indicative scenario and inferred routes — not an official forecast or as-built map.</p>
+        <WaterPricePanel horizon={stressAhead} />
       </div>
     </div>
   );

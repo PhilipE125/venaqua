@@ -9,11 +9,48 @@ const km = (a: Pt, b: Pt) => {
   return Math.hypot((a.lon - b.lon) * kx, (a.lat - b.lat) * KM_LAT);
 };
 
-// Pipes follow roads, so draw a gentle two-leg route instead of a straight line.
+// Deterministic pseudo-random in [-1, 1] from coordinates, so routes are stable between renders.
+const hash = (x: number, y: number) => {
+  const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return (s - Math.floor(s)) * 2 - 1;
+};
+
+// Pipes are laid along roads: build a road-like route with straight runs, 45°/90° turns
+// and gentle meanders, then round the corners like a carriageway.
 function route(a: Pt, b: Pt): [number, number][] {
-  const mid: [number, number] = Math.abs(a.lon - b.lon) > Math.abs(a.lat - b.lat) ? [b.lon, a.lat] : [a.lon, b.lat];
-  const m: [number, number] = [(mid[0] * 2 + (a.lon + b.lon) / 2) / 3, (mid[1] * 2 + (a.lat + b.lat) / 2) / 3];
-  return [[a.lon, a.lat], m, [b.lon, b.lat]];
+  const dx = b.lon - a.lon, dy = b.lat - a.lat;
+  const len = Math.hypot(dx, dy) || 1e-9;
+  const n = Math.max(4, Math.min(14, Math.round(len / 0.012)));
+  const px = -dy / len, py = dx / len;
+  const amp = Math.min(0.02, len * 0.12);
+  // Octilinear skeleton: run along the dominant axis, then the diagonal, like a road grid.
+  const horiz = Math.abs(dx) > Math.abs(dy);
+  const straight = horiz ? Math.abs(dx) - Math.abs(dy) : Math.abs(dy) - Math.abs(dx);
+  const corner: [number, number] = horiz ? [a.lon + Math.sign(dx) * straight, a.lat] : [a.lon, a.lat + Math.sign(dy) * straight];
+  const skel: [number, number][] = [[a.lon, a.lat], corner, [b.lon, b.lat]];
+  const pts: [number, number][] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    // Sample along the skeleton, blended slightly toward the straight line.
+    const leg = t < 0.5 ? 0 : 1, lt = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+    const s0 = skel[leg]!, s1 = skel[leg + 1]!;
+    const sx = s0[0] + (s1[0] - s0[0]) * lt, sy = s0[1] + (s1[1] - s0[1]) * lt;
+    const lx = a.lon + dx * t, ly = a.lat + dy * t;
+    const w = i === 0 || i === n ? 0 : hash(sx * 50 + i, sy * 50) * amp * Math.sin(Math.PI * t);
+    pts.push([sx * 0.7 + lx * 0.3 + px * w, sy * 0.7 + ly * 0.3 + py * w]);
+  }
+  // Chaikin smoothing (2 passes) for rounded, road-like bends.
+  let out = pts;
+  for (let k = 0; k < 2; k++) {
+    const nx: [number, number][] = [out[0]!];
+    for (let i = 0; i < out.length - 1; i++) {
+      const p = out[i]!, q = out[i + 1]!;
+      nx.push([p[0] * 0.75 + q[0] * 0.25, p[1] * 0.75 + q[1] * 0.25], [p[0] * 0.25 + q[0] * 0.75, p[1] * 0.25 + q[1] * 0.75]);
+    }
+    nx.push(out[out.length - 1]!);
+    out = nx;
+  }
+  return out;
 }
 
 export function predictPipes(
