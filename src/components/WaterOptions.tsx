@@ -7,13 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { crf, droughtLoss, mid, opportunityCost, optionA, optionB, optionC, type CostInputs, type Range } from "@/lib/costs";
+import { defaultEffluent, EFFLUENT, evaluateOptions, mid, type Range } from "@/lib/costs";
 import { eurK, fmt, fmt1, fmt2, SUPPLY_SEARCH_KM as SEARCH_KM, useDrought, useWwtps, useElevation, useRestriction, useRoadRoute, useSupplyPlant } from "@/lib/queries";
 import { muniKey } from "@/lib/sectors";
 import { currentPhase, phaseDaysInYear, PHASES, type Phase } from "@/lib/sources/drought";
 import { useApp, useScenarioState, type Mode } from "@/lib/state";
 import { Answer, Details } from "./Drawer";
-import { FuturePanel, type FutureInputs } from "./FuturePanel";
+import { FuturePanel } from "./FuturePanel";
 import type { Company } from "@/lib/types";
 import { QualityBadge, SourceInfo } from "./SourceInfo";
 
@@ -67,8 +67,6 @@ function RangeBars({ rows, tariff, max }: { rows: { key: string; label: string; 
 
 const fmtR = (r: Range, f: (n: number) => string) => (Math.abs(r[0] - r[1]) < 1e-9 ? f(r[0]) : `${f(r[0])}–${f(r[1])}`);
 
-const EFFLUENT = { light: { label: "Light (cooling, rinsing)", k: 0.8 }, medium: { label: "Medium (mixed process)", k: 1 }, heavy: { label: "Heavy (food, chemicals)", k: 1.4 } } as const;
-
 export function WaterOptions({ company, focus = "all", view = "economics", onSummary }: { company: Company; focus?: Mode; view?: "overview" | "economics"; onSummary?: ((p: OpportunitySnapshot) => void) | undefined }) {
   const { settings, demandOverride, setDemandOverride, select, region } = useApp();
   const w = useWwtps();
@@ -78,7 +76,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
   const [elec, setElec] = useScenarioState<"low" | "base" | "high">(`${company.id}:elec`, "base");
   const [phaseOverride, setPhaseOverride] = useScenarioState<Phase | "current">(`${company.id}:phaseOverride`, "current");
   const [replay, setReplay] = useScenarioState(`${company.id}:replay`, false);
-  const [effluent, setEffluent] = useScenarioState<keyof typeof EFFLUENT>(`${company.id}:effluent`, company.sector === "food" || company.sector === "chemicals" ? "heavy" : "medium");
+  const [effluent, setEffluent] = useScenarioState<keyof typeof EFFLUENT>(`${company.id}:effluent`, defaultEffluent(company.sector));
   const [dischargePct, setDischargePct] = useScenarioState(`${company.id}:dischargePct`, 80);
   const [local, setLocal] = useScenarioState(`${company.id}:local`, { tariff: settings.tariffs[region].supply, dischargeCharge: settings.tariffs[region].discharge, rate: settings.rate, years: settings.years });
 
@@ -97,27 +95,9 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
 
   const calc = useMemo(() => {
     const tariff = local.tariff * (1 + Number(tariffShock) / 100);
-    const e = settings.electricity[elec];
-    // Discharge charge applies to the share of water discharged, spread over total demand.
-    const inputs: CostInputs = { demandM3PerYear: Q, tariff, dischargeCharge: local.dischargeCharge * (dischargePct / 100), rate: local.rate, years: local.years, electricity: [e, e] };
-    const A = optionA(inputs);
     // Road distance when the router answered; otherwise straight line × detour factor.
     const distanceKm = candidate ? (road.data?.km ?? candidate.d * settings.detourFactor) : 0;
     const liftM = elev.data ? Math.max(0, elev.data.b - elev.data.a) + (settings.frictionPer10km * distanceKm) / 10 : (settings.frictionPer10km * distanceKm) / 10;
-    const B = candidate
-      ? optionB(inputs, {
-          distanceKm,
-          liftM,
-          pumpEfficiency: settings.pumpEfficiency,
-          pipeCostPerKm: settings.pipeCostPerKm,
-          polishing: candidate.p.supply.reuseReady ? [0, 0] : settings.polishing,
-          reclaimedPrice: settings.reclaimedPrice,
-          availableM3PerDay: candidate.p.supply.availableReclaimed,
-        })
-      : null;
-    const ek = EFFLUENT[effluent].k;
-    const C = optionC(inputs, { recoveryRate: settings.recoveryRate, capexPerM3Day: [settings.onsiteCapex[0] * ek, settings.onsiteCapex[1] * ek], opex: [settings.onsiteOpex[0] * ek, settings.onsiteOpex[1] * ek] });
-
     // Drought: current/selected phase, or 2023 replay weighted by days in each phase.
     let cut = settings.droughtCut[phase];
     let days2023: Record<Phase, number> | null = null;
@@ -125,25 +105,21 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
       days2023 = phaseDaysInYear(events, 2023);
       cut = PHASES.reduce((s, ph) => s + (days2023![ph] / 365) * settings.droughtCut[ph], 0);
     }
-    const lossA = droughtLoss(Q, cut, settings.valuePerM3Lost);
-    const lossB = B ? droughtLoss(Q, cut, settings.valuePerM3Lost, B.coverage) : lossA;
-    const lossC = droughtLoss(Q, cut, settings.valuePerM3Lost, mid(settings.recoveryRate));
-    const bAnnual = B?.annualCost ?? ([Infinity, Infinity] as Range);
-    const bestIsB = !!B && mid(bAnnual) + lossB < mid(C.annualCost) + lossC;
-    const opp = opportunityCost(A.annualCost, bAnnual, C.annualCost, lossA, bestIsB ? lossB : lossC);
-    const cheapest = mid(A.annualCost) + lossA <= Math.min(mid(bAnnual) + lossB, mid(C.annualCost) + lossC) ? "A" : bestIsB ? "B" : "C";
-    const k = crf(local.rate, local.years);
-    const future: FutureInputs = {
+    const r = evaluateOptions({
       q: Q,
-      tariff0: tariff,
-      dischargeCharge: inputs.dischargeCharge,
-      valuePerM3Lost: settings.valuePerM3Lost,
-      cuts: settings.droughtCut,
+      tariff,
+      // Discharge charge applies to the share of water discharged, spread over total demand.
+      dischargeCharge: local.dischargeCharge * (dischargePct / 100),
+      rate: local.rate,
+      years: local.years,
+      electricity: settings.electricity[elec],
+      plant: candidate ? { distanceKm, liftM, reuseReady: candidate.p.supply.reuseReady, availableM3PerDay: candidate.p.supply.availableReclaimed } : null,
+      effluentK: EFFLUENT[effluent].k,
+      cut,
       events,
-      B: B ? { capex: mid(B.capex), opexAtT0: mid(B.annualCost) - mid(B.capex) * k, mainsShare: 1 - B.coverage, coverage: B.coverage } : null,
-      C: { capex: mid(C.capex), opexAtT0: mid(C.annualCost) - mid(C.capex) * k, mainsShare: 1 - mid(settings.recoveryRate), protectedShare: mid(settings.recoveryRate) },
-    };
-    return { tariff, A, B, C, distanceKm, liftM, lossA, lossB, lossC, opp, cheapest, days2023, cut, future };
+      s: settings,
+    });
+    return { ...r, tariff, distanceKm, liftM, days2023, cut };
   }, [Q, local, tariffShock, elec, settings, candidate, elev.data, road.data, phase, replay, events, effluent, dischargePct]);
 
   const { A, B, C } = calc;

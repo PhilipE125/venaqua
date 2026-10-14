@@ -1,5 +1,6 @@
 // Pure: future exposure. Tariff path, drought frequency scaled by climate stress,
 // cumulative cost per option and the first year reuse pays off.
+import { climateFactor } from "./sources/aqueduct";
 import { PHASES, phaseDaysInYear, type DroughtEvent, type Phase } from "./sources/drought";
 
 export const tariffAt = (base: number, ratePerYear: number, yearsFromNow: number) => base * (1 + ratePerYear) ** yearsFromNow;
@@ -43,4 +44,37 @@ export function cumulative(paths: Record<string, OptionPath>, years: number[], t
 export function paybackYear(rows: Record<string, number>[], option: string, base = "A"): number | null {
   for (const r of rows) if (r[option]! <= r[base]!) return r["year"]!;
   return null;
+}
+
+export const FUTURE_START = 2026;
+export const FUTURE_END = 2050;
+export const GROWTH = { low: 0.01, mid: 0.03, high: 0.05 } as const;
+
+export interface FutureInputs {
+  q: number;
+  tariff0: number;
+  dischargeCharge: number;
+  valuePerM3Lost: number;
+  cuts: Record<Phase, number>;
+  events: DroughtEvent[] | undefined;
+  B: { capex: number; opexAtT0: number; mainsShare: number; coverage: number } | null;
+  C: { capex: number; opexAtT0: number; mainsShare: number; protectedShare: number };
+}
+
+/** Cumulative cost of A/B/C from FUTURE_START to FUTURE_END and the first year B or C beats A. */
+export function projectFuture(i: FutureInputs, growth: number, freq = phaseFrequencies(i.events, 2008, 2025)) {
+  const years = Array.from({ length: FUTURE_END - FUTURE_START + 1 }, (_, k) => FUTURE_START + k);
+  const tariffFor = (y: number) => tariffAt(i.tariff0, growth, y - FUTURE_START);
+  const cutFor = (y: number) => expectedCut(freq, i.cuts, climateFactor(y));
+  const loss = (cut: number, protectedShare: number) => i.q * cut * i.valuePerM3Lost * (1 - protectedShare);
+  const paths: Record<string, OptionPath> = {
+    A: { capex: 0, opex: (t, cut) => i.q * (t + i.dischargeCharge) + loss(cut, 0) },
+    C: { capex: i.C.capex, opex: (t, cut) => i.C.opexAtT0 + i.q * i.C.mainsShare * (t - i.tariff0) + loss(cut, i.C.protectedShare) },
+  };
+  if (i.B) {
+    const b = i.B;
+    paths["B"] = { capex: b.capex, opex: (t, cut) => b.opexAtT0 + i.q * b.mainsShare * (t - i.tariff0) + loss(cut, b.coverage) };
+  }
+  const rows = cumulative(paths, years, tariffFor, cutFor);
+  return { rows, freq, tariffFor, cutFor, payB: i.B ? paybackYear(rows, "B") : null, payC: paybackYear(rows, "C") };
 }

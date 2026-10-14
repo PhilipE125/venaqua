@@ -1,5 +1,7 @@
 // Pure cost model for the A/B/C water options. No React, no I/O.
 // All money values are [low, high] ranges.
+import type { FutureInputs } from "./projection";
+import type { DroughtEvent, Phase } from "./sources/drought";
 
 export type Range = [number, number];
 
@@ -136,4 +138,69 @@ export function supplyCostPerM3(
   if (delivered <= 0) return Infinity;
   const pipe = (mid(s.pipeCostPerKm) * p.distanceKm * s.detourFactor * crf(s.rate, s.years)) / delivered;
   return pipe + (p.reuseReady ? 0 : mid(s.polishing));
+}
+
+export const EFFLUENT = { light: { label: "Light (cooling, rinsing)", k: 0.8 }, medium: { label: "Medium (mixed process)", k: 1 }, heavy: { label: "Heavy (food, chemicals)", k: 1.4 } } as const;
+export const defaultEffluent = (sector: string): keyof typeof EFFLUENT => (sector === "food" || sector === "chemicals" ? "heavy" : "medium");
+
+export interface EvaluateInputs {
+  q: number; // m3/year
+  tariff: number;
+  dischargeCharge: number; // already scaled by the discharged share
+  rate: number;
+  years: number;
+  electricity: number;
+  plant: { distanceKm: number; liftM: number; reuseReady: boolean; availableM3PerDay: number } | null;
+  effluentK: number; // on-site cost multiplier for effluent strength
+  cut: number; // supply-cut share used for today's drought loss
+  events: DroughtEvent[] | undefined;
+  s: {
+    pumpEfficiency: number;
+    pipeCostPerKm: Range;
+    polishing: Range;
+    reclaimedPrice: Range;
+    recoveryRate: Range;
+    onsiteCapex: Range;
+    onsiteOpex: Range;
+    droughtCut: Record<Phase, number>;
+    valuePerM3Lost: number;
+  };
+}
+
+/** A/B/C for one company, the cheapest today (incl. drought loss) and the inputs for the future projection. */
+export function evaluateOptions(i: EvaluateInputs) {
+  const { q, s } = i;
+  const inputs: CostInputs = { demandM3PerYear: q, tariff: i.tariff, dischargeCharge: i.dischargeCharge, rate: i.rate, years: i.years, electricity: [i.electricity, i.electricity] };
+  const A = optionA(inputs);
+  const B = i.plant
+    ? optionB(inputs, {
+        distanceKm: i.plant.distanceKm,
+        liftM: i.plant.liftM,
+        pumpEfficiency: s.pumpEfficiency,
+        pipeCostPerKm: s.pipeCostPerKm,
+        polishing: i.plant.reuseReady ? [0, 0] : s.polishing,
+        reclaimedPrice: s.reclaimedPrice,
+        availableM3PerDay: i.plant.availableM3PerDay,
+      })
+    : null;
+  const C = optionC(inputs, { recoveryRate: s.recoveryRate, capexPerM3Day: scale(s.onsiteCapex, i.effluentK), opex: scale(s.onsiteOpex, i.effluentK) });
+  const lossA = droughtLoss(q, i.cut, s.valuePerM3Lost);
+  const lossB = B ? droughtLoss(q, i.cut, s.valuePerM3Lost, B.coverage) : lossA;
+  const lossC = droughtLoss(q, i.cut, s.valuePerM3Lost, mid(s.recoveryRate));
+  const bAnnual = B?.annualCost ?? ([Infinity, Infinity] as Range);
+  const bestIsB = !!B && mid(bAnnual) + lossB < mid(C.annualCost) + lossC;
+  const opp = opportunityCost(A.annualCost, bAnnual, C.annualCost, lossA, bestIsB ? lossB : lossC);
+  const cheapest: "A" | "B" | "C" = mid(A.annualCost) + lossA <= Math.min(mid(bAnnual) + lossB, mid(C.annualCost) + lossC) ? "A" : bestIsB ? "B" : "C";
+  const k = crf(i.rate, i.years);
+  const future: FutureInputs = {
+    q,
+    tariff0: i.tariff,
+    dischargeCharge: i.dischargeCharge,
+    valuePerM3Lost: s.valuePerM3Lost,
+    cuts: s.droughtCut,
+    events: i.events,
+    B: B ? { capex: mid(B.capex), opexAtT0: mid(B.annualCost) - mid(B.capex) * k, mainsShare: 1 - B.coverage, coverage: B.coverage } : null,
+    C: { capex: mid(C.capex), opexAtT0: mid(C.annualCost) - mid(C.capex) * k, mainsShare: 1 - mid(s.recoveryRate), protectedShare: mid(s.recoveryRate) },
+  };
+  return { A, B, C, lossA, lossB, lossC, opp, cheapest, future };
 }
