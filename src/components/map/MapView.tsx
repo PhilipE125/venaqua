@@ -88,6 +88,29 @@ function stressColor(v: number, a: number): [number, number, number, number] {
 }
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
+// Fetch the OpenFreeMap style and re-tint water so rivers and lakes read clearly blue.
+function useBasemapStyle(dark: boolean) {
+  const [style, setStyle] = useState<object | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch(`https://tiles.openfreemap.org/styles/${dark ? "dark" : "positron"}`)
+      .then((r) => r.json())
+      .then((s) => {
+        if (!alive) return;
+        for (const l of s.layers ?? []) {
+          if (l.id === "water") l.paint = { ...l.paint, "fill-color": dark ? "#1d3f5e" : "#a9d6f2" };
+          if (l.id === "waterway") l.paint = { ...l.paint, "line-color": dark ? "#2a5a86" : "#7dbde8" };
+        }
+        setStyle(s);
+      })
+      .catch(() => setStyle(null));
+    return () => {
+      alive = false;
+    };
+  }, [dark]);
+  return style;
+}
+
 export default function MapView() {
   const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus } = useApp();
   const pr = useProjects();
