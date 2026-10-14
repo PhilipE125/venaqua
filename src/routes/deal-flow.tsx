@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWorkspace } from "@/lib/workspace";
 import dealData from "@/data/dealflow-deals.json";
+import { CASE_DISCLAIMER, INVESTMENT_CASES, type InvestmentCase, type Verdict } from "@/data/investment-cases";
 import {
   filterDeals, formatEur, KIND_LABELS, KINDS, SCOPE_LABELS, SCORE_LABELS, SECTOR_LABELS, STAGE_LABELS, STAGES,
   type Deal, type DealFilters, type Kind, type Stage,
@@ -31,10 +32,10 @@ export const Route = createFileRoute("/deal-flow")({
   }),
   head: () => ({
     meta: [
-      { title: "Venaqua · Reuse Pipeline: water reuse deals in Spain" },
+      { title: "Venaqua · Deal Flow: reuse investment cases in Spain" },
       { name: "description", content: "Filter sourced, scored wastewater-reuse tenders, programmes and projects across Spain, with value, volume, deadlines and sources." },
       { property: "og:title", content: "Venaqua Reuse Pipeline" },
-      { property: "og:description", content: "Sourced, scored water reuse deals in Spain: from first signal to tender." },
+      { property: "og:description", content: "Investment cases, early signals and tenders for water reuse in Spain." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -216,5 +217,87 @@ function DealSheet({ deal: d, onClose }: { deal?: Deal | undefined; onClose: () 
         </>}
       </SheetContent>
     </Sheet>
+  );
+}
+
+const VERDICT_CLASS: Record<Verdict, string> = { Strong: "bg-primary text-primary-foreground", Likely: "bg-accent text-accent-foreground", Marginal: "bg-muted text-foreground", Weak: "bg-destructive/15 text-destructive" };
+const PENDING = "Pending case file";
+const eurM3 = (n: number) => `€${n.toFixed(2)}/m³`;
+
+function CasesTab() {
+  const [open, setOpen] = useState<InvestmentCase | null>(null);
+  return (
+    <div className="mt-4">
+      <p className="max-w-3xl text-sm text-muted-foreground">Co-investment opportunities in shared reuse infrastructure (pipe, pumping, storage, treatment) between a treatment plant and the buyers nearby.</p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {INVESTMENT_CASES.map((c) => (
+          <article key={c.id} className="flex flex-col rounded-xl border bg-card p-4">
+            <div className="flex items-start justify-between gap-2">
+              <div><h3 className="font-semibold leading-snug">{c.name}</h3><p className="text-xs text-muted-foreground">{c.region} · {c.buyers}</p></div>
+              {c.verdict ? <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${VERDICT_CLASS[c.verdict]}`}>{c.verdict}</span> : <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">Verdict pending</span>}
+            </div>
+            <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+              <div><dt className="label-caps">Capex</dt><dd className="tnum mt-0.5">{c.capexEur != null ? formatEur(c.capexEur) : PENDING}</dd></div>
+              <div><dt className="label-caps">Payback</dt><dd className="tnum mt-0.5">{c.paybackYears != null ? `~${c.paybackYears} years` : PENDING}</dd></div>
+              <div className="col-span-2"><dt className="label-caps">Delivered vs today</dt><dd className="tnum mt-0.5">{c.deliveredEurM3 != null && c.todayEurM3 ? `${eurM3(c.deliveredEurM3)} vs €${c.todayEurM3[0].toFixed(2)} to €${c.todayEurM3[1].toFixed(2)}/m³` : PENDING}</dd></div>
+              <div><dt className="label-caps">Yearly saving</dt><dd className="tnum mt-0.5">{c.yearlySavingEur != null ? formatEur(c.yearlySavingEur) : PENDING}</dd></div>
+              <div><dt className="label-caps">Shared vs alone</dt><dd className="tnum mt-0.5">{c.sharedVsAlone ? `${eurM3(c.sharedVsAlone.shared)} vs ${eurM3(c.sharedVsAlone.alone)}` : PENDING}</dd></div>
+            </dl>
+            <p className="mt-3 text-[11px] text-muted-foreground">{CASE_DISCLAIMER}</p>
+            <Button size="sm" className="mt-3 self-start" onClick={() => setOpen(c)}>Open</Button>
+          </article>
+        ))}
+      </div>
+      <CaseRoom c={open} onClose={() => setOpen(null)} />
+    </div>
+  );
+}
+
+function CaseRoom({ c, onClose }: { c: InvestmentCase | null; onClose: () => void }) {
+  const { setContact } = useWorkspace();
+  const Section = ({ title, items }: { title: string; items: string[] }) => (
+    <div className="mt-5"><p className="label-caps">{title}</p><ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm">{items.map((i) => <li key={i}>{i}</li>)}</ul></div>
+  );
+  return (
+    <Sheet open={!!c} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent className="w-full overflow-y-auto sm:max-w-lg">
+        {c && <>
+          <SheetHeader>
+            <Badge variant="outline" className="w-fit">Case Room</Badge>
+            <SheetTitle className="text-left">{c.name}</SheetTitle>
+            <SheetDescription className="text-left">{CASE_DISCLAIMER}</SheetDescription>
+          </SheetHeader>
+          {c.sharedVsAlone && <p className="mt-4 rounded-lg bg-muted/50 p-3 text-sm">{c.sharedVsAlone.note}: <span className="tnum font-semibold">{eurM3(c.sharedVsAlone.shared)} vs {eurM3(c.sharedVsAlone.alone)}</span></p>}
+          <Section title="Parties and roles under RD 1085/2024" items={[`Water producer: ${c.plant} (reclamation and quality at the point of delivery)`, `Users: ${c.buyers} (use in line with the authorised purpose)`, "Basin authority: grants the reuse authorisation or concession"]} />
+          <Section title="Permit path" items={["Application to the basin authority with the risk-management plan", "Decision within 12 months; silence means refusal", "Existing facilities must comply by 31 December 2028"]} />
+          <Section title="Risk-plan (PGRAR) checklist" items={["System description from source to point of use", "Hazard and risk assessment per use", "Preventive barriers and quality targets", "Monitoring and verification plan", "Incident and communication protocol"]} />
+          <Section title="Term-sheet draft" items={["Volume and delivery profile per buyer", "Price per m³ and indexation", "Capex split across pipe, pumping and storage", "Term, take-or-pay and exit terms", "Quality guarantee and liability"]} />
+          <Section title="Funding" items={["EU and national water funds", "Plant owner or utility capex", "Buyer contributions in line with their capex share"]} />
+          <Section title="Risks" items={["Demand and today's water cost are screening assumptions", "Pipe route and rights of way unconfirmed", "Permit refusal by silence if the file is incomplete"]} />
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Button onClick={() => setContact("investment_case")}>Talk to us about an engineer-reviewed case</Button>
+          </div>
+        </>}
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function SignalsTab({ onOpen }: { onOpen: (id: string) => void }) {
+  const signals = DEALS.filter((d) => d.stage === "signal" || d.stage === "planning" || d.stage === "study").sort((a, b) => b.opportunity_score - a.opportunity_score);
+  return (
+    <div className="mt-4">
+      <p className="max-w-3xl text-sm text-muted-foreground">Plants facing EU-directive upgrades or RD 1085/2024 deadlines (existing facilities must comply by 31 December 2028), so projects show up before they are tendered.</p>
+      <div className="mt-4 overflow-x-auto rounded-xl border bg-card">
+        <table className="w-full min-w-[640px] text-sm">
+          <thead><tr className="border-b text-left text-xs text-muted-foreground"><th className="px-3 py-2 font-medium">Name</th><th className="px-3 py-2 font-medium">Region</th><th className="px-3 py-2 font-medium">Stage</th><th className="px-3 py-2 font-medium">Value</th><th className="px-3 py-2 font-medium">Score</th></tr></thead>
+          <tbody>{signals.map((d) => (
+            <tr key={d.id} className="cursor-pointer border-b last:border-0 hover:bg-muted/50" onClick={() => onOpen(d.id)}>
+              <td className="px-3 py-2.5 font-medium">{d.name}</td><td className="px-3 py-2.5 text-muted-foreground">{d.region}</td><td className="px-3 py-2.5">{STAGE_LABELS[d.stage]}</td>
+              <td className="tnum px-3 py-2.5">{formatEur(d.value_eur)}</td><td className="px-3 py-2.5"><span className={`tnum rounded-full px-2 py-0.5 text-xs font-semibold ${scoreClass(d.opportunity_score)}`}>{Math.round(d.opportunity_score)}</span></td>
+            </tr>))}</tbody>
+        </table>
+      </div>
+    </div>
   );
 }
