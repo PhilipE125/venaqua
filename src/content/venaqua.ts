@@ -45,8 +45,8 @@ export type Plan = {
 
 // Two paid options only. The free map is a strip below the table, never a plan.
 export const PLANS: Plan[] = [
-  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 seats, 3 Case Rooms, exports and alerts", "Team €12,000/yr: 10 seats, unlimited Case Rooms, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], status: "beta", statusLabel: "Beta", cta: "Start pilot" },
-  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
+  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 seats, 3 Case Rooms, exports and alerts", "Team €12,000/yr: 10 seats, unlimited Case Rooms, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], status: "live", statusLabel: "Live", cta: "Start pilot" },
+  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "live", statusLabel: "Live", cta: "Talk to us" },
 ];
 
 export const ENQUIRIES: Record<EnquiryTopic, { title: string; description: string; placeholder: string }> = {
