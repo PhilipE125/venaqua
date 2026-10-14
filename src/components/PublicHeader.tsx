@@ -31,10 +31,11 @@ export function PublicHeader() {
   const content: Record<Key, { title: string; body: string; actions: React.ReactNode }> = {
     platform: {
       title: "The Venaqua platform",
-      body: "A live map of water recycling plants, industrial water users and water stress. Spot reuse opportunities, then save and develop them as projects.",
+      body: "A live map of water recycling plants, industrial users and water stress, plus Deal Flow: costed investment cases, early signals and tenders.",
       actions: (
         <>
           <Button asChild size="sm"><Link to="/platform" onClick={close}>See the platform</Link></Button>
+          <Button asChild size="sm" variant="outline"><Link to="/deal-flow" onClick={close}>Open Deal Flow</Link></Button>
           <Button asChild size="sm" variant="outline"><Link to="/explore" onClick={close}>Explore the free map</Link></Button>
         </>
       ),
@@ -85,7 +86,6 @@ export function PublicHeader() {
               {i.label}
             </button>
           ))}
-          <Link to="/deal-flow" className="whitespace-nowrap rounded-full px-2.5 py-1.5 transition-colors hover:bg-muted hover:text-foreground">Reuse Pipeline</Link>
         </nav>
         <div className="flex shrink-0 items-center gap-1.5">
           <Button variant="ghost" size="sm" className="whitespace-nowrap" onClick={() => setAuthOpen(true)}>Sign in</Button>
@@ -113,7 +113,6 @@ export function PublicHeader() {
                     {i.label}
                   </button>
                 ))}
-                <Link to="/deal-flow" onClick={close} className="rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted">Reuse Pipeline</Link>
               </div>
             </>
           ) : current && (
