@@ -56,17 +56,23 @@ function MapBackdrop() {
 
 const WHY = [
   {
-    title: "Supply and demand are fragmented",
-    text: "Treatment plants, reuse permits and industrial water users live in separate registries, so the matches that exist are hard to see.",
+    title: "Permits take up to 12 months",
+    text: "A reuse authorisation can take a year, and silence counts as refusal. Venaqua lays out the permit route and the evidence each step needs, so applications start complete and early.",
   },
   {
-    title: "Teams lack a shared evidence base",
-    text: "Without one place to compare flows, distances, tariffs and constraints, early conversations restart from zero every time.",
+    title: "Pipes are the biggest cost",
+    text: "At €0.35–0.85M per km, distance decides viability. Venaqua ranks matches by connection length and shows indicative cost ranges before anyone pays for a feasibility study.",
   },
   {
-    title: "Weak opportunities absorb engineering time",
-    text: "Projects that stall before engineering begins still consume expensive feasibility work that better-located projects deserved.",
+    title: "Someone has to pay",
+    text: "Tarragona's ~€42M scheme was 85% EU-funded. Each Investment Case lists funding options and who benefits, so the parties can agree a split instead of waiting for one payer.",
   },
+];
+
+const WHY_NOW = [
+  { value: "2039", text: "EU deadline for extra treatment at large plants (Directive 2024/3019). The upgrade makes reuse-quality water cheaper to produce." },
+  { value: "RD 1085/2024", text: "Spain's 2024 reuse decree sets the authorisation rules every project now has to follow." },
+  { value: "€0.10–0.19 vs €1.73–2.59", text: "Cost per m³ of reclaimed water against industrial mains water in the Barcelona area — the saving exists in wet years too." },
 ];
 
 const STEPS = [
@@ -136,15 +142,31 @@ function Landing() {
           <div className="mx-auto w-full max-w-5xl px-5 py-16">
             <p className="label-caps text-primary">Why Venaqua</p>
             <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
-              Water reuse projects often stall before engineering begins.
+              Reuse projects stall on permits, pipe costs and who pays.
             </h2>
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {HOME_FACTS.map((id) => <HomeFact key={id} id={id} />)}
             </div>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Finding a match is only the first filter. Venaqua is built to get the shortlisted ones through the hard parts.</p>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {WHY.map((w) => (
                 <div key={w.title} className="rounded-xl border bg-card p-6">
                   <h3 className="font-semibold leading-snug">{w.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="why-now" className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-5xl px-5 py-16">
+            <p className="label-caps text-primary">Why now — not only in droughts</p>
+            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">Regulation and price push reuse forward, wet year or dry.</h2>
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              {WHY_NOW.map((w) => (
+                <div key={w.value} className="rounded-xl border bg-card p-6">
+                  <p className="text-xl font-semibold tabular-nums">{w.value}</p>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.text}</p>
                 </div>
               ))}
@@ -218,6 +240,7 @@ function Landing() {
           <div className="mx-auto w-full max-w-5xl px-5 py-16">
             <p className="label-caps text-primary">Neutral by design</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Three rules we never break</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Why no success fees? Plant owners, industrial sites, funders and contractors all have to trust the same numbers for a project to move. If we earned more when a deal closed, none of them could. Flat prices keep our analysis usable by every side.</p>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {NEUTRALITY.map((n) => (
                 <div key={n.title} className="rounded-xl border bg-card p-6">
