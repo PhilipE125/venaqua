@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AnalysisRouteImport } from './routes/analysis'
+import { Route as DealFlowRouteImport } from './routes/deal-flow'
 import { Route as DeckRouteImport } from './routes/deck'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as PlatformRouteImport } from './routes/platform'
@@ -34,6 +35,11 @@ const AboutRoute = AboutRouteImport.update({
 const AnalysisRoute = AnalysisRouteImport.update({
   id: '/analysis',
   path: '/analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DealFlowRoute = DealFlowRouteImport.update({
+  id: '/deal-flow',
+  path: '/deal-flow',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DeckRoute = DeckRouteImport.update({
@@ -81,6 +87,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/analysis': typeof AnalysisRoute
+  '/deal-flow': typeof DealFlowRoute
   '/deck': typeof DeckRoute
   '/explore': typeof ExploreRoute
   '/platform': typeof PlatformRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/analysis': typeof AnalysisRoute
+  '/deal-flow': typeof DealFlowRoute
   '/deck': typeof DeckRoute
   '/explore': typeof ExploreRoute
   '/platform': typeof PlatformRoute
@@ -108,6 +116,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/analysis': typeof AnalysisRoute
+  '/deal-flow': typeof DealFlowRoute
   '/deck': typeof DeckRoute
   '/explore': typeof ExploreRoute
   '/platform': typeof PlatformRoute
@@ -123,6 +132,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/analysis'
+    | '/deal-flow'
     | '/deck'
     | '/explore'
     | '/platform'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/analysis'
+    | '/deal-flow'
     | '/deck'
     | '/explore'
     | '/platform'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/analysis'
+    | '/deal-flow'
     | '/deck'
     | '/explore'
     | '/platform'
@@ -163,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AnalysisRoute: typeof AnalysisRoute
+  DealFlowRoute: typeof DealFlowRoute
   DeckRoute: typeof DeckRoute
   ExploreRoute: typeof ExploreRoute
   PlatformRoute: typeof PlatformRoute
@@ -194,6 +207,13 @@ declare module '@tanstack/react-router' {
       path: '/analysis'
       fullPath: '/analysis'
       preLoaderRoute: typeof AnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/deal-flow': {
+      id: '/deal-flow'
+      path: '/deal-flow'
+      fullPath: '/deal-flow'
+      preLoaderRoute: typeof DealFlowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/deck': {
@@ -259,6 +279,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AnalysisRoute: AnalysisRoute,
+  DealFlowRoute: DealFlowRoute,
   DeckRoute: DeckRoute,
   ExploreRoute: ExploreRoute,
   PlatformRoute: PlatformRoute,
