@@ -41,3 +41,8 @@
 - [x] Add an explicit Now stress surface, separate from hiding the layer
 - [x] Add a freshwater price panel with verified INE supply-cost history and clearly assumed stress scenarios; commercial-only history unavailable, use editable current bill price
 - [x] Six tests pass; browser verified Now, Hide, graph, scenario toggles and invalid-price validation at 949×693; build OK
+
+## Commercial drought-cost outlook
+- [x] Replace purchase-price outlook with restriction-cost scenarios and editable commercial exposure assumptions
+- [x] Compare with sourced 2023/2024 Catalan industrial restrictions in Spain, without inventing observed business losses
+- [x] Nine tests pass; browser-verified editable totals, graph, scenario toggles, validation, historical cases and close; build OK

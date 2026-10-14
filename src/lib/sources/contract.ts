@@ -21,6 +21,16 @@ export interface SourceStatus {
 }
 
 export const META = {
+  droughtCases: {
+    id: "droughtCases",
+    name: "Past Spanish industrial drought restrictions",
+    publisher: "Generalitat de Catalunya · 2023 and 2024 announcements",
+    url: "https://exteriors.gencat.cat/en/ambits-dactuacio/afers_exteriors/delegacions_govern/ue/actualitat/not_240201_drought_emergency",
+    unitNotes: "Documented industrial water-use reductions: 15% in exceptional drought (2023), 25% in emergency (2024). The cost replay uses your inputs, not observed historical losses.",
+    updateFrequency: "Historical episodes · 2023–2024",
+    quality: "modelled",
+    knownIssues: ["Catalan examples only, not Spain-wide rules", "Restrictions are not equivalent to production losses", "Local rules, approved savings plans and water availability need confirmation"],
+  },
   waterPrices: {
     id: "waterPrices",
     name: "Historical water-supply costs",
