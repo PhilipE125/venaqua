@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, Suspense, useState } from "react";
-import { Sparkles, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { useWorkspace } from "@/lib/workspace";
 import { Drawer } from "@/components/Drawer";
 import { CompanySearch, QuestionBar } from "@/components/Landing";
@@ -31,18 +30,18 @@ function MapFallback() {
   return <div className="h-full w-full animate-pulse bg-muted" />;
 }
 
+const BANNER_KEY = "venaqua:free-banner-dismissed";
 function FreeMapBanner() {
   const { user, setAuthOpen } = useWorkspace();
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(true);
+  useEffect(() => { setDismissed(localStorage.getItem(BANNER_KEY) === "1"); }, []);
   if (user || dismissed) return null;
+  const close = () => { localStorage.setItem(BANNER_KEY, "1"); setDismissed(true); };
   return (
-    <div className="pointer-events-auto absolute left-1/2 top-3 z-30 flex w-[min(92%,560px)] -translate-x-1/2 items-center gap-3 rounded-xl border bg-card/95 px-4 py-2.5 shadow-lg backdrop-blur">
-      <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-      <p className="min-w-0 flex-1 text-xs leading-snug text-muted-foreground">
-        You're viewing the <span className="font-medium text-foreground">free map</span>. Create an account to save projects, run full economics and get a feasibility brief.
-      </p>
-      <Button size="sm" className="shrink-0" onClick={() => setAuthOpen(true)}>Get started</Button>
-      <button aria-label="Dismiss" className="shrink-0 text-muted-foreground hover:text-foreground" onClick={() => setDismissed(true)}><X className="h-4 w-4" /></button>
+    <div className="pointer-events-auto absolute left-1/2 top-3 z-30 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-card/95 py-1 pl-3 pr-1.5 text-xs shadow-md backdrop-blur">
+      <span className="text-muted-foreground">Free map</span>
+      <button className="font-medium text-primary hover:underline" onClick={() => setAuthOpen(true)}>Save projects with an account</button>
+      <button aria-label="Dismiss" className="rounded-full p-1 text-muted-foreground hover:text-foreground" onClick={close}><X className="h-3.5 w-3.5" /></button>
     </div>
   );
 }
