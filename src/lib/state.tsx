@@ -32,6 +32,9 @@ export const MODE_PRESETS: Record<Mode, Record<LayerKey, boolean>> = {
   q5: { wwtp: false, regen: true, companies: true, reservoirs: true, tenders: false, projects: false, clusters: false },
   all: { wwtp: true, regen: true, companies: true, reservoirs: true, tenders: true, projects: true, clusters: true },
 };
+// Calm first view: plants first; companies fade in once zoomed in; extras stay off until switched on.
+export const CALM_LAYERS: Record<LayerKey, boolean> = { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false
+};
 
 export interface Settings {
   sectorDemand: Record<SectorId, number>;
@@ -134,6 +137,10 @@ interface AppState {
   setLanding: (b: boolean) => void;
   searchOpen: boolean;
   setSearchOpen: (b: boolean) => void;
+  horizon: string | null;
+  setHorizon: (h: string | null) => void;
+  showPipes: boolean;
+  setShowPipes: (b: boolean) => void;
 }
 
 const Ctx = createContext<AppState | null>(null);
@@ -153,7 +160,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [scenarioValues, setScenarioValues] = useState<Record<string, unknown>>({});
   const [region, setRegion] = useState<Region>("es");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(MODE_PRESETS.all); // matches the initial mode below
+  const [layers, setLayers] = useState<Record<LayerKey, boolean>>(CALM_LAYERS);
   const [mode, setModeState] = useState<Mode>("all");
   const [tip, setTip] = useState(false);
   const [selection, select] = useState<Selection>(null);
@@ -166,6 +173,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [demandOverride, setDemand] = useState<Record<string, number>>({});
   const [landing, setLanding] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [horizon, setHorizon] = useState<string | null>(null);
+  const [showPipes, setShowPipes] = useState(false);
 
   useEffect(() => {
     const s = load<Partial<Settings>>(KEY, {});
@@ -239,8 +248,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setLanding,
       searchOpen,
       setSearchOpen,
+      horizon, setHorizon, showPipes, setShowPipes,
     }),
-    [camera, cameraFocus, scenarioValues, layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen, mode, tip, region, panelOpen],
+    [horizon, showPipes, camera, cameraFocus, scenarioValues, layers, selection, maxKm, sector, minCapacity, settings, dark, confirmed, demandOverride, landing, searchOpen, mode, tip, region, panelOpen],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
