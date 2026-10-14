@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { hasApiAccess, type PlanId } from "./plans";
 import { sha256Hex } from "./apiHash";
 
-/** Creates an API key for Data & API customers. The full key is returned once; only its hash is stored. */
+/** Creates an API key for Data API customers. The full key is returned once; only its hash is stored. */
 export const createApiKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ name: z.string().trim().min(1).max(100) }).parse(d))
