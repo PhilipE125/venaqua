@@ -21,6 +21,16 @@ export interface SourceStatus {
 }
 
 export const META = {
+  stressScenario: {
+    id: "stressScenario",
+    name: "Illustrative water-stress surface",
+    publisher: "Venaqua visual scenario",
+    url: "https://drought.emergency.copernicus.eu/",
+    unitNotes: "Synthetic 0–100 visual index, including the Now baseline. Not measured current conditions or a validated forecast. The linked drought observatory is a reference, not the source of this surface.",
+    updateFrequency: "Static illustration · baseline 2026",
+    quality: "assumption",
+    knownIssues: ["Not suitable for site decisions", "Simplified mainland and Balearic coverage; excludes the Canary Islands, Ceuta and Melilla"],
+  },
   wwtp: {
     id: "wwtp",
     name: "Treatment plants (EDAR)",
