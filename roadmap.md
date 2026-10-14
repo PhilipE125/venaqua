@@ -75,4 +75,4 @@
 
 # Pricing simplification (Oct 2026)
 - [x] Two paid options only (Investment cases, Data & API); free map as strip below
-- [ ] Remove all Beta/coming labels site-wide; present as full solution
+- [x] Removed all Beta/coming labels site-wide; everything presented as live
