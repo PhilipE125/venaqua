@@ -3,88 +3,45 @@ import { ArrowRight, Building2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
-import { FAQ_PRICING, NEUTRALITY, OFFERS, PRICING_STORY, type Offer, type OfferTier } from "@/content/venaqua";
+import { FAQ_PRICING, NEUTRALITY, PLANS, PRICING_STORY, type Plan } from "@/content/venaqua";
 import dealData from "@/data/dealflow-deals.json";
 
 const DEAL_COUNT = (dealData as { deals: unknown[] }).deals.length;
-const priceNumber = (p: string) => Number(p.replace(/[^\d]/g, "").slice(0, 6)) || undefined;
+const priceNumber = (p: string) => Number(p.replace(/[^\d]/g, "").slice(0, 6)) || 0;
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Venaqua · Pricing: Deal Flow and Data" },
-      { name: "description", content: "Free reuse map. Deal Flow from €2,900/yr (launch price) and Data from €6,000/yr per country. Flat prices, no success fees." },
+      { name: "description", content: "Free reuse map. Deal Flow Pro €2,900/yr launch price, Team €12,000/yr, engineer-reviewed cases from €4,900, Data from €6,000/yr. EUR excl. VAT, no success fees." },
       { property: "og:title", content: "Venaqua · Pricing" },
-      { property: "og:description", content: "Develop wastewater-reuse projects with Deal Flow, or use our data in your own tools. All prices under €15,000." },
+      { property: "og:description", content: "Investment cases, early signals and tenders for water reuse in Spain. All prices under €15,000." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     scripts: [{
       type: "application/ld+json",
       children: JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Product",
-        name: "Venaqua",
-        offers: OFFERS.flatMap((o) => [
-          ...o.tiers.map((t) => ({ "@type": "Offer", name: `${o.name} ${t.name}`, price: priceNumber(t.price), priceCurrency: "EUR" })),
-          ...(o.addon ? [{ "@type": "Offer", name: o.addon.name, price: priceNumber(o.addon.price), priceCurrency: "EUR" }] : []),
-        ]),
+        "@context": "https://schema.org", "@type": "Product", name: "Venaqua",
+        offers: PLANS.map((p) => ({ "@type": "Offer", name: p.name, price: priceNumber(p.price), priceCurrency: "EUR" })),
       }),
     }],
   }),
   component: Pricing,
 });
 
-const STATUS_STYLE: Record<OfferTier["status"], string> = {
+const STATUS_STYLE: Record<Plan["status"], string> = {
   live: "bg-primary/10 text-primary",
   beta: "bg-secondary text-secondary-foreground",
   "on-request": "bg-muted text-foreground",
   coming: "bg-muted text-muted-foreground",
 };
 
-function Tier({ tier, primary }: { tier: OfferTier; primary: boolean }) {
+function PlanCta({ plan }: { plan: Plan }) {
   const { setContact } = useWorkspace();
-  return (
-    <div className="flex flex-col rounded-md border bg-background p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-semibold">{tier.name}</h3>
-        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_STYLE[tier.status]}`}>{tier.statusLabel}</span>
-      </div>
-      <div className="mt-2 flex flex-wrap items-baseline gap-2">
-        <p className="text-xl font-semibold tabular-nums">{tier.price}</p>
-        {tier.listPrice && <p className="text-sm tabular-nums text-muted-foreground line-through">{tier.listPrice}</p>}
-        {tier.chip && <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">{tier.chip}</span>}
-      </div>
-      <p className="mt-1 text-xs text-muted-foreground">{tier.detail}</p>
-      <ul className="mt-3 flex flex-col gap-2">
-        {tier.includes.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span>{f}</span></li>
-        ))}
-      </ul>
-      <Button className="mt-4 w-full" variant={primary ? "default" : "outline"} onClick={() => setContact(tier.id)}>{tier.cta}</Button>
-    </div>
-  );
-}
-
-function OfferCard({ offer }: { offer: Offer }) {
-  const { setContact } = useWorkspace();
-  return (
-    <article aria-label={offer.name} className="flex min-w-0 flex-col rounded-lg border bg-card p-6">
-      <h2 className="text-2xl font-semibold">{offer.name}</h2>
-      <p className="mt-2 font-medium leading-snug">{offer.line}</p>
-      <p className="mt-2 text-sm text-muted-foreground"><span className="font-medium text-foreground">For: </span>{offer.for}</p>
-      <div className="mt-5 grid flex-1 gap-4 sm:grid-cols-2">
-        {offer.tiers.map((t, i) => <Tier key={t.id} tier={t} primary={i === 0} />)}
-      </div>
-      {offer.addon && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed p-3 text-sm">
-          <p><span className="font-medium">Add-on: {offer.addon.name}: {offer.addon.price}.</span> <span className="text-muted-foreground">{offer.addon.text}</span></p>
-          <Button size="sm" variant="ghost" onClick={() => setContact(offer.addon!.id)}>{offer.addon.cta}<ArrowRight /></Button>
-        </div>
-      )}
-      {offer.note && <p className="mt-4 text-xs leading-relaxed text-muted-foreground">{offer.note}</p>}
-    </article>
-  );
+  if (plan.id === "free") return <Button asChild variant="outline" size="sm" className="w-full"><Link to="/explore">{plan.cta}</Link></Button>;
+  const id = plan.id;
+  return <Button size="sm" className="w-full" variant={plan.cta === "Start pilot" ? "default" : "outline"} onClick={() => setContact(id)}>{plan.cta}</Button>;
 }
 
 function Pricing() {
@@ -95,21 +52,45 @@ function Pricing() {
         <section className="mx-auto w-full max-w-5xl px-5 pb-8 pt-16 text-center sm:pt-20">
           <h1 className="text-3xl font-semibold sm:text-4xl">{PRICING_STORY.title}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">{PRICING_STORY.description}</p>
-          <p className="mx-auto mt-2 max-w-2xl text-xs text-muted-foreground">{PRICING_STORY.small}</p>
-        </section>
-
-        <section className="mx-auto w-full max-w-6xl px-5 pb-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/40 px-5 py-3">
-            <p className="text-sm">{PRICING_STORY.free}</p>
-            <Button asChild size="sm" variant="outline"><Link to="/explore">Explore the free map<ArrowRight /></Link></Button>
-          </div>
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-5 pb-12">
-          <div className="grid gap-5 lg:grid-cols-2">
-            {OFFERS.map((o) => <OfferCard key={o.id} offer={o} />)}
+          <div className="overflow-x-auto rounded-lg border bg-card">
+            <table className="w-full min-w-[860px] table-fixed text-sm">
+              <thead>
+                <tr className="border-b align-top">
+                  {PLANS.map((p) => (
+                    <th key={p.id} className="p-4 text-left font-normal">
+                      <div className="flex flex-wrap items-center justify-between gap-1">
+                        <span className="font-semibold">{p.name}</span>
+                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_STYLE[p.status]}`}>{p.statusLabel}</span>
+                      </div>
+                      <div className="mt-2 flex flex-wrap items-baseline gap-2">
+                        <span className="tabular-nums text-lg font-semibold">{p.price}</span>
+                        {p.listPrice && <span className="tabular-nums text-sm text-muted-foreground line-through">{p.listPrice}</span>}
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">{p.priceNote}</p>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="align-top">
+                  {PLANS.map((p) => (
+                    <td key={p.id} className="p-4">
+                      <ul className="flex flex-col gap-2">
+                        {p.includes.map((f) => <li key={f} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><span>{f}</span></li>)}
+                      </ul>
+                    </td>
+                  ))}
+                </tr>
+                <tr>{PLANS.map((p) => <td key={p.id} className="p-4 pt-0"><PlanCta plan={p} /></td>)}</tr>
+              </tbody>
+            </table>
           </div>
-          <p className="mt-5 text-center text-sm text-muted-foreground">Currently tracking <span className="font-medium text-foreground tabular-nums">{DEAL_COUNT}</span> reuse deals in Spain, updated weekly. <Link to="/deal-flow" className="font-medium text-primary hover:underline">See the live pipeline</Link></p>
+          <p className="mt-4 text-center text-sm font-medium">{PRICING_STORY.small}</p>
+          <p className="mt-1 text-center text-xs text-muted-foreground">EUR, excluding VAT.</p>
+          <p className="mt-5 text-center text-sm text-muted-foreground">Currently tracking <span className="font-medium text-foreground tabular-nums">{DEAL_COUNT}</span> reuse tenders and signals in Spain. <Link to="/deal-flow" className="font-medium text-primary hover:underline">See Deal Flow</Link></p>
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-5 pb-12">

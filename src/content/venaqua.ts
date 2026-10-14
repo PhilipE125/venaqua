@@ -30,78 +30,48 @@ export type Offer = {
   note?: string;
 };
 
-// Two paid offers plus a free map. Every price stays under Spain's €15,000 minor-contract limit (excl. VAT).
-export const OFFERS: Offer[] = [
-  {
-    id: "deal-flow",
-    name: "Deal Flow",
-    line: "Track wastewater-reuse deals across Spain from the first signal to tender, with analysis to help you choose which to pursue.",
-    for: "Water operators, construction and engineering firms, equipment suppliers, investors.",
-    tiers: [
-      {
-        id: "deal_flow_pro", name: "Pro", price: "€2,900/year", listPrice: "€4,900/year", chip: "Launch price",
-        detail: "Launch price for the first 20 customers · 3 seats · Spain",
-        includes: [
-          "Full deal pipeline with filters: region, value, stage, type, score, deadline",
-          "Opportunity analysis on every site: three options, cost of waiting, 2050 scenarios",
-          "Automated Investment Case export per deal: supply, demand, pipe and cost ranges, water price, payback, funding options, sources",
-          "Saved searches and email alerts",
-          "CSV export",
-        ],
-        status: "beta", statusLabel: "Beta", cta: "Start with the launch price",
-      },
-      {
-        id: "deal_flow_team", name: "Team", price: "€12,000/year",
-        detail: "10 seats · everything in Pro",
-        includes: ["Shared team pipeline", "CRM export", "1 engineer-reviewed Investment Case per year included"],
-        status: "beta", statusLabel: "Beta", cta: "Talk to us",
-      },
-    ],
-    addon: { id: "investment_case", name: "Engineer-reviewed Investment Case", price: "€4,900 fixed per deal", text: "Reviewed by partner engineers; the fee can be split between the parties.", cta: "Request an Investment Case" },
-    note: "Some pipeline features, including alerts and CRM export, are still rolling out during the beta.",
-  },
-  {
-    id: "data",
-    name: "Data",
-    line: "Use our structured data on plants, industrial users, deals and scores in your own tools.",
-    for: "Large operators' planning teams, consultancies with their own GIS, water-risk platforms, lenders.",
-    tiers: [
-      {
-        id: "data_export", name: "Export", price: "€6,000/year", detail: "Per country · quarterly files",
-        includes: ["CSV and GeoJSON: treatment plants", "Industrial facilities with demand estimates", "Deals with scores and sources"],
-        status: "on-request", statusLabel: "Live (on request)", cta: "Request a sample file",
-      },
-      {
-        id: "data_api", name: "API", price: "€14,900/year", detail: "Per country · daily updates",
-        includes: ["Daily-updated deals and plant data by API", "API keys", "Field documentation"],
-        status: "beta", statusLabel: "Early access", cta: "Request early access",
-      },
-    ],
-    note: "Each layer keeps its source licence and labels (measured, estimate, needs confirmation). Extra country: same price per country.",
-  },
+// One pricing table. Every price stays under Spain's €15,000 minor-contract limit (excl. VAT).
+export type Plan = {
+  id: EnquiryTopic | "free";
+  name: string;
+  price: string;
+  listPrice?: string;
+  priceNote: string;
+  includes: string[];
+  status: ModuleStatus;
+  statusLabel: string;
+  cta: "Start pilot" | "Talk to us" | "Open the free map";
+};
+
+export const PLANS: Plan[] = [
+  { id: "free", name: "Free", price: "€0", priceNote: "No account needed", includes: ["Reuse map and plant pages", "Teaser lists of cases, signals and tenders", "No € figures or buyer names"], status: "live", statusLabel: "Live", cta: "Open the free map" },
+  { id: "deal_flow_pro", name: "Deal Flow Pro", price: "€2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["3 seats · Spain", "All investment cases, early signals and tenders", "3 Case Rooms", "Exports and alerts"], status: "beta", statusLabel: "Beta", cta: "Start pilot" },
+  { id: "deal_flow_team", name: "Deal Flow Team", price: "€12,000/yr", priceNote: "Everything in Pro", includes: ["10 seats", "Unlimited Case Rooms", "Company profile for eligibility checks", "1 engineer-reviewed case included"], status: "beta", statusLabel: "Beta", cta: "Talk to us" },
+  { id: "investment_case", name: "Engineer-reviewed case", price: "from €4,900", priceNote: "Scoped per case", includes: ["A screening case checked by partner engineers", "Fee can be split between the parties"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
+  { id: "data_export", name: "Data (export or API)", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
 ];
 
 export const ENQUIRIES: Record<EnquiryTopic, { title: string; description: string; placeholder: string }> = {
-  deal_flow_pro: { title: "Deal Flow Pro launch price", description: "Tell us about your team and the deals you want to track. Launch price €2,900/year for the first 20 customers.", placeholder: "Your company, regions and the kinds of reuse deals you pursue…" },
-  deal_flow_team: { title: "Deal Flow Team", description: "Tell us about your team and how you manage your deals today.", placeholder: "Team size, regions, CRM you use and deals you're working on…" },
-  investment_case: { title: "Engineer-reviewed Investment Case", description: "€4,900 fixed per deal, reviewed by partner engineers.", placeholder: "The deal or site, the parties involved and the decision you need to make…" },
-  data_export: { title: "Request a sample data file", description: "Quarterly CSV and GeoJSON per country, €6,000/year.", placeholder: "Countries, layers you need and the tools you'll load them into…" },
-  data_api: { title: "Data API early access", description: "Daily-updated deals and plant data per country, €14,900/year.", placeholder: "Countries, endpoints you need and your integration…" },
+  deal_flow_pro: { title: "Start a Deal Flow Pro pilot", description: "Launch price €2,900/yr (excl. VAT) for the first 20 customers.", placeholder: "Your company, regions and the kinds of reuse projects you pursue…" },
+  deal_flow_team: { title: "Deal Flow Team", description: "€12,000/yr (excl. VAT) for 10 seats with unlimited Case Rooms.", placeholder: "Team size, regions and the cases you're working on…" },
+  investment_case: { title: "Engineer-reviewed case", description: "From €4,900 (excl. VAT), scoped per case.", placeholder: "The case or site, the parties involved and the decision you need to make…" },
+  data_export: { title: "Data by export or API", description: "From €6,000/yr per country (excl. VAT).", placeholder: "Countries, layers you need and the tools you'll load them into…" },
+  data_api: { title: "Data by export or API", description: "From €6,000/yr per country (excl. VAT).", placeholder: "Countries, endpoints you need and your integration…" },
 };
 
 export const PRICING_STORY = {
   title: "Pricing",
-  description: "Use Deal Flow to develop reuse projects, or bring our data into your own tools. Flat prices, no success fees.",
-  small: "EUR, excluding VAT. All prices are under Spain's €15,000 minor-contract limit, so public bodies can buy directly.",
-  free: "Free: the reuse map, plant pages and the list of public reuse tenders. No account needed.",
+  description: "Investment cases, early signals and tenders for water reuse in Spain, or our data in your own tools. Flat prices in EUR, excluding VAT.",
+  small: "No success fees or commissions. All prices are under €15,000, so public bodies can buy directly.",
+  free: "Free: the reuse map and teaser lists. No account needed.",
   summary: "Free map · Deal Flow from €2,900/yr · Data from €6,000/yr",
   which: [
-    { want: "I want to find and win reuse projects", offer: "Deal Flow" },
+    { want: "I want to find, shape and win reuse projects", offer: "Deal Flow" },
     { want: "I want the data in my own systems", offer: "Data" },
   ],
   why: [
-    "Tender alerts cost €200-3,500 a year and start when a tender is published. Deal Flow starts at the plant, months earlier, and includes the analysis.",
-    "A feasibility study can cost €150-300k. An engineer-reviewed Investment Case is €4,900.",
+    "Tender alerts cost €200-3,500 a year and start when a tender is published. Deal Flow starts at the plant, months earlier, with costed co-investment cases.",
+    "A feasibility study can cost €150-300k. An engineer-reviewed case starts at €4,900.",
     "We never take a cut of a deal, so our numbers stay neutral.",
   ],
 };
@@ -142,8 +112,8 @@ export const FACTS = {
 export type FactId = keyof typeof FACTS;
 
 export const FAQ_PRICING = [
-  { q: "What's in an Investment Case?", a: "Supply, demand, pipe and cost ranges, the water price, payback, funding options and every source used. Deal Flow plans export it automatically for each deal. The engineer-reviewed version (€4,900 fixed per deal) adds a check by partner engineers." },
-  { q: "Is it engineering advice?", a: "No. Investment Cases are indicative screening documents that help you decide whether a full engineering study is worth commissioning. They do not replace engineering design, legal advice or permitting review." },
+  { q: "What's in an investment case?", a: "The parties, shared infrastructure, capex, delivered cost per m³ against today's cost, yearly saving, payback and a verdict. Pro and Team open each one in a Case Room with the permit path, risk-plan checklist, term-sheet draft and funding. The engineer-reviewed version (from €4,900, scoped per case) adds a check by partner engineers." },
+  { q: "Is it engineering advice?", a: "No. Cases are estimates from public data and stated assumptions. They help you decide whether a full engineering study is worth commissioning, and do not replace engineering design, legal advice or permitting review." },
   { q: "Can public bodies buy without a tender?", a: "Yes. Every price is under Spain's €15,000 minor-contract limit (excluding VAT), so agencies and municipal water companies can buy directly." },
   { q: "Do you take a commission?", a: "No. We charge flat subscriptions and fixed fees, with no success fees, commissions or paid ranking. Our fee does not change when a deal goes ahead." },
   { q: "What's the difference between Deal Flow and Data?", a: "Deal Flow is the deal pipeline plus the analysis, used inside Venaqua to find and win projects. Data is the same structured data delivered to your own tools by file export or API." },
