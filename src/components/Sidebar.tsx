@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { fmt, fmt1, useCompanies, useDrought, useEea, useMatches, usePrat, useProjects, useRegen, useReservoirHistory, useReservoirs, useTenders, useWwtps } from "@/lib/queries";
+import { fmt, fmt1, fmt2, useCompanies, useFlipTable, useDrought, useEea, useMatches, usePrat, useProjects, useRegen, useReservoirHistory, useReservoirs, useTenders, useWwtps } from "@/lib/queries";
 import { SECTORS, sectorById, type SectorId } from "@/lib/sectors";
 import { META, type SourceId } from "@/lib/sources/contract";
 import { QualityBadge } from "./SourceInfo";
@@ -220,6 +220,43 @@ function OpportunitiesTab() {
   );
 }
 
+function FlipTab() {
+  const { select, region } = useApp();
+  const { rows, isLoading } = useFlipTable();
+  const flips = rows?.filter((r) => r.flipYear != null).length ?? 0;
+  return (
+    <div className="px-4 py-3">
+      <p className="text-xs leading-snug text-muted-foreground">
+        Each site run through the cost model with default inputs: sector demand, the regional tariff, tariffs rising 3% a year
+        {region === "cat" || region === "es" ? ", Catalan drought history" : ""}. B = recycled water from the cheapest plant within 30 km, C = on-site reuse. Open a site to change its inputs.
+      </p>
+      {isLoading || !rows ? (
+        <div className="mt-3 space-y-2">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-11 w-full" />)}</div>
+      ) : (
+        <>
+          <p className="label-caps mb-2 mt-3">{fmt.format(flips)} of {fmt.format(rows.length)} sites flip by 2050 · top 50</p>
+          <ol className="space-y-1">
+            {rows.slice(0, 50).map((r, i) => (
+              <li key={r.company.id}>
+                <Button variant="ghost" onClick={() => select({ kind: "company", id: r.company.id })} className="block h-auto w-full rounded-sm px-2 py-2 text-left whitespace-normal">
+                  <div className="flex items-baseline justify-between gap-2 text-xs">
+                    <span className="truncate font-medium"><span className="tnum mr-1.5 text-muted-foreground">{i + 1}</span>{r.company.name}</span>
+                    <span className="tnum shrink-0 font-medium">{r.flipYear == null ? "not by 2050" : r.flipYear <= 2026 ? "cheaper now" : `flips ${r.flipYear}`}</span>
+                  </div>
+                  <div className="mt-0.5 flex justify-between gap-2 text-[11px] text-muted-foreground">
+                    <span className="truncate">{r.option === "B" ? `B · ${r.plant}` : "C · on site"} · {sectorById[r.company.sector].label}</span>
+                    <span className="tnum shrink-0">€{fmt2.format(r.perM3)} vs €{fmt2.format(r.statusQuo)}/m³</span>
+                  </div>
+                </Button>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+    </div>
+  );
+}
+
 function LandscapeBox() {
   return (
     <>
@@ -348,14 +385,16 @@ export function Sidebar() {
     <aside className={`panel map-left-panel flex flex-col rounded-lg ${selection ? "obscured" : ""}`}>
       <div className="flex items-center justify-between px-4 pt-3"><h2 className="flex items-center gap-2 text-sm font-semibold"><Layers3 className="h-4 w-4 text-primary" />Map controls</h2><Button variant="ghost" size="icon" className="h-7 w-7" aria-label="Close map controls" onClick={() => setPanelOpen(false)}><X /></Button></div>
       <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col">
-        <TabsList className="mx-4 mt-3 grid grid-cols-3">
+        <TabsList className="mx-4 mt-3 grid grid-cols-4">
           <TabsTrigger value="layers">Layers</TabsTrigger>
           <TabsTrigger value="opps">Filters</TabsTrigger>
+          <TabsTrigger value="flip">Flip</TabsTrigger>
           <TabsTrigger value="about">Sources</TabsTrigger>
         </TabsList>
         <div className="min-h-0 flex-1 overflow-y-auto">
           <TabsContent value="layers" className="mt-0"><LayersTab /></TabsContent>
           <TabsContent value="opps" className="mt-0"><OpportunitiesTab /></TabsContent>
+          <TabsContent value="flip" className="mt-0"><FlipTab /></TabsContent>
           <TabsContent value="about" className="mt-0"><DataQualityTab /></TabsContent>
         </div>
       </Tabs>

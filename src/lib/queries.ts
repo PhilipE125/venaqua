@@ -5,10 +5,12 @@ import { useCallback, useMemo } from "react";
 import { findClusters } from "./clusters";
 import { knownUserSource } from "./knownUsers";
 import { mergeCompanies } from "./merge";
-import { supplyCostPerM3 } from "./costs";
+import { defaultEffluent, EFFLUENT, evaluateOptions, mid, supplyCostPerM3 } from "./costs";
+import { GROWTH, phaseFrequencies, projectFuture } from "./projection";
+import { muniKey } from "./sectors";
 import { effectiveSupply, haversineKm, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
-import { fetchDrought } from "./sources/drought";
+import { currentPhase, fetchDrought, type DroughtEvent } from "./sources/drought";
 import { enrichPlants, fetchEea, nationalPlant, type Country } from "./sources/eea";
 import { fetchIed } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
@@ -20,7 +22,7 @@ import { departmentStress, fetchDepartments, fetchRestriction } from "./sources/
 import { fetchPratHistory, fetchReservoirHistory, fetchReservoirs } from "./sources/reservoirs";
 import { searchTenders } from "./sources/ted.functions";
 import { fetchWwtps } from "./sources/wwtp";
-import { useApp, type Region } from "./state";
+import { useApp, type Region, type Settings } from "./state";
 import type { Company, Plant, SupplySite } from "./types";
 
 const H = 60 * 60 * 1000;
@@ -196,23 +198,91 @@ export function useRoadRoute(a?: { lat: number; lon: number }, b?: { lat: number
 
 export const SUPPLY_SEARCH_KM = 30;
 
+type SupplyPlant = Plant & { supply: NonNullable<Plant["supply"]> };
+
 /** The plant that would supply a company: the cheapest per m³ (pipe + polishing) within reach. */
+export function pickSupplyPlant(plants: Plant[], company: Company, q: number, settings: Settings) {
+  let best: { p: SupplyPlant; d: number; cost: number } | null = null;
+  for (const p of plants) {
+    if (!p.supply || p.supply.availableReclaimed <= 0 || Math.abs(p.lat - company.lat) > 0.3) continue; // 0.3° lat ≈ 33 km
+    const d = haversineKm(p, company);
+    if (d > SUPPLY_SEARCH_KM) continue;
+    const cost = supplyCostPerM3({ distanceKm: d, reuseReady: p.supply.reuseReady, availableM3PerDay: p.supply.availableReclaimed }, q, settings);
+    if (!best || cost < best.cost) best = { p: p as SupplyPlant, d, cost };
+  }
+  return best;
+}
+
 export function useSupplyPlant(company?: Company) {
   const w = useWwtps();
   const { settings, demandOverride } = useApp();
-  return useMemo(() => {
-    if (!company) return null;
-    const q = demandOverride[company.id] ?? (settings.sectorDemand[company.sector] ?? 0) * 365;
-    let best: { p: Plant & { supply: NonNullable<Plant["supply"]> }; d: number; cost: number } | null = null;
-    for (const p of w.data?.features ?? []) {
-      if (!p.supply || p.supply.availableReclaimed <= 0) continue;
-      const d = haversineKm(p, company);
-      if (d > SUPPLY_SEARCH_KM) continue;
-      const cost = supplyCostPerM3({ distanceKm: d, reuseReady: p.supply.reuseReady, availableM3PerDay: p.supply.availableReclaimed }, q, settings);
-      if (!best || cost < best.cost) best = { p: p as Plant & { supply: NonNullable<Plant["supply"]> }, d, cost };
+  return useMemo(
+    () => (company ? pickSupplyPlant(w.data?.features ?? [], company, demandOverride[company.id] ?? (settings.sectorDemand[company.sector] ?? 0) * 365, settings) : null),
+    [w.data, company, settings, demandOverride],
+  );
+}
+
+export interface FlipRow {
+  company: Company;
+  option: "B" | "C"; // the reuse route that flips first (or is cheaper per m³ if neither flips)
+  plant: string | null;
+  perM3: number; // mid €/m³ of that option, including mains water it does not replace
+  statusQuo: number; // €/m³ today: supply + discharge
+  flipYear: number | null; // first year its cumulative cost beats status quo, mid tariff growth
+}
+
+/**
+ * Every company in view, run through the same model as the drawer with defaults: sector demand
+ * (or the user's figure), regional tariff, 80% discharged, base electricity, straight line × detour
+ * and friction only (no road or elevation lookups per row), today's drought phase.
+ */
+export function useFlipTable() {
+  const { settings, demandOverride, region } = useApp();
+  const c = useCompanies();
+  const w = useWwtps();
+  const drought = useDrought();
+  const rows = useMemo(() => {
+    if (!c.data || !w.data) return null;
+    const t = settings.tariffs[region];
+    const plants = w.data.features.filter((p) => p.supply && p.supply.availableReclaimed > 0);
+    const freqs = new Map<DroughtEvent[] | undefined, ReturnType<typeof phaseFrequencies>>();
+    const out: FlipRow[] = [];
+    for (const co of c.data.features) {
+      const q = demandOverride[co.id] ?? (settings.sectorDemand[co.sector] ?? 0) * 365;
+      if (q <= 0) continue;
+      const cand = pickSupplyPlant(plants, co, q, settings);
+      const events = drought.data?.byMuni.get(muniKey(co.municipi));
+      const distanceKm = cand ? cand.d * settings.detourFactor : 0;
+      const r = evaluateOptions({
+        q,
+        tariff: t.supply,
+        dischargeCharge: t.discharge * 0.8,
+        rate: settings.rate,
+        years: settings.years,
+        electricity: settings.electricity.base,
+        plant: cand ? { distanceKm, liftM: (settings.frictionPer10km * distanceKm) / 10, reuseReady: cand.p.supply.reuseReady, availableM3PerDay: cand.p.supply.availableReclaimed } : null,
+        effluentK: EFFLUENT[defaultEffluent(co.sector)].k,
+        cut: settings.droughtCut[currentPhase(events)?.phase ?? "normal"],
+        events,
+        s: settings,
+      });
+      let freq = freqs.get(events);
+      if (!freq) freqs.set(events, (freq = phaseFrequencies(events, 2008, 2025)));
+      const f = projectFuture(r.future, GROWTH.mid, freq);
+      const useB = !!r.B && (f.payB != null ? f.payC == null || f.payB <= f.payC : f.payC == null && mid(r.B.perM3) < mid(r.C.perM3));
+      out.push({
+        company: co,
+        option: useB ? "B" : "C",
+        plant: useB ? (cand?.p.name ?? null) : null,
+        perM3: mid(useB ? r.B!.perM3 : r.C.perM3),
+        statusQuo: mid(r.A.perM3),
+        flipYear: useB ? f.payB : f.payC,
+      });
     }
-    return best;
-  }, [w.data, company, settings, demandOverride]);
+    // Soonest flip first; ties and non-flippers by how close reuse is to the status quo per m³.
+    return out.sort((a, b) => (a.flipYear ?? 9999) - (b.flipYear ?? 9999) || a.perM3 - a.statusQuo - (b.perM3 - b.statusQuo));
+  }, [c.data, w.data, drought.data, settings, demandOverride, region]);
+  return { rows, isLoading: c.isLoading || w.isLoading };
 }
 
 export function useElevation(a?: { lat: number; lon: number }, b?: { lat: number; lon: number }) {

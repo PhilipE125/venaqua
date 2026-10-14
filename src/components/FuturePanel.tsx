@@ -2,46 +2,19 @@ import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { cumulative, expectedCut, paybackYear, phaseFrequencies, tariffAt, type OptionPath } from "@/lib/projection";
+import { FUTURE_END, FUTURE_START, GROWTH, projectFuture, type FutureInputs } from "@/lib/projection";
 import { eurK, fmt1 } from "@/lib/queries";
 import { climateFactor } from "@/lib/sources/aqueduct";
-import type { DroughtEvent, Phase } from "@/lib/sources/drought";
 import { useApp, useScenarioState } from "@/lib/state";
 import { SourceInfo } from "./SourceInfo";
 
-const START = 2026;
-const END = 2050;
-const GROWTH = { low: 0.01, mid: 0.03, high: 0.05 } as const;
+const START = FUTURE_START;
+const END = FUTURE_END;
 
-export interface FutureInputs {
-  q: number;
-  tariff0: number;
-  dischargeCharge: number;
-  valuePerM3Lost: number;
-  cuts: Record<Phase, number>;
-  events: DroughtEvent[] | undefined;
-  B: { capex: number; opexAtT0: number; mainsShare: number; coverage: number } | null;
-  C: { capex: number; opexAtT0: number; mainsShare: number; protectedShare: number };
-}
+export type { FutureInputs };
 
 export function useFuture(i: FutureInputs, growth: keyof typeof GROWTH) {
-  return useMemo(() => {
-    const freq = phaseFrequencies(i.events, 2008, 2025);
-    const years = Array.from({ length: END - START + 1 }, (_, k) => START + k);
-    const tariffFor = (y: number) => tariffAt(i.tariff0, GROWTH[growth], y - START);
-    const cutFor = (y: number) => expectedCut(freq, i.cuts, climateFactor(y));
-    const loss = (cut: number, protectedShare: number) => i.q * cut * i.valuePerM3Lost * (1 - protectedShare);
-    const paths: Record<string, OptionPath> = {
-      A: { capex: 0, opex: (t, cut) => i.q * (t + i.dischargeCharge) + loss(cut, 0) },
-      C: { capex: i.C.capex, opex: (t, cut) => i.C.opexAtT0 + i.q * i.C.mainsShare * (t - i.tariff0) + loss(cut, i.C.protectedShare) },
-    };
-    if (i.B) {
-      const b = i.B;
-      paths["B"] = { capex: b.capex, opex: (t, cut) => b.opexAtT0 + i.q * b.mainsShare * (t - i.tariff0) + loss(cut, b.coverage) };
-    }
-    const rows = cumulative(paths, years, tariffFor, cutFor);
-    return { rows, freq, tariffFor, cutFor, payB: i.B ? paybackYear(rows, "B") : null, payC: paybackYear(rows, "C") };
-  }, [i, growth]);
+  return useMemo(() => projectFuture(i, GROWTH[growth]), [i, growth]);
 }
 
 export function FuturePanel({ inputs }: { inputs: FutureInputs }) {

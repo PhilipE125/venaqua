@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { crf, droughtLoss, opportunityCost, optionA, optionB, optionC, pumpingKWhPerM3, supplyCostPerM3, type CostInputs } from "./costs";
+import { crf, droughtLoss, evaluateOptions, opportunityCost, optionA, optionB, optionC, pumpingKWhPerM3, supplyCostPerM3, type CostInputs } from "./costs";
+import { FUTURE_START, projectFuture } from "./projection";
 import { eeaJoinKey } from "./sources/eea";
+import { DEFAULT_SETTINGS } from "./state";
 import { sectorFromCcae, sectorFromIedActivity } from "./sectors";
 import { phaseDaysInYear, phaseFromCode } from "./sources/drought";
 
@@ -109,5 +111,24 @@ describe("sectorFromCcae", () => {
     expect(sectorFromCcae("Elaboració de cava")).toBe("food");
     expect(sectorFromCcae("Fabricació de matèries plàstiques")).toBe("plastics");
     expect(sectorFromCcae("Reparació de vehicles de motor")).toBe("services");
+  });
+});
+
+describe("evaluateOptions + projectFuture (flip table and drawer share these)", () => {
+  const e = (plant: Parameters<typeof evaluateOptions>[0]["plant"], tariff: number) =>
+    evaluateOptions({ q: 365_000, tariff, dischargeCharge: 1, rate: 0.06, years: 20, electricity: 0.15, plant, effluentK: 1, cut: 0, events: undefined, s: DEFAULT_SETTINGS });
+  const near = { distanceKm: 2, liftM: 0, reuseReady: true, availableM3PerDay: 5000 };
+  it("matches the single-option functions", () => {
+    const r = e(near, 2);
+    expect(r.A.perM3[0]).toBeCloseTo(3);
+    expect(r.B!.coverage).toBe(1);
+    expect(e(null, 2).B).toBeNull();
+  });
+  it("flips earlier when water is dearer, never before the start year", () => {
+    const cheap = projectFuture(e(near, 0.5).future, 0.03).payB;
+    const dear = projectFuture(e(near, 4).future, 0.03).payB;
+    expect(dear).not.toBeNull();
+    expect(dear!).toBeGreaterThanOrEqual(FUTURE_START);
+    expect(cheap == null || cheap > dear!).toBe(true);
   });
 });
