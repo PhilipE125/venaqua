@@ -38,6 +38,6 @@
 - [x] Future water stress (2/5/10/15 yrs) + predicted pipe network layers
 
 ## Current stress and freshwater prices
-- [ ] Add an explicit Now stress surface, separate from hiding the layer
-- [ ] Add a freshwater price panel with sourced history and clearly assumed stress scenarios
-- [ ] Test price arithmetic and verify the map controls and chart in the browser
+- [x] Add an explicit Now stress surface, separate from hiding the layer
+- [x] Add a freshwater price panel with verified INE supply-cost history and clearly assumed stress scenarios; commercial-only history unavailable, use editable current bill price
+- [x] Six tests pass; browser verified Now, Hide, graph, scenario toggles and invalid-price validation at 949×693; build OK
