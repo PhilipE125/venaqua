@@ -21,3 +21,4 @@
 - AppStateProvider lives in the root; camera and per-opportunity scenario values stay in this context across map and analysis routes — returning to discovery must not discard user inputs.
 - The map renders only a compact opportunity preview; detailed views are reused on the public analysis route — keeps discovery visually separate from project evaluation.
 - Map price history is a sourced supply-only snapshot in its own source module; commercial-price scenarios use pure tested compounding separately from the illustrative stress surface — prevents synthetic map values being presented as calibrated tariff forecasts.
+- The map drought-cost outlook uses pure event-exposure arithmetic in droughtCosts.ts and sourced restriction cases in sources/droughtCases.ts; historical monetary replays and future duration sensitivities remain assumptions separate from the synthetic map — avoids implying observed losses or calibrated forecasts.
