@@ -1,3 +1,4 @@
+import { useWorkspace } from "./workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useMemo } from "react";
@@ -273,8 +274,9 @@ export function useMatches(): Derived {
   const r = useRegen();
   const c = useCompanies();
   const { stress } = useStress();
+  const { weights } = useWorkspace();
 
-  return shared(slots.matches, [w.data, r.data, c.data, maxKm, sector, minCapacity, settings, stress], () => {
+  return shared(slots.matches, [w.data, r.data, c.data, maxKm, sector, minCapacity, settings, stress, weights], () => {
     const sites: SupplySite[] = [...(w.data?.features ?? []), ...(r.data?.features ?? [])];
     const companies = c.data?.features ?? [];
     const siteById = new Map(sites.map((s) => [s.id, s]));
@@ -282,7 +284,7 @@ export function useMatches(): Derived {
     const matches = scorePairs(
       sites.map((s) => ({ id: s.id, lat: s.lat, lon: s.lon, supply: effectiveSupply(s.capacity, s.kind === "regen") })),
       companies.map((x) => ({ id: x.id, lat: x.lat, lon: x.lon, demand: settings.sectorDemand[x.sector] ?? 0 })),
-      { maxKm, stress },
+      { maxKm, stress, weights },
     );
     const filtered = matches
       .filter((m) => {
