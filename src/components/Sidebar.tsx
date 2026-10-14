@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmt, fmt1, fmt2, useCompanies, useFlipTable, useDrought, useEea, useMatches, usePrat, useProjects, useRegen, useReservoirHistory, useReservoirs, useTenders, useWwtps } from "@/lib/queries";
 import { SECTORS, sectorById, type SectorId } from "@/lib/sectors";
 import { META, type SourceId } from "@/lib/sources/contract";
-import { QualityBadge } from "./SourceInfo";
+import { QualityBadge, SourceInfo } from "./SourceInfo";
+import { STRESS_HORIZONS } from "@/lib/stressGrid";
 import { useApp, type LayerKey } from "@/lib/state";
 import { LEVEL_COLORS, REGEN_COLOR, RIVER_COLORS, fillColor, rgb } from "./map/colors";
 
@@ -69,8 +70,29 @@ function LayerRow({
   );
 }
 
+function FutureLayers() {
+  const { horizon, setHorizon, showPipes, setShowPipes } = useApp();
+  return (
+    <div className="border-b py-3 text-xs">
+      <div className="flex items-center justify-between gap-2"><p className="text-sm font-medium">Water stress scenario</p><SourceInfo id="stressScenario" /></div>
+      <div className="mt-2 grid grid-cols-6 gap-1">
+        <Button size="sm" variant={horizon === null ? "default" : "secondary"} onClick={() => setHorizon(null)} className="h-7 min-w-0 px-0 text-[10px]">Off</Button>
+        {STRESS_HORIZONS.map((h) => (
+          <Button key={h.key} size="sm" variant={horizon === h.key ? "default" : "secondary"} aria-pressed={horizon === h.key} onClick={() => setHorizon(h.key)} className="tnum h-7 min-w-0 px-0 text-[10px]">{h.label}</Button>
+        ))}
+      </div>
+      {horizon && <><div className="stress-ramp mt-2 h-2 rounded-full" /><div className="mt-0.5 flex justify-between text-[10px] text-muted-foreground"><span>Low</span><span>Illustrative, not an official forecast</span><span>Severe</span></div></>}
+      <label className="mt-3 flex cursor-pointer items-center justify-between gap-2">
+        <span><span className="text-sm font-medium">Illustrative pipe layout</span><span className="block text-[11px] text-muted-foreground">Sketch, not real routes · appears when zoomed in to town level</span></span>
+        <Switch checked={showPipes} onCheckedChange={setShowPipes} />
+      </label>
+    </div>
+  );
+}
+
 function LayersTab() {
   const { region } = useApp();
+  const spain = region === "es" || region === "cat";
   const w = useWwtps();
   const r = useRegen();
   const c = useCompanies();
@@ -93,7 +115,8 @@ function LayersTab() {
           <span key={s.id} className="flex items-center gap-1.5"><Dot color={s.color} />{s.label}</span>
         ))}
       </LayerRow>
-      <LayerRow k="reservoirs" title={region === "de" ? "Rivers (live gauge levels)" : region === "fr" ? "Reservoirs (none in France)" : "Reservoirs"} q={res} count={res.data?.features.length}>
+      {spain && <FutureLayers />}
+      {region !== "fr" && <LayerRow k="reservoirs" title={region === "de" ? "Rivers (live gauge levels)" : "Reservoirs"} q={res} count={res.data?.features.length}>
         {region === "de" ? (
           <>
             <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.low} />Low water</span>
@@ -107,18 +130,13 @@ function LayersTab() {
             <span className="flex items-center gap-1.5"><Dot color={fillColor(80)} />&gt;60%</span>
           </>
         )}
-      </LayerRow>
+      </LayerRow>}
       <LayerRow k="tenders" title="Water-sector tenders" q={t} count={t.data?.tenders.length}>
         <span>Wastewater and water-treatment tenders since 2024 (EU TED); few are about reuse itself</span>
       </LayerRow>
-      <LayerRow k="projects" title="Reuse projects (tenders)" q={pr.isLoading || !pr.data ? { ...pr, isLoading: !pr.isError } : pr} count={pr.data?.features.length}>
+      {spain && <LayerRow k="projects" title="Reuse projects (tenders)" q={pr.isLoading || !pr.data ? { ...pr, isLoading: !pr.isError } : pr} count={pr.data?.features.length}>
         <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 bg-foreground" />Catalan contracts for reclaimed water</span>
-      </LayerRow>
-      <div className="border-b py-3 text-xs text-muted-foreground">
-        <p className="label-caps mb-1.5">Evidence</p>
-        <p>Solid = measured · dashed = modelled · dotted or hollow = assumption or potential.</p>
-        <p className="mt-1">Companies: hollow = potential, grey = water-intensive, black = confirmed.</p>
-      </div>
+      </LayerRow>}
       <LayerRow k="clusters" title="Shared pipe clusters" q={{ isLoading: false, isError: false, error: null, dataUpdatedAt: 0 }}>
         <span>Groups of 3+ companies that could share one pipe (our estimate)</span>
       </LayerRow>

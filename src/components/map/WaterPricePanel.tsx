@@ -57,7 +57,7 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="mt-3 w-full justify-between text-xs"><span>Commercial drought-cost outlook</span><TrendingUp className="h-3.5 w-3.5" /></Button>
+        <Button variant="outline" size="sm" className="h-6 gap-1.5 px-2 text-[11px]"><span>Drought-cost outlook</span><TrendingUp className="h-3.5 w-3.5" /></Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] w-[calc(100%-24px)] max-w-4xl gap-4 overflow-y-auto rounded-md p-5 sm:p-6">
         <DialogHeader className="pr-5 text-left">

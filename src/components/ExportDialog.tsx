@@ -11,9 +11,12 @@ function save(name: string, body: string, type: string) {
   const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);
 }
 
-export function ExportDialog() {
+export function ExportDialog({ open: ctlOpen, onOpenChange }: { open?: boolean; onOpenChange?: (o: boolean) => void } = {}) {
   const { user, setAuthOpen, privateSites } = useWorkspace();
-  const [open, setOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const controlled = ctlOpen !== undefined;
+  const open = controlled ? ctlOpen : ownOpen;
+  const setOpen = (o: boolean) => (controlled ? onOpenChange?.(o) : setOwnOpen(o));
   const plants = useWwtps().data?.features ?? [];
   const companies = useCompanies().data?.features ?? [];
   const { filtered, siteById, companyById } = useMatches();
@@ -24,7 +27,7 @@ export function ExportDialog() {
     { id: "private-sites", label: "Your private sites", rows: privateSites.map(s => ({ id: s.id, name: s.name, lat: s.lat, lon: s.lon, kind: s.kind, volume_m3_day: Number(s.volume_m3_day) })) },
   ];
   return <Dialog open={open} onOpenChange={o => { if (o && !user) { setAuthOpen(true); return; } setOpen(o); }}>
-    <DialogTrigger asChild><Button variant="ghost" size="sm" aria-label="Export data"><Download /><span className="hidden xl:inline">Export</span></Button></DialogTrigger>
+    {!controlled && <DialogTrigger asChild><Button variant="ghost" size="sm" aria-label="Export data"><Download /><span className="hidden xl:inline">Export</span></Button></DialogTrigger>}
     <DialogContent>
       <DialogHeader><DialogTitle>Export map data</DialogTitle><DialogDescription>Download what's loaded for the current region as a spreadsheet (CSV) or a map file (GeoJSON). Each source keeps its own licence.</DialogDescription></DialogHeader>
       <ul className="divide-y text-sm">{sets.map(s => <li key={s.id} className="flex items-center justify-between gap-2 py-3"><span>{s.label} <span className="text-muted-foreground">· {s.rows.length.toLocaleString("en-GB")}</span></span><span className="flex gap-1"><Button size="sm" variant="outline" disabled={!s.rows.length} onClick={() => save(`venaqua-${s.id}.csv`, toCsv(s.rows), "text/csv")}>CSV</Button><Button size="sm" variant="outline" disabled={!s.rows.length} onClick={() => save(`venaqua-${s.id}.geojson`, toGeoJson(s.rows), "application/geo+json")}>GeoJSON</Button></span></li>)}</ul>
