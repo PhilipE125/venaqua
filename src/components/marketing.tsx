@@ -1,7 +1,6 @@
 import { createContext, useContext, type ReactNode } from "react";
-import { FACTS, type FactId, type ModuleStatus } from "@/content/venaqua";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { FACTS, type FactId } from "@/content/venaqua";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const SourcesCtx = createContext<FactId[]>([]);
 
@@ -67,27 +66,6 @@ export function SourcesList() {
   );
 }
 
-const STATUS: Record<ModuleStatus, { label: string; tip: string; cls: string }> = {
-  live: { label: "Live", tip: "In the product today.", cls: "border-primary bg-primary text-primary-foreground" },
-  beta: { label: "Beta", tip: "Works today, still being refined.", cls: "border-primary text-primary" },
-  "on-request": { label: "On request", tip: "Set up for your team on request.", cls: "border-border text-muted-foreground" },
-};
-
-export function StatusBadge({ status, className }: { status: ModuleStatus; className?: string }) {
-  const s = STATUS[status];
-  return (
-    <TooltipProvider delayDuration={150}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <span tabIndex={0} className={cn("inline-flex shrink-0 cursor-default items-center whitespace-nowrap rounded-full border px-2 py-0.5 text-[10px] font-medium", s.cls, className)}>
-            {s.label}
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>{s.tip}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
 
 /** Small inline "Source · year" note shown next to a fact. */
 export function SourceCaption({ id }: { id: FactId }) {
