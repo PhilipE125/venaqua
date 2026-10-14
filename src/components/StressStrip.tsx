@@ -4,6 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { fmt, fmt1, usePrat, useReservoirHistory, useReservoirs, useVigieauDepartments } from "@/lib/queries";
 import { GRAVITE_LABEL, GRAVITES } from "@/lib/sources/vigieau";
 import { useApp } from "@/lib/state";
+import { STRESS_HORIZONS } from "@/lib/stressGrid";
+import { WaterPricePanel } from "./map/WaterPricePanel";
 
 function Spark({ data, color }: { data: { date: string; value: number }[]; color: string }) {
   return (
@@ -81,7 +83,8 @@ export function StressStrip() {
 }
 
 function CatalanStrip() {
-  const { selection } = useApp();
+  const { selection, region, horizon } = useApp();
+  const ahead = STRESS_HORIZONS.find((h) => h.key === horizon)?.ahead ?? 0;
   const res = useReservoirHistory();
   const prat = usePrat();
   const last = res.data?.series.at(-1);
@@ -92,7 +95,8 @@ function CatalanStrip() {
     <div className={`panel map-context pointer-events-auto absolute bottom-4 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${selection ? "with-selection" : ""}`}>
       <div className="flex flex-col justify-center">
         <p className="label-caps">Water stress now</p>
-        <p className="text-[11px] text-muted-foreground">Catalonia, internal basins</p>
+        <p className="text-[11px] text-muted-foreground">{region === "es" ? "Live data: Catalonia only" : "Catalonia, internal basins"}</p>
+        <div className="mt-1"><WaterPricePanel horizon={ahead} /></div>
       </div>
       <div className="flex min-w-0 items-center gap-3 border-l pl-4">
         <div>
