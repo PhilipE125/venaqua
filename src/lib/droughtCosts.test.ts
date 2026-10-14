@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { droughtEventCost, droughtCostOutlook, restrictionDaysAt, type DroughtCostInputs } from "./droughtCosts";
+import { droughtEventCost, droughtCostOutlook, restrictionDaysAt, reuseInvestmentCase, type DroughtCostInputs } from "./droughtCosts";
 
 const inputs: DroughtCostInputs = { dailyDemand: 1000, restrictionDays: 90, lossPerM3: 10, backupShare: 0.4, backupPremium: 3, responseCost: 2000, protectedShare: 0 };
 
@@ -29,5 +29,37 @@ describe("commercial drought exposure", () => {
     expect(() => droughtEventCost(inputs, -0.1)).toThrow(RangeError);
     expect(() => droughtEventCost({ ...inputs, dailyDemand: NaN }, 0.25)).toThrow(RangeError);
     expect(() => droughtEventCost(inputs, 0.25, 366)).toThrow(RangeError);
+  });
+});
+
+describe("reuse investment resilience screening", () => {
+  const project = { additionalProtectedShare: 0.5, capitalCost: 250000, annualOperatingCost: 15000, eventsPerYear: 0.5, years: 10 };
+  it("compares the same 25% restriction with and without additional reuse", () => {
+    const result = reuseInvestmentCase(inputs, 0.25, 90, project);
+    expect(result.baseline.total).toBe(164000);
+    expect(result.withReuse.total).toBe(83000);
+    expect(result.avoidedPerEvent).toBe(81000);
+    expect(result.protectedVolume).toBe(11250);
+  });
+  it("deducts operating and capital costs from explicit event-frequency benefits", () => {
+    const result = reuseInvestmentCase(inputs, 0.25, 90, project);
+    expect(result.annualNet).toBe(25500);
+    expect(result.netOverPeriod).toBe(5000);
+    expect(result.simplePayback).toBeCloseTo(250000 / 25500);
+  });
+  it("does not claim payback when no events occur", () => {
+    const result = reuseInvestmentCase(inputs, 0.25, 90, { ...project, eventsPerYear: 0 });
+    expect(result.simplePayback).toBeNull();
+    expect(result.netOverPeriod).toBe(-400000);
+  });
+  it("caps combined protected supply at 100%", () => {
+    const result = reuseInvestmentCase({ ...inputs, protectedShare: 0.8 }, 0.25, 90, project);
+    expect(result.protectedShare).toBe(1);
+    expect(result.withReuse.total).toBe(0);
+    expect(result.avoidedPerEvent).toBeCloseTo(34400);
+  });
+  it("rejects invalid investment assumptions", () => {
+    expect(() => reuseInvestmentCase(inputs, 0.25, 90, { ...project, years: 0 })).toThrow(RangeError);
+    expect(() => reuseInvestmentCase(inputs, 0.25, 90, { ...project, additionalProtectedShare: 1.1 })).toThrow(RangeError);
   });
 });
