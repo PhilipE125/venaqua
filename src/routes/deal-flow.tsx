@@ -20,7 +20,7 @@ const REGIONS = [...new Set(DEALS.map((d) => d.region))].sort();
 // Demo build: every deal unlocked. Plan-gated access comes with the database step.
 const DEMO_UNLOCK = true;
 
-type Search = { q?: string; region?: string; kind?: string; stage?: string; min_score?: number; actionable?: string; deadline?: number; verified?: string; view?: string; deal?: string };
+type Search = { q?: string | undefined; region?: string | undefined; kind?: string | undefined; stage?: string | undefined; min_score?: number | undefined; actionable?: string | undefined; deadline?: number | undefined; verified?: string | undefined; view?: string | undefined; deal?: string | undefined };
 const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
 const num = (v: unknown) => (v === undefined || v === "" ? undefined : Number.isFinite(Number(v)) ? Number(v) : undefined);
 
@@ -170,7 +170,7 @@ function DealFlow() {
   );
 }
 
-function DealSheet({ deal: d, onClose }: { deal?: Deal; onClose: () => void }) {
+function DealSheet({ deal: d, onClose }: { deal?: Deal | undefined; onClose: () => void }) {
   const { setContact } = useWorkspace();
   return (
     <Sheet open={!!d} onOpenChange={(o) => !o && onClose()}>
