@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { crf, droughtLoss, opportunityCost, optionA, optionB, optionC, pumpingKWhPerM3, type CostInputs } from "./costs";
+import { crf, droughtLoss, opportunityCost, optionA, optionB, optionC, pumpingKWhPerM3, supplyCostPerM3, type CostInputs } from "./costs";
 import { eeaJoinKey } from "./sources/eea";
 import { sectorFromIedActivity } from "./sectors";
 import { phaseDaysInYear, phaseFromCode } from "./sources/drought";
@@ -84,5 +84,17 @@ describe("IED activity → sector", () => {
   it("excludes waste and wastewater activities", () => {
     expect(sectorFromIedActivity("5(f)")).toBeNull();
     expect(sectorFromIedActivity("5(d)")).toBeNull();
+  });
+});
+
+describe("supplyCostPerM3", () => {
+  const s = { detourFactor: 1.3, pipeCostPerKm: [150_000, 400_000] as [number, number], polishing: [0.25, 0.6] as [number, number], rate: 0.06, years: 20 };
+  it("prefers a near plant that needs polishing over a far reuse-ready one", () => {
+    const near = supplyCostPerM3({ distanceKm: 2, reuseReady: false, availableM3PerDay: 5000 }, 91_250, s);
+    const far = supplyCostPerM3({ distanceKm: 15, reuseReady: true, availableM3PerDay: 5000 }, 91_250, s);
+    expect(near).toBeLessThan(far);
+  });
+  it("cannot supply from a plant with nothing available", () => {
+    expect(supplyCostPerM3({ distanceKm: 1, reuseReady: true, availableM3PerDay: 0 }, 1000, s)).toBe(Infinity);
   });
 });

@@ -184,7 +184,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
     );
 
   if (view === "overview") return <section className="mt-5 space-y-5">{answer}
-    <div className="grid grid-cols-2 gap-5 border-y py-5"><div><p className="label-caps">Indicative demand · our estimate</p><p className="tnum mt-1 text-xl font-semibold">{fmt.format(Q / 365)} <span className="text-xs font-normal text-muted-foreground">m³/day</span></p></div><div><p className="label-caps">Delivered-water cost · modelled</p><p className="mt-1 text-lg font-semibold">{deliveredCost}</p></div><div><p className="label-caps">Nearest candidate</p><p className="mt-1 text-sm font-medium">{candidate?.p.name ?? "None within 30 km"}</p></div><div><p className="label-caps">{road.data ? "Pipe route by road" : "Straight-line distance"}</p><p className="tnum mt-1 text-sm font-medium">{candidate ? (road.data ? `${fmt1.format(road.data.km)} km (${fmt1.format(candidate.d)} km straight)` : `${fmt1.format(candidate.d)} km`) : "Not available"}</p></div></div>
+    <div className="grid grid-cols-2 gap-5 border-y py-5"><div><p className="label-caps">Indicative demand · our estimate</p><p className="tnum mt-1 text-xl font-semibold">{fmt.format(Q / 365)} <span className="text-xs font-normal text-muted-foreground">m³/day</span></p></div><div><p className="label-caps">Delivered-water cost · modelled</p><p className="mt-1 text-lg font-semibold">{deliveredCost}</p></div><div><p className="label-caps">Supplying plant · cheapest per m³</p><p className="mt-1 text-sm font-medium">{candidate?.p.name ?? "None within 30 km"}</p></div><div><p className="label-caps">{road.data ? "Pipe route by road" : "Straight-line distance"}</p><p className="tnum mt-1 text-sm font-medium">{candidate ? (road.data ? `${fmt1.format(road.data.km)} km (${fmt1.format(candidate.d)} km straight)` : `${fmt1.format(candidate.d)} km`) : "Not available"}</p></div></div>
     <div><p className="label-caps">Main blocker</p><p className="mt-1 text-sm">{calc.cheapest === "A" ? "Cost exceeds the current bill. Confirm your tariff and shorten the route, or test shared infrastructure." : "Firm demand, water quality and the pipe route need validation."}</p></div>
     <div className="border-l-2 border-primary pl-4"><p className="label-caps">Recommended next step</p><p className="mt-1 text-sm font-medium">Confirm annual demand and water-quality requirements with the site team.</p></div>
     {focus === "q5" && <FuturePanel inputs={calc.future} />}
@@ -276,7 +276,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
       </table>
 
       <div className="mt-4 space-y-1.5 text-xs">
-        <p className="label-caps">B · nearest suitable plant</p>
+        <p className="label-caps">B · cheapest plant within {SEARCH_KM} km</p>
         {candidate ? (
           <>
             <button className="font-medium underline-offset-2 hover:underline" onClick={() => select({ kind: "wwtp", id: candidate.p.id })}>

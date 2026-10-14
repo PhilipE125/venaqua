@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import { findClusters } from "./clusters";
 import { knownUserSource } from "./knownUsers";
 import { mergeCompanies } from "./merge";
+import { supplyCostPerM3 } from "./costs";
 import { effectiveSupply, haversineKm, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
 import { fetchDrought } from "./sources/drought";
@@ -189,18 +190,23 @@ export function useRoadRoute(a?: { lat: number; lon: number }, b?: { lat: number
 
 export const SUPPLY_SEARCH_KM = 30;
 
-/** The plant that would supply a company: spare reclaimed water, reuse-ready first, then nearest. */
+/** The plant that would supply a company: the cheapest per m³ (pipe + polishing) within reach. */
 export function useSupplyPlant(company?: Company) {
   const w = useWwtps();
+  const { settings, demandOverride } = useApp();
   return useMemo(() => {
     if (!company) return null;
-    const list = (w.data?.features ?? [])
-      .filter((p): p is Plant & { supply: NonNullable<Plant["supply"]> } => !!p.supply && p.supply.availableReclaimed > 0)
-      .map((p) => ({ p, d: haversineKm(p, company) }))
-      .filter((x) => x.d <= SUPPLY_SEARCH_KM)
-      .sort((a, b) => a.d - b.d);
-    return list.find((x) => x.p.supply.reuseReady) ?? list[0] ?? null;
-  }, [w.data, company]);
+    const q = demandOverride[company.id] ?? (settings.sectorDemand[company.sector] ?? 0) * 365;
+    let best: { p: Plant & { supply: NonNullable<Plant["supply"]> }; d: number; cost: number } | null = null;
+    for (const p of w.data?.features ?? []) {
+      if (!p.supply || p.supply.availableReclaimed <= 0) continue;
+      const d = haversineKm(p, company);
+      if (d > SUPPLY_SEARCH_KM) continue;
+      const cost = supplyCostPerM3({ distanceKm: d, reuseReady: p.supply.reuseReady, availableM3PerDay: p.supply.availableReclaimed }, q, settings);
+      if (!best || cost < best.cost) best = { p: p as Plant & { supply: NonNullable<Plant["supply"]> }, d, cost };
+    }
+    return best;
+  }, [w.data, company, settings, demandOverride]);
 }
 
 export function useElevation(a?: { lat: number; lon: number }, b?: { lat: number; lon: number }) {
