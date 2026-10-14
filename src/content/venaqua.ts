@@ -18,6 +18,20 @@ export type Plan = {
 // Max three paid options: two deal-flow products and one data product. The free map is a footnote, not a plan.
 export const PLANS: Plan[] = [
   {
+    name: "Deal File",
+    price: "Scoped per project",
+    for: "Teams that need one opportunity worked up for an internal or investor decision",
+    features: [
+      "Indicative feasibility pack for one opportunity",
+      "Supply, demand, route and economics ranges",
+      "Drought-cost and payback scenarios",
+      "Open questions for engineering review",
+      "Not an engineering design",
+    ],
+    cta: "Request a Deal File",
+    topic: "Deal File request",
+  },
+  {
     name: "Deal Flow",
     price: "From €12,000/year",
     for: "Advisors, developers and engineering teams sourcing and qualifying reuse opportunities",
@@ -31,20 +45,6 @@ export const PLANS: Plan[] = [
     cta: "Book a demo",
     topic: "Booking a demo — Deal Flow",
     popular: true,
-  },
-  {
-    name: "Deal File",
-    price: "Scoped per project",
-    for: "Teams that need one opportunity worked up for an internal or investor decision",
-    features: [
-      "Indicative feasibility pack for one opportunity",
-      "Supply, demand, route and economics ranges",
-      "Drought-cost and payback scenarios",
-      "Open questions for engineering review",
-      "Not an engineering design",
-    ],
-    cta: "Request a Deal File",
-    topic: "Deal File request",
   },
   {
     name: "Data & API",

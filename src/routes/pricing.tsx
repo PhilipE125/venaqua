@@ -26,7 +26,7 @@ function PlanCard({ plan }: { plan: Plan }) {
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-semibold">{plan.name}</h3>
         {plan.popular && (
-          <span className="label-caps rounded-full bg-primary/10 px-2.5 py-1 text-primary">Most popular</span>
+          <span className="label-caps rounded-full bg-primary/10 px-2.5 py-1 text-primary">Most popular · Best win-win</span>
         )}
       </div>
       <p className="mt-2 text-xl font-semibold tracking-tight tabular-nums">{plan.price}</p>

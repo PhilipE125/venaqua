@@ -52,3 +52,4 @@
 - [x] Frame the landing backdrop on Spain without changing the saved Explorer view
 - [x] Clarify wastewater reuse optimization in the headline, subtitle and About us
 - [x] Browser-verified Spain backdrop, About us and Explorer-to-home return; no page errors
+- [x] Pricing: put most-popular option in the middle, label as best win-win
