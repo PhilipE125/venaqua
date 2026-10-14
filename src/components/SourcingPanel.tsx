@@ -184,7 +184,7 @@ export function SourcingPanel({ company }: { company: Company }) {
   const col = (k: Choice) => cols.find((c) => c.key === k);
 
   const lossWhy = `Uses €${fmt.format(settings.valuePerM3Lost)} lost per m³ cut and the cut per phase, both settings`;
-  const assumptionCount = 9 + (userQ == null ? 1 : 0);
+  const assumptionCount = 10 + (userQ == null ? 1 : 0);
   const dataCount = 2 + (selected ? 1 : 0) + (road.data ? 1 : 0) + (heightM != null ? 1 : 0);
 
   return (
