@@ -15,6 +15,8 @@ export function priceAt(base: number, annualRate: number, years: number): number
 export function projectWaterPrices(base: number, baseYear: number, horizon: number) {
   return Array.from({ length: horizon + 1 }, (_, ahead) => ({
     year: baseYear + ahead,
-    ...Object.fromEntries(PRICE_SCENARIOS.map((s) => [s.id, priceAt(base, s.rate, ahead)])),
+    managed: priceAt(base, PRICE_SCENARIOS[0].rate, ahead),
+    rising: priceAt(base, PRICE_SCENARIOS[1].rate, ahead),
+    severe: priceAt(base, PRICE_SCENARIOS[2].rate, ahead),
   }));
 }
