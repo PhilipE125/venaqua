@@ -6,6 +6,8 @@ export type Pillar = "source" | "risk" | "proof";
 
 export type Plan = {
   name: string;
+  family: string;
+  outcome: string;
   price: string;
   for: string;
   features: string[];
@@ -13,53 +15,76 @@ export type Plan = {
   href?: "/explore";
   topic?: string;
   popular?: boolean;
+  tiers?: { name: string; price: string; text: string }[];
+  note: string;
+  enquiry: { title: string; description: string; placeholder: string };
 };
 
 // Max three paid options: two deal-flow products and one data product. The free map is a footnote, not a plan.
 export const PLANS: Plan[] = [
   {
     name: "Deal File",
+    family: "Reuse projects",
+    outcome: "Make a decision on one opportunity.",
     price: "Scoped per project",
-    for: "Teams that need one opportunity worked up for an internal or investor decision",
+    for: "For project teams, investors and lenders evaluating a specific site.",
     features: [
-      "Indicative feasibility pack for one opportunity",
-      "Supply, demand, route and economics ranges",
-      "Drought-cost and payback scenarios",
-      "Open questions for engineering review",
-      "Not an engineering design",
+      "Supply and demand assessment with source evidence",
+      "Indicative connection and treatment cost ranges",
+      "Drought exposure, reuse savings and payback scenarios",
+      "Downloadable decision brief and engineering questions",
     ],
-    cta: "Request a Deal File",
+    cta: "Scope my Deal File",
     topic: "Deal File request",
+    note: "An indicative project assessment, not engineering design. Scope and fee agreed before work starts.",
+    enquiry: { title: "Scope your Deal File", description: "Tell us about one opportunity and the decision you need to make. We’ll discuss scope and pricing.", placeholder: "Site or opportunity, available water data, and the decision you need to make…" },
   },
   {
     name: "Deal Flow",
+    family: "Reuse projects",
+    outcome: "Find, qualify and progress a portfolio.",
     price: "From €12,000/year",
-    for: "Advisors, developers and engineering teams sourcing and qualifying reuse opportunities",
+    for: "For operators, developers, EPC firms and advisors building a reuse pipeline.",
     features: [
-      "Market Access — one market, up to 10 active opportunities (from €12,000/year)",
-      "Development Portfolio — reuse pipeline, up to 25 opportunities, alerts (€30,000–45,000/year)",
-      "Full opportunity cards and economics",
-      "Project stages, owners and evidence logs",
-      "Professional decision briefs",
+      "Map-based supply–demand matching and opportunity analysis",
+      "Compare economics and drought-resilience scenarios",
+      "Private pipeline with stages, owners and evidence logs",
+      "Export decision briefs for project review",
     ],
-    cta: "Book a demo",
+    tiers: [
+      { name: "Market Access", price: "From €12,000/year", text: "One market · up to 10 active projects" },
+      { name: "Development Portfolio", price: "€30,000–45,000/year", text: "Up to 25 active projects · in-app project alerts" },
+    ],
+    cta: "Book a Deal Flow demo",
     topic: "Booking a demo — Deal Flow",
     popular: true,
+    note: "Deal File adds a scoped assessment when a shortlisted opportunity needs a deeper decision case.",
+    enquiry: { title: "Book your Deal Flow demo", description: "See how Venaqua can support your reuse pipeline. Tell us your market and portfolio needs.", placeholder: "Your market, the opportunities you work on, and approximate portfolio size…" },
   },
   {
     name: "Data & API",
+    family: "Data access",
+    outcome: "Bring reuse intelligence into your tools.",
     price: "€60,000–100,000/year",
-    for: "Operators, agencies and platforms plugging Venaqua data into their own tools",
+    for: "For operators, agencies and platforms using their own GIS or analysis tools.",
     features: [
-      "Normalised plant, demand and stress layers",
-      "Export and API access",
-      "Private data layers and custom scoring",
-      "Enterprise: multi-region, SSO and integrations — custom pricing",
+      "API access to plant data, your projects and private sites",
+      "CSV and GeoJSON exports of map data and opportunities",
+      "Upload private supply and demand sites",
+      "Custom map-scoring weights and revocable API keys",
     ],
-    cta: "Talk to the team",
+    cta: "Discuss API access",
     topic: "Data / API enquiry",
+    note: "Coverage and integration scope agreed with your team. Demand and stress data are export-only, not API endpoints.",
+    enquiry: { title: "Discuss your data needs", description: "Tell us which datasets and tools you need to connect. We’ll confirm coverage, API scope and pricing.", placeholder: "Datasets, regions, intended tools, and export or API requirements…" },
   },
 ];
+
+export const PRICING_STORY = {
+  title: "Reuse projects. Connected data.",
+  description: "One reuse-project solution, two ways to use it: assess a single opportunity with Deal File, or develop a portfolio with Deal Flow. Need data in your own tools? Choose Data & API.",
+  pipelineNote: "Next for Deal Flow: a sourced reuse-deal feed with shared filters, deadline tracking and human-reviewed updates. These additions are planned, not included as live features today.",
+};
 
 export const ADDONS = [
   {
@@ -73,7 +98,7 @@ export const ADDONS = [
     name: "Data / API",
     price: "On request",
     status: "on-request" as ModuleStatus,
-    text: "Export or API access to Venaqua's normalised plant, demand and stress layers for your own tools.",
+    text: "API access to plants, your projects and private sites; map-data exports for your own tools. Coverage is scoped with your team.",
     topic: "Data / API enquiry",
   },
 ];
@@ -115,7 +140,8 @@ export type FactId = keyof typeof FACTS;
 
 export const FAQ_PRICING = [
   { q: "Is the map really free?", a: "Yes. The Free Explorer map needs no account and no card. You can search plants, industrial users and water-stress layers across Spain and open compact previews. Paid plans add full economics, saved projects, team workspaces and briefs. You can stay on the free map as long as you like." },
-  { q: "Why is there no online checkout?", a: "Paid plans are annual and depend on your market, team size and data needs. Every plan starts with a short conversation so we can scope it properly and show the workspace on your own sites. Implementation and private-data setup are scoped separately and agreed in writing before work starts." },
+  { q: "How do Deal File and Deal Flow fit together?", a: "They are two ways to develop reuse projects. Deal File focuses on one opportunity and a specific decision. Deal Flow provides an ongoing workspace to find, qualify and track a portfolio. You can request a scoped Deal File for a shortlisted project; it is not automatically included in the subscription." },
+  { q: "Why is there no online checkout?", a: "Deal Flow and Data & API are annual subscriptions. Deal File is scoped and priced per project. Each starts with a product-specific enquiry so we can confirm your needs, coverage and fee. Implementation and private-data setup are agreed separately before work starts." },
   { q: "Does Venaqua take a cut of the projects?", a: "No. Venaqua charges only for software and data. We take no success fees or commissions, sell no exclusive leads and accept no paid ranking. That keeps the rankings and economics neutral, so you can share them with partners, boards and lenders without a conflict of interest." },
   { q: "Is a brief an engineering study?", a: "No. Briefs and Deal Files are indicative screening documents. They show supply, demand, route and cost ranges with sources and open questions. They help you decide whether an engineering study is worth commissioning. They do not replace engineering design, legal advice or permitting review." },
 ];

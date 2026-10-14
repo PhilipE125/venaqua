@@ -52,4 +52,8 @@
 - [x] Frame the landing backdrop on Spain without changing the saved Explorer view
 - [x] Clarify wastewater reuse optimization in the headline, subtitle and About us
 - [x] Browser-verified Spain backdrop, About us and Explorer-to-home return; no page errors
-- [x] Pricing: put most-popular option in the middle, label as best win-win
+- [x] Pricing: put most-popular option in the middle
+
+## Pricing product clarity
+- [x] Remove internal badge wording, group Deal File / Deal Flow as a solution family, and give each product a distinct enquiry
+- [x] Align descriptions with implemented features and distinguish proposed deal-flow automation; pricing, three enquiry prompts and free-map link browser-verified with no runtime errors or smaller-screen overflow
