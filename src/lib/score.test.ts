@@ -61,3 +61,17 @@ describe("businessCase", () => {
     expect(b.paybackYears).toBeCloseTo(2000 / 36500);
   });
 });
+
+import { rawScore as rs2 } from "./score";
+describe("custom scoring weights", () => {
+  const p = { supply: 1000, demand: 400, stress: 0.5, distanceKm: 4 };
+  it("defaults to the original formula", () => {
+    expect(rs2(p)).toBeCloseTo((400 * 1.5) / 5);
+  });
+  it("distance weight 2 penalises distance squared", () => {
+    expect(rs2(p, { volume: 1, stress: 1, distance: 2 })).toBeCloseTo((400 * 1.5) / 25);
+  });
+  it("distance weight 0 ignores distance", () => {
+    expect(rs2(p, { volume: 1, stress: 1, distance: 0 })).toBeCloseTo(400 * 1.5);
+  });
+});

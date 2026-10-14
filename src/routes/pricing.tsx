@@ -53,9 +53,6 @@ function PlanCard({ plan }: { plan: Plan }) {
             {plan.cta}
           </Button>
         )}
-        <Link to="/solutions/$slug" params={{ slug: plan.slug }} className="mt-3 block text-center text-sm font-medium text-primary underline-offset-4 hover:underline">
-          Learn more about {plan.name}
-        </Link>
       </div>
     </div>
   );
