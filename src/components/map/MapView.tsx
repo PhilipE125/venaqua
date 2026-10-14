@@ -434,6 +434,19 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         pickable: true,
         updateTriggers: { getLineColor: [selection] },
       }),
+    privateSites.length > 0 &&
+      new ScatterplotLayer<(typeof privateSites)[number]>({
+        id: "private-sites",
+        data: privateSites,
+        getPosition: (d) => [d.lon, d.lat],
+        getRadius: 7,
+        radiusUnits: "pixels",
+        getFillColor: (d) => (d.kind === "supply" ? [20, 160, 140, 230] : [230, 160, 30, 230]),
+        stroked: true,
+        getLineColor: [20, 20, 20, 255],
+        lineWidthMinPixels: 2,
+        pickable: true,
+      }),
     layers.projects &&
       new IconLayer<ReuseProject>({
         id: "projects",
