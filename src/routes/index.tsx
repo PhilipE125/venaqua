@@ -263,9 +263,9 @@ function Landing() {
           <div className="mx-auto grid w-full max-w-5xl gap-8 px-5 py-16 md:grid-cols-[1fr_1.2fr]">
             <div>
               <p className="label-caps text-primary">What you can do today</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">What is in the product, and what is not yet</h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Everything in the product, live today</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Every module carries its real status, so you know exactly what works today. Built on public European water data.
+                Every module below works in the product today. Built on public European water data.
               </p>
             </div>
             <ul className="grid gap-2.5 sm:grid-cols-2">

@@ -71,7 +71,6 @@ const STATUS: Record<ModuleStatus, { label: string; tip: string; cls: string }> 
   live: { label: "Live", tip: "In the product today.", cls: "border-primary bg-primary text-primary-foreground" },
   beta: { label: "Beta", tip: "Works today, still being refined.", cls: "border-primary text-primary" },
   "on-request": { label: "On request", tip: "Set up for your team on request.", cls: "border-border text-muted-foreground" },
-  coming: { label: "Coming soon", tip: "Planned, not yet available.", cls: "border-dashed border-muted-foreground/50 text-muted-foreground" },
 };
 
 export function StatusBadge({ status, className }: { status: ModuleStatus; className?: string }) {

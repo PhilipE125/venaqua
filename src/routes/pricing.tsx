@@ -34,7 +34,6 @@ const STATUS_STYLE: Record<Plan["status"], string> = {
   live: "bg-primary/10 text-primary",
   beta: "bg-secondary text-secondary-foreground",
   "on-request": "bg-muted text-foreground",
-  coming: "bg-muted text-muted-foreground",
 };
 
 function PlanCta({ plan }: { plan: Plan }) {
@@ -78,15 +77,12 @@ function Pricing() {
                   {PLANS.map((p) => (
                     <td key={p.id} className="p-4">
                       <ul className="flex flex-col gap-2">
-                        {p.includes.map((f) => {
-                          const coming = f.includes("(coming soon");
-                          return (
-                            <li key={f} className={`flex items-start gap-2 ${coming ? "text-muted-foreground/70" : ""}`}>
-                              <Check className={`mt-0.5 h-4 w-4 shrink-0 ${coming ? "text-muted-foreground/50" : "text-primary"}`} />
-                              <span>{f}</span>
-                            </li>
-                          );
-                        })}
+                        {p.includes.map((f) => (
+                          <li key={f} className="flex items-start gap-2">
+                            <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
                       </ul>
                     </td>
                   ))}
