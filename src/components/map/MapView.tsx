@@ -393,8 +393,13 @@ export default function MapView() {
             const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
             const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
             if (!o?.name) return setHover.current(null);
+            const label =
+              o.kind === "wwtp" ? "Treatment plant" :
+              o.kind === "company" ? "Company" :
+              o.kind === "regen" ? "Reuse-ready plant" :
+              o.kind === "reservoir" ? "Reservoir" : "";
             const extra = o.kind === "reservoir" ? ` · ${o.note ?? `${o.fill}% full`}` : "";
-            setHover.current({ x: info.x, y: info.y, text: o.name + extra });
+            setHover.current({ x: info.x, y: info.y, text: `${label ? label + " · " : ""}${o.name}${extra}` });
           }}
           onClick={(info) => {
             const raw = info.object as { id: string; kind: string; g?: RegenPlant; plant?: Plant; buyer?: string } | undefined;
@@ -409,14 +414,61 @@ export default function MapView() {
           }}
         />
       </Map>
-      <div className={`panel map-legend z-10 max-w-[290px] space-y-0.5 rounded-md px-3 py-2 text-[10px] text-muted-foreground ${selection ? "with-selection" : ""}`}>
-        {layers.wwtp && <p>Circle = treatment plant; bigger = more water treated; hollow = our estimate.</p>}
-        {layers.regen && <p>Ring = recycled water already used (accent = industry); gap = unused.</p>}
-        {layers.companies && <p>Dot = company: hollow potential, grey water-intensive, black confirmed.</p>}
-        {layers.clusters && <p>Outlined area = companies that could share one pipe.</p>}
-        {layers.projects && <p>Black square = reclaimed-water contract.</p>}
-        {layers.reservoirs && <p>{region === "de" ? "Red, amber, green = river gauge at low, normal, high water." : "Red, amber, green = reservoir fill."}</p>}
-        {selectedSite && <p>Dashed line = possible link from the selected plant.</p>}
+      <div className={`panel map-legend z-10 max-w-[300px] space-y-1 rounded-md px-3 py-2 text-[10px] text-muted-foreground ${selection ? "with-selection" : ""}`}>
+        {layers.wwtp && (
+          <p className="flex items-center gap-2">
+            <span className="flex shrink-0 items-center gap-1">
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.primary) }} />
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.secondary) }} />
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.tertiary) }} />
+            </span>
+            Treatment plant — colour = treatment level, size = water treated, hollow = our estimate.
+          </p>
+        )}
+        {layers.regen && (
+          <p className="flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border-2" style={{ borderColor: rgb(REGEN_COLOR) }} />
+            Reuse-ready plant — ring = recycled water in use (dark = industry), gap = unused.
+          </p>
+        )}
+        {layers.companies && (
+          <p className="flex items-center gap-2">
+            <span className="flex shrink-0 items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full border border-muted-foreground/60" />
+              <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/70" />
+              <span className="inline-block h-2 w-2 rounded-full bg-foreground" />
+            </span>
+            Company — hollow = potential buyer, grey = water-intensive, solid = confirmed user; border colour = sector.
+          </p>
+        )}
+        {layers.clusters && (
+          <p className="flex items-center gap-2">
+            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm border" style={{ borderColor: "rgba(11,110,138,0.8)", background: "rgba(11,110,138,0.15)" }} />
+            Companies that could share one pipe.
+          </p>
+        )}
+        {layers.projects && (
+          <p className="flex items-center gap-2">
+            <span className="inline-block h-2 w-2 shrink-0 bg-foreground" />
+            Signed reclaimed-water contract.
+          </p>
+        )}
+        {layers.reservoirs && (
+          <p className="flex items-center gap-2">
+            <span className="flex shrink-0 items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(15)) }} />
+              <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(45)) }} />
+              <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(80)) }} />
+            </span>
+            Water store — low, medium or high fill.
+          </p>
+        )}
+        {selectedSite && (
+          <p className="flex items-center gap-2">
+            <span className="inline-block h-0 w-5 shrink-0 border-t-2 border-dashed" style={{ borderColor: rgb(LEVEL_COLORS.tertiary) }} />
+            Possible link from the selected plant.
+          </p>
+        )}
       </div>
       {popup && (
         <div className="panel absolute left-3 top-3 z-20 w-80 rounded-md p-3 text-xs shadow-md">
