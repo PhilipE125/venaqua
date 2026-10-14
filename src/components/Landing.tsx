@@ -9,7 +9,7 @@ import { normalize } from "@/lib/sectors";
 import { useApp, type Mode } from "@/lib/state";
 import { useWorkspace } from "@/lib/workspace";
 
-const TASKS: { mode: Mode; label: string }[] = [{ mode: "q1", label: "Find buyers for reusable treated water" }, { mode: "q2", label: "Find supply for reusable treated water" }, { mode: "q3", label: "Connect or build your own water reuse system" }, { mode: "q4", label: "Share cost with neighbours" }, { mode: "q5", label: "See future water costs with site-specific drought scenarios" }, { mode: "all", label: "Explore all data" }];
+const TASKS: { mode: Mode; label: string }[] = [{ mode: "q5", label: "See future water costs with site-specific drought scenarios" }, { mode: "q3", label: "Connect or build your own water reuse system" }, { mode: "q4", label: "Share cost with neighbours" }, { mode: "q1", label: "Find buyers for reusable treated water" }, { mode: "q2", label: "Find supply for reusable treated water" }, { mode: "all", label: "Explore all data" }];
 export function QuestionBar() {
   const { mode, setMode, select, selection, setSearchOpen, panelOpen, setPanelOpen } = useApp();
   const { setContact } = useWorkspace();

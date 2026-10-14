@@ -6,11 +6,11 @@ import { useApp, type Mode } from "@/lib/state";
 
 // The deck's five modules, mapped onto the existing question modes q1–q5.
 export const MODULES: { mode: Exclude<Mode, "all">; n: number; title: string; sub: string }[] = [
-  { mode: "q1", n: 1, title: "Find buyers", sub: "for reusable treated water" },
-  { mode: "q2", n: 2, title: "Find supply", sub: "for reusable treated water" },
-  { mode: "q3", n: 3, title: "Connect or build", sub: "your own water reuse system" },
-  { mode: "q4", n: 4, title: "Share cost", sub: "with neighbours" },
-  { mode: "q5", n: 5, title: "Future water costs", sub: "site-specific drought scenarios" },
+  { mode: "q5", n: 1, title: "Future water costs", sub: "site-specific drought scenarios" },
+  { mode: "q3", n: 2, title: "Connect or build", sub: "your own water reuse system" },
+  { mode: "q4", n: 3, title: "Share cost", sub: "with neighbours" },
+  { mode: "q1", n: 4, title: "Find buyers", sub: "for reusable treated water" },
+  { mode: "q2", n: 5, title: "Find supply", sub: "for reusable treated water" },
 ];
 
 export function useModulePicker() {

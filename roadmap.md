@@ -88,3 +88,4 @@
 - [x] Remove "Live" status labels site-wide; everything shown is simply available
 - [ ] Own-plant risk and liability: explain the residual mains exposure, then make the on-site plant's feed coupling an explicit, editable assumption (Philip, 13:35)
 - [ ] Redesign the uploaded pitch deck (Venaqua_pitch_deck_15.33_vclaude.pdf) to the platform's visual design, keeping content, structure and outline unchanged (Adwoa, 13:35)
+- [ ] Reorder the modules: 1 Future water costs, 2 Connect or build, 3 Share cost, 4 Find buyers, 5 Find supply, keeping wording and renumbering (Niamh, 13:44)
