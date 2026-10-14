@@ -23,7 +23,7 @@ import { useWorkspace } from "@/lib/workspace";
 import dealData from "@/data/dealflow-deals.json";
 import { AMBITION, AUDIENCES, FACTS, LANDSCAPE_POSITION, MODULES, MOAT, NEUTRALITY, PARTNERS, VISION, type AudienceIcon, type FactId } from "@/content/venaqua";
 import { MODULES as DECK_MODULES } from "@/components/ModuleBar";
-import { FactValue, SourceCaption, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
+import { FactValue, SourceCaption, SourcesList, SourcesProvider } from "@/components/marketing";
 
 const HOME_FACTS: FactId[] = ["reuseShare", "industryShare", "tertiary", "uwwtd2039", "reclaimedCost", "bcnTariff", "energyAvoided"];
 
@@ -130,10 +130,7 @@ function Landing() {
           <div className="mt-10 grid w-full gap-3 text-left sm:grid-cols-3">
             {VISION.questions.map((q) => (
               <a key={q.pillar} href="/platform#three-questions" className="rounded-xl border bg-card/90 p-4 transition-colors hover:border-primary/60">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="label-caps text-primary">{q.label}</span>
-                  <StatusBadge status={q.status} />
-                </div>
+                <span className="label-caps text-primary">{q.label}</span>
                 <p className="mt-2 text-sm leading-snug">{q.question}</p>
               </a>
             ))}
@@ -263,19 +260,16 @@ function Landing() {
           <div className="mx-auto grid w-full max-w-5xl gap-8 px-5 py-16 md:grid-cols-[1fr_1.2fr]">
             <div>
               <p className="label-caps text-primary">What you can do today</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Everything in the product, live today</h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Everything in the product today</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Every module below works in the product today. Built on public European water data.
+                Every module below is in the product. Built on public European water data.
               </p>
             </div>
             <ul className="grid gap-2.5 sm:grid-cols-2">
               {MODULES.map((m) => (
-                <li key={m.name} className="flex items-start justify-between gap-2 text-sm">
-                  <span className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <span>{m.name}</span>
-                  </span>
-                  <StatusBadge status={m.status} />
+                <li key={m.name} className="flex items-start gap-2 text-sm">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>{m.name}</span>
                 </li>
               ))}
             </ul>
@@ -289,7 +283,7 @@ function Landing() {
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{(dealData as { deals: unknown[] }).deals.length} reuse deals in Spain are tracked and updated weekly today.</p>
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
               {MOAT.map((m) => (
-                <div key={m.title} className="rounded-xl border bg-card p-6"><div className="flex items-center justify-between gap-2"><h3 className="font-semibold">{m.title}</h3><StatusBadge status={m.status} /></div><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{m.text}</p></div>
+                <div key={m.title} className="rounded-xl border bg-card p-6"><h3 className="font-semibold">{m.title}</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{m.text}</p></div>
               ))}
             </div>
           </div>

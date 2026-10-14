@@ -3,7 +3,7 @@ import { ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { FACTS, FAQ_PLATFORM, MODULES, NEUTRALITY, VISION, type FactId } from "@/content/venaqua";
-import { FactValue, SourceCaption, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
+import { FactValue, SourceCaption, SourcesList, SourcesProvider } from "@/components/marketing";
 
 export const Route = createFileRoute("/platform")({
   head: () => ({
@@ -41,20 +41,16 @@ function Platform() {
             <div className="mt-4 grid gap-5 md:grid-cols-3">
               {VISION.questions.map((q) => (
                 <div key={q.pillar} className="flex flex-col rounded-xl border bg-card p-6">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="label-caps text-primary">{q.label}</span>
-                    <StatusBadge status={q.status} />
-                  </div>
+                  <span className="label-caps text-primary">{q.label}</span>
                   <p className="mt-3 font-semibold leading-snug">{q.question}</p>
                   <p className="mt-2 text-xs text-muted-foreground">{q.note}</p>
                   <ul className="mt-4 flex flex-col gap-2 border-t pt-4">
                     {MODULES.filter((m) => m.pillar === q.pillar).map((m) => (
-                      <li key={m.name} className="flex items-start justify-between gap-2 text-sm">
+                      <li key={m.name} className="flex items-start gap-2 text-sm">
                         <span>
                           <span className="font-medium">{m.name}</span>
                           <span className="block text-xs text-muted-foreground">{m.text}</span>
                         </span>
-                        <StatusBadge status={m.status} />
                       </li>
                     ))}
                   </ul>
