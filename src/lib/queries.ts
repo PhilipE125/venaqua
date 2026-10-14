@@ -304,7 +304,7 @@ export function useFlipTable() {
     // Soonest flip first; ties and non-flippers by how close reuse is to the status quo per m³.
     return out.sort((a, b) => (a.flipYear ?? 9999) - (b.flipYear ?? 9999) || a.perM3 - a.statusQuo - (b.perM3 - b.statusQuo));
   }, [c.data, w.data, drought.data, settings, demandOverride, region, scenarioValues]);
-  return { rows, isLoading: c.isLoading || w.isLoading };
+  return { rows, isLoading: c.isLoading || w.isLoading, isError: c.isError || w.isError };
 }
 
 export function useElevation(a?: { lat: number; lon: number }, b?: { lat: number; lon: number }) {

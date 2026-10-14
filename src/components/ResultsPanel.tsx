@@ -15,7 +15,7 @@ function flipLabel(y: number | null) {
 // Headline output: reuse projects ranked by cost per m³ vs the alternative, with the year the math flips.
 export function ResultsPanel() {
   const { mode, selection, select, region } = useApp();
-  const { rows, isLoading } = useFlipTable();
+  const { rows, isLoading, isError } = useFlipTable();
   const clusters = useClusters();
   const { siteById } = useMatches();
   const [open, setOpen] = useState(true);
@@ -37,7 +37,7 @@ export function ResultsPanel() {
         <span>
           <span className="label-caps block">{module ? `Module ${module.n} · ${module.title}` : "Ranked projects"}</span>
           <span className="mt-0.5 block text-sm font-semibold">{mode === "q4" ? "Shared pipes by cost per m³" : "Cost per m³ vs the alternative"}</span>
-          {rows && <span className="tnum mt-0.5 block text-[11px] text-muted-foreground">{fmt.format(rows.length)} sites screened in {REGION_NAME[region]} · <span className="font-medium text-flip">{fmt.format(early)} flip before 2035</span></span>}
+          {rows && <span className="tnum mt-0.5 block text-[11px] text-muted-foreground">{fmt.format(rows.length)} sites screened in {REGION_NAME[region]} · <span className="font-medium text-flip">{fmt.format(early)} flip before 2035</span><span className="block">Straight-line distance; open a site for the road route.</span></span>}
         </span>
         {open ? <ChevronUp className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />}
       </button>
@@ -51,6 +51,8 @@ export function ResultsPanel() {
               {plant && <Button size="sm" variant="link" className="h-6 px-0 text-xs" onClick={() => select({ kind: plant.kind, id: plant.id })}>Open cost-benefit</Button>}
             </li>;
           })}</ol> : <p className="p-3 text-xs text-muted-foreground">No shared-pipe groups found within the current distance.</p>
+        ) : isError ? (
+          <p role="alert" className="p-3 text-xs text-muted-foreground">Couldn't load the companies or treatment plants. Check your connection and reload the page.</p>
         ) : isLoading || !list ? (
           <div className="space-y-2 p-1">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-14 w-full" />)}</div>
         ) : (
