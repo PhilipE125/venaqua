@@ -55,5 +55,5 @@
 - [x] Pricing: put most-popular option in the middle
 
 ## Pricing product clarity
-- [ ] Remove internal badge wording, group Deal File / Deal Flow as a solution family, and give each product a distinct enquiry
-- [ ] Align descriptions with implemented features and distinguish proposed deal-flow automation; verify pricing and enquiries
+- [x] Remove internal badge wording, group Deal File / Deal Flow as a solution family, and give each product a distinct enquiry
+- [x] Align descriptions with implemented features and distinguish proposed deal-flow automation; pricing, three enquiry prompts and free-map link browser-verified with no runtime errors or smaller-screen overflow
