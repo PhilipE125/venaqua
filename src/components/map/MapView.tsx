@@ -208,7 +208,7 @@ export default function MapView() {
   const stressUrl = useMemo(() => (stressYear && typeof document !== "undefined" ? stressImage(stressYear, (v) => stressColor(v, 255).slice(0, 3).map(Math.round) as [number, number, number]) : null), [stressYear]);
   const pipesVisible = showPipes && zoomLvl >= PIPE_MIN_ZOOM;
   const deckLayers = [
-    stressUrl &&
+    !!stressUrl &&
       new BitmapLayer({ id: "future-stress-raster", image: stressUrl, bounds: STRESS_BOUNDS, opacity: 0.62 }),
     stressYear &&
       new PolygonLayer<(typeof STRESS)[number]>({
