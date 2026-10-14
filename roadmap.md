@@ -36,3 +36,8 @@
 
 - [ ] Philip map-fixes plan (What_s_wrong_now): blue rivers, dry-to-wet colour scale, gauge shapes, no-red sector palette, swatch legend, clickable gauges, country-neutral text
 - [x] Future water stress (2/5/10/15 yrs) + predicted pipe network layers
+
+## Current stress and freshwater prices
+- [x] Add an explicit Now stress surface, separate from hiding the layer
+- [x] Add a freshwater price panel with verified INE supply-cost history and clearly assumed stress scenarios; commercial-only history unavailable, use editable current bill price
+- [x] Six tests pass; browser verified Now, Hide, graph, scenario toggles and invalid-price validation at 949×693; build OK
