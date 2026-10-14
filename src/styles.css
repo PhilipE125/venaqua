@@ -203,7 +203,7 @@
 .slide-chrome, .slide-footer { font-size: 20px; line-height: 1.15; }
 
 /* Landing page: faded live map behind the hero */
-.landing-map > div:first-child { opacity: 0.75; }
+.landing-map > div:first-child { opacity: 0.5; }
 .landing-map .map-legend,
 .landing-map .panel { display: none !important; }
 .landing-map .maplibregl-ctrl { display: none !important; }

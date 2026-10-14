@@ -48,6 +48,6 @@
 - [x] Nine tests pass; browser-verified editable totals, graph, scenario toggles, validation, historical cases and close; build OK
 
 ## Landing vision and Spain framing
-- [ ] Frame the landing backdrop on Spain without changing the saved Explorer view
-- [ ] Clarify wastewater reuse optimization in the headline, subtitle and About us
-- [ ] Browser-check landing page and About us
+- [x] Frame the landing backdrop on Spain without changing the saved Explorer view
+- [x] Clarify wastewater reuse optimization in the headline, subtitle and About us
+- [x] Browser-verified Spain backdrop, About us and Explorer-to-home return; no page errors
