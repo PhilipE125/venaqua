@@ -485,8 +485,8 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
             const o = raw?.plant ? raw.plant : raw;
             if (!o) return select(null);
             if (o.kind === "wwtp" || o.kind === "regen" || o.kind === "company")
-              select({ kind: o.kind, id: o.id });
-            };
+      select({ kind: o.kind, id: o.id });
+  };
 
   return (
     <div className="relative h-full w-full">
@@ -544,7 +544,76 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
           }}
         />
       </Map>
-           {popup && (
+      <div className={`map-legend z-10 ${selection ? "with-selection" : ""}`}>
+        {legendOpen ? (
+          <div className="panel max-w-[300px] space-y-1 rounded-md px-3 py-2 text-[10px] text-muted-foreground shadow-md">
+            <div className="flex items-center justify-between"><p className="label-caps">Legend</p><button className="text-muted-foreground hover:text-foreground" aria-label="Close legend" onClick={() => setLegendOpen(false)}>×</button></div>
+            {layers.wwtp && (
+              <p className="flex items-center gap-2">
+                <span className="flex shrink-0 items-center gap-1">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.primary) }} />
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.secondary) }} />
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.tertiary) }} />
+                </span>
+                Treatment plant — colour = treatment level, size = water treated, hollow = our estimate.
+              </p>
+            )}
+            {layers.regen && (
+              <p className="flex items-center gap-2">
+                <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border-2" style={{ borderColor: rgb(REGEN_COLOR) }} />
+                Reuse-ready plant — ring = recycled water in use (dark = industry), gap = unused.
+              </p>
+            )}
+            {layers.companies && (
+              <p className="flex items-center gap-2">
+                <span className="flex shrink-0 items-center gap-1">
+                  <span className="inline-block h-2 w-2 rounded-full border border-muted-foreground/60" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/70" />
+                  <span className="inline-block h-2 w-2 rounded-full bg-foreground" />
+                </span>
+                {companyOpacity > 0 ? "Company — hollow = potential buyer, grey = water-intensive, solid = confirmed user; border colour = sector once zoomed in." : "Companies appear when you zoom in."}
+              </p>
+            )}
+            {layers.clusters && (
+              <p className="flex items-center gap-2">
+                <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm border" style={{ borderColor: "rgba(11,110,138,0.8)", background: "rgba(11,110,138,0.15)" }} />
+                Companies that could share one pipe.
+              </p>
+            )}
+            {layers.projects && (
+              <p className="flex items-center gap-2"><span className="inline-block h-2 w-2 shrink-0 bg-foreground" />Signed reclaimed-water contract.</p>
+            )}
+            {layers.reservoirs && region === "de" && (
+              <p className="flex items-center gap-2">
+                <span className="flex shrink-0 items-center gap-1">
+                  {Object.values(RIVER_COLORS).map((c) => <span key={c.join()} className="inline-block h-1 w-3 rounded-full" style={{ background: rgb(c) }} />)}
+                </span>
+                River — colour = level at the nearest federal gauge: orange low, blue normal, navy high water.
+              </p>
+            )}
+            {layers.reservoirs && region !== "de" && (res.data?.features.length ?? 0) > 0 && (
+              <p className="flex items-center gap-2">
+                <span className="flex shrink-0 items-center gap-1">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(15)) }} />
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(45)) }} />
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(80)) }} />
+                </span>
+                Water store — low, medium or high fill.
+              </p>
+            )}
+            {stressYear && (
+              <div><div className="stress-ramp h-1.5 rounded-full" /><p className="mt-0.5">Illustrative water stress {stressYear}, low → severe. Not an official forecast.</p></div>
+            )}
+            {pipesVisible && (
+              <p className="flex items-center gap-2"><span className="inline-block h-[3px] w-5 shrink-0 rounded" style={{ background: "rgb(2,132,199)" }} />Illustrative pipe sketch — bold = rural priority, not real routes.</p>
+            )}
+            {showPipes && spain && !pipesVisible && <p>Zoom in to town level to see the pipe sketch.</p>}
+          </div>
+        ) : (
+          <Button size="sm" variant="secondary" className="h-7 shadow-md" onClick={() => setLegendOpen(true)}>Legend</Button>
+        )}
+      </div>
+      {popup && (
         <div className="panel absolute left-3 top-3 z-20 w-80 rounded-md p-3 text-xs shadow-md">
           <div className="flex items-start justify-between gap-2">
             <p className="label-caps">Reuse project</p>
