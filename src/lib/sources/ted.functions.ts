@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import type { Tender } from "../types";
 
 // TED has no CORS, so this runs server-side (proxy).
-const body = (country: "ESP" | "DEU") => ({
+type TedCountry = "ESP" | "DEU" | "FRA";
+const body = (country: TedCountry) => ({
   query:
     `classification-cpv IN (45252127 45252100 45252126 90513800) AND buyer-country=${country} AND publication-date>=20240101`,
   fields: [
@@ -27,14 +28,14 @@ function pickLang(v: unknown): string {
   if (Array.isArray(v)) return pickLang(v[0]);
   if (typeof v === "object") {
     const o = v as Record<string, unknown>;
-    const val = o["spa"] ?? o["deu"] ?? o["eng"] ?? Object.values(o)[0];
+    const val = o["spa"] ?? o["deu"] ?? o["fra"] ?? o["eng"] ?? Object.values(o)[0];
     return pickLang(val);
   }
   return String(v);
 }
 
 export const searchTenders = createServerFn({ method: "GET" })
-  .validator((country: "ESP" | "DEU") => (country === "DEU" ? "DEU" : "ESP"))
+  .validator((country: TedCountry): TedCountry => (country === "DEU" || country === "FRA" ? country : "ESP"))
   .handler(async ({ data: country }) => {
   const notices: Record<string, unknown>[] = [];
   for (let page = 1; page <= 8; page++) {

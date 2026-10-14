@@ -13,6 +13,7 @@ type Country = Area & { subareas: Area[] };
 export const COUNTRIES: Country[] = [
   { id: "es", name: "Spain", subareas: [{ id: "cat", name: "Catalonia" }] },
   { id: "de", name: "Germany", subareas: [] },
+  { id: "fr", name: "France", subareas: [] },
 ];
 
 function labelFor(region: Region) {

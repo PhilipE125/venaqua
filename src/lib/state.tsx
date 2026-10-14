@@ -11,7 +11,7 @@ export type Selection =
   | { kind: "region"; id: "catalonia" }
   | null;
 
-export type Region = "es" | "cat" | "de";
+export type Region = "es" | "cat" | "de" | "fr";
 
 export type Mode = "q1" | "q2" | "q3" | "q4" | "q5" | "all";
 

@@ -50,11 +50,17 @@ async function fetchPage(country: string, offset: number): Promise<EeaPage> {
   return (await r.json()) as EeaPage;
 }
 
-export async function fetchEea(country: "ES" | "DE"): Promise<{ plants: Map<string, EeaPlant>; fetched: number; fetchedAt: string }> {
-  // Spain and Germany both need two pages (2,138 and 3,776 plants), so fetch the first two together.
+/** Countries with national layers (EEA plants, EEA industry, TED). */
+export type Country = "ES" | "DE" | "FR";
+
+export async function fetchEea(country: Country): Promise<{ plants: Map<string, EeaPlant>; fetched: number; fetchedAt: string }> {
+  // Spain, Germany and France all need at least two pages (2,138 / 3,776 / 3,930 plants), so fetch the first two together.
   const pages = await Promise.all([fetchPage(country, 0), fetchPage(country, 2000)]);
   const more = (j: EeaPage) => j.exceededTransferLimit || j.properties?.exceededTransferLimit;
   for (let offset = 4000; offset < 20000 && more(pages.at(-1)!); offset += 2000) pages.push(await fetchPage(country, offset));
+  // France reports uwwWasteWaterTreated per day, not per year: median 0.1 m³ per population
+  // equivalent against ~55 for Germany and Spain (≈150 L/PE/day either way). Normalise to m³/year.
+  const toYear = country === "FR" ? 365 : 1;
   const plants = new Map<string, EeaPlant>();
   let fetched = 0;
   for (const j of pages) {
@@ -65,7 +71,7 @@ export async function fetchEea(country: "ES" | "DE"): Promise<{ plants: Map<stri
         code: String(p["uwwCode"]),
         name: String(p["uwwName"] ?? ""),
         capacity: Number(p["uwwCapacity"]) || 0,
-        treatedM3PerYear: t == null || Number(t) <= 0 ? null : Number(t),
+        treatedM3PerYear: t == null || Number(t) <= 0 ? null : Number(t) * toYear,
         uv: p["uwwUV"] === 1,
         filtration: p["uwwSandFiltration"] === 1 || p["uwwMicroFiltration"] === 1,
         ozonation: p["uwwOzonation"] === 1,

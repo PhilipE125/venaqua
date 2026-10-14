@@ -7,12 +7,13 @@ import { mergeCompanies } from "./merge";
 import { effectiveSupply, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
 import { fetchDrought } from "./sources/drought";
-import { enrichPlants, fetchEea, nationalPlant } from "./sources/eea";
+import { enrichPlants, fetchEea, nationalPlant, type Country } from "./sources/eea";
 import { fetchIed } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
 import { fetchProjects } from "./sources/projects";
 import { fetchGauges, lowWaterShare } from "./sources/pegel";
 import { fetchRegen } from "./sources/regen";
+import { departmentStress, fetchDepartments, fetchRestriction } from "./sources/vigieau";
 import { fetchPratHistory, fetchReservoirHistory, fetchReservoirs } from "./sources/reservoirs";
 import { searchTenders } from "./sources/ted.functions";
 import { fetchWwtps } from "./sources/wwtp";
@@ -34,18 +35,25 @@ function shared<T>(slot: Slot, deps: unknown[], fn: () => T): T {
 }
 const slots = { plants: {} as Slot, plantsData: {} as Slot, companies: {} as Slot, companiesData: {} as Slot, matches: {} as Slot, clusters: {} as Slot };
 
-const country = (region: Region) => (region === "de" ? "DE" : "ES");
+const country = (region: Region): Country => (region === "de" ? "DE" : region === "fr" ? "FR" : "ES");
+const outsideSpain = (region: Region) => region === "de" || region === "fr"; // no Catalan sources
 
-// Catalan-only sources (ACA plants' regeneration, projects, drought phases, El Prat) are empty in Germany.
+// Catalan-only sources (ACA plants' regeneration, projects, drought phases, El Prat) are empty outside Spain.
 function catalanOnly<T extends { data?: unknown; isLoading: boolean }>(q: T, region: Region): T {
-  return region === "de" ? { ...q, data: undefined, isLoading: false } : q;
+  return outsideSpain(region) ? { ...q, data: undefined, isLoading: false } : q;
 }
 
 const useWwtpsRaw = () => useQuery({ queryKey: ["wwtp"], queryFn: fetchWwtps, ...opts });
 // Query definitions shared by the hooks and by usePrefetchRegion, so a prefetch fills the same cache entry.
-const eeaQuery = (c: "ES" | "DE") => ({ queryKey: ["eea", c], queryFn: () => fetchEea(c), ...opts, staleTime: 24 * H, gcTime: 24 * H });
-const iedQuery = (c: "ES" | "DE", fn: (o: { data: "ES" | "DE" }) => ReturnType<typeof fetchIed> = fetchIed) => ({ queryKey: ["ied", c], queryFn: () => fn({ data: c }), ...opts, staleTime: 24 * H, gcTime: 24 * H });
-const reservoirsQuery = (de: boolean) => ({ queryKey: ["reservoirs", de], queryFn: de ? fetchGauges : fetchReservoirs, ...opts, staleTime: de ? H / 4 : H });
+const eeaQuery = (c: Country) => ({ queryKey: ["eea", c], queryFn: () => fetchEea(c), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+const iedQuery = (c: Country, fn: (o: { data: Country }) => ReturnType<typeof fetchIed> = fetchIed) => ({ queryKey: ["ied", c], queryFn: () => fn({ data: c }), ...opts, staleTime: 24 * H, gcTime: 24 * H });
+// Point layer for stress: Catalan reservoirs, German river gauges; none in France (restrictions are looked up per site).
+const reservoirsQuery = (region: Region) => {
+  const kind = region === "de" ? "gauges" : region === "fr" ? "none" : "reservoirs";
+  const fn = kind === "gauges" ? fetchGauges : kind === "none" ? async () => ({ features: [], fetchedAt: new Date().toISOString() }) : fetchReservoirs;
+  return { queryKey: ["reservoirs", kind], queryFn: fn, ...opts, staleTime: kind === "gauges" ? H / 4 : H };
+};
+const departmentsQuery = { queryKey: ["vigieau-departements"], queryFn: fetchDepartments, ...opts, staleTime: H / 2 };
 
 /** Start loading a region's national layers before it is picked (e.g. when the region menu opens). */
 export function usePrefetchRegion() {
@@ -55,7 +63,8 @@ export function usePrefetchRegion() {
       const c = country(r);
       void qc.prefetchQuery(eeaQuery(c));
       void qc.prefetchQuery(iedQuery(c));
-      void qc.prefetchQuery(reservoirsQuery(r === "de"));
+      void qc.prefetchQuery(reservoirsQuery(r));
+      if (r === "fr") void qc.prefetchQuery(departmentsQuery);
     },
     [qc],
   );
@@ -84,7 +93,7 @@ export function useWwtps() {
   const e = useEea();
   const g = useRegen();
   const enriched = shared(slots.plants, [w.data, e.data, g.data, region], () => {
-    if (region === "de") {
+    if (outsideSpain(region)) {
       const plants = [...(e.data?.plants.values() ?? [])].map(nationalPlant).filter((p): p is NonNullable<typeof p> => p !== null);
       return { plants, matched: 0, total: 0 };
     }
@@ -102,7 +111,7 @@ export function useWwtps() {
   const join = useMemo(() => (enriched && e.data ? { matched: enriched.matched, total: enriched.total } : null), [enriched, e.data]);
   return {
     ...w,
-    isLoading: region === "es" ? w.isLoading && e.isLoading : region === "de" ? e.isLoading : w.isLoading,
+    isLoading: region === "es" ? w.isLoading && e.isLoading : outsideSpain(region) ? e.isLoading : w.isLoading,
     data,
     join,
     eeaLoading: e.isLoading,
@@ -122,7 +131,7 @@ export function useCompanies() {
   const i = useIed();
   const merged = shared(slots.companies, [a.data, i.data, region], () => {
     if (!a.data && !i.data) return null;
-    const m = mergeCompanies(region === "de" ? [] : a.data?.features ?? [], i.data?.facilities ?? []);
+    const m = mergeCompanies(outsideSpain(region) ? [] : a.data?.features ?? [], i.data?.facilities ?? []);
     const companies: Company[] = m.companies.map((c) => {
       const src = knownUserSource(c);
       return src ? { ...c, confirmedSource: src } : c;
@@ -141,7 +150,7 @@ export function useCompanies() {
 
 /** Catalan reservoirs, or in Germany the federal river gauges (same shape, fill mapped from low/normal/high water). */
 export function useReservoirs() {
-  return useQuery(reservoirsQuery(useApp().region === "de"));
+  return useQuery(reservoirsQuery(useApp().region));
 }
 export const useReservoirHistory = () =>
   catalanOnly(useQuery({ queryKey: ["reservoirs-90d"], queryFn: fetchReservoirHistory, ...opts }), useApp().region);
@@ -182,8 +191,22 @@ export function useElevation(a?: { lat: number; lon: number }, b?: { lat: number
   });
 }
 
+/** France: VigiEau department summary (national strip) and the restriction at one site. */
+export const useVigieauDepartments = () => useQuery(departmentsQuery);
+export function useRestriction(at?: { lat: number; lon: number }) {
+  const fr = useApp().region === "fr";
+  return useQuery({
+    queryKey: ["vigieau", at?.lat.toFixed(4), at?.lon.toFixed(4)],
+    queryFn: () => fetchRestriction(at!.lat, at!.lon),
+    enabled: fr && !!at,
+    ...opts,
+    staleTime: H / 2,
+  });
+}
+
 export function useTenders() {
-  const c = useApp().region === "de" ? "DEU" : "ESP";
+  const region = useApp().region;
+  const c = region === "de" ? "DEU" : region === "fr" ? "FRA" : "ESP";
   const fn = useServerFn(searchTenders);
   return useQuery({ queryKey: ["ted", c], queryFn: () => fn({ data: c }), ...opts });
 }
@@ -191,9 +214,15 @@ export function useTenders() {
 /** Current stress = 1 − volume-weighted reservoir fill. */
 /** Current stress = 1 − volume-weighted reservoir fill; in Germany, the share of river gauges at low water. */
 export function useStress() {
-  const de = useApp().region === "de";
+  const { region } = useApp();
+  const de = region === "de";
   const h = useReservoirHistory();
   const g = useReservoirs();
+  const deps = useQuery({ ...departmentsQuery, enabled: region === "fr" });
+  if (region === "fr") {
+    const s = departmentStress(deps.data ?? []);
+    return { stress: s ?? 0.5, fill: null, known: s != null, lowWater: null };
+  }
   if (de) {
     const low = lowWaterShare(g.data?.features ?? []);
     return { stress: low ?? 0.5, fill: null, known: low != null, lowWater: low };
