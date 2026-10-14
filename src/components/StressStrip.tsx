@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { SourceInfo } from "./SourceInfo";
 import { Skeleton } from "@/components/ui/skeleton";

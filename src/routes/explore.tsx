@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ClientOnly } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
+import { useApp, type Mode } from "@/lib/state";
 import { Drawer } from "@/components/Drawer";
 import { CompanySearch } from "@/components/Landing";
 import { ModuleBar } from "@/components/ModuleBar";
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/explore")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { module?: Exclude<Mode, "all"> } => (typeof s.module === "string" && /^q[1-5]$/.test(s.module) ? { module: s.module as Exclude<Mode, "all"> } : {}),
   component: Index,
 });
 
@@ -32,6 +34,10 @@ function MapFallback() {
 }
 
 function Index() {
+  const { module } = Route.useSearch();
+  const { setMode } = useApp();
+  // Landing-page module links open the map with that module active.
+  useEffect(() => { if (module) setMode(module); }, [module]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
       <TooltipProvider delayDuration={200}>
         <div className="map-shell flex flex-col overflow-hidden">
