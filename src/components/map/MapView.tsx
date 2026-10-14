@@ -1,5 +1,5 @@
 import "maplibre-gl/dist/maplibre-gl.css";
-import { setWorkerUrl } from "maplibre-gl";
+import { setWorkerUrl, type StyleSpecification } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
 import { IconLayer, PathLayer, PolygonLayer, ScatterplotLayer } from "@deck.gl/layers";
@@ -90,7 +90,7 @@ const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capa
 
 // Fetch the OpenFreeMap style and re-tint water so rivers and lakes read clearly blue.
 function useBasemapStyle(dark: boolean) {
-  const [style, setStyle] = useState<object | null>(null);
+  const [style, setStyle] = useState<StyleSpecification | null>(null);
   useEffect(() => {
     let alive = true;
     fetch(`https://tiles.openfreemap.org/styles/${dark ? "dark" : "positron"}`)
