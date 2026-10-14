@@ -18,7 +18,7 @@ import { evaluateCandidate, type CompanyEvalInput } from "@/lib/companyEval";
 import { comarcaKey, footprint, mainsShare, type Choice } from "@/lib/footprint";
 import {
   eurK, fmt, fmt1, fmt2, SUPPLY_SEARCH_KM, useClusters, useDrought, useElevation, usePratYearly, useRegen, useRegenHistory,
-  useReservoirMonthly, useRestriction, useRoadRoute, useSourcing, useStress, useWwtps, type SupplyCandidate,
+  useReservoirMonthly, useRestriction, useRiverFlows, useRoadRoute, useSourcing, useStress, useWwtps, type SupplyCandidate,
 } from "@/lib/queries";
 import { haversineKm } from "@/lib/score";
 import {
@@ -520,6 +520,16 @@ function DroughtNow({ company, events, logEnd }: { company: Company; events: Dro
   const { region } = useApp();
   const restriction = useRestriction(company);
   const { lowWater } = useStress();
+  const rivers = useRiverFlows();
+  // Nearest live river reading within 25 km: local context next to the area-wide stress row.
+  const river = useMemo(() => {
+    let best: { name: string; note?: string | undefined; fill: number; km: number } | null = null;
+    for (const g of rivers.data?.features ?? []) {
+      const km = haversineKm(company.lat, company.lon, g.lat, g.lon);
+      if (km <= 25 && (!best || km < best.km)) best = { name: g.name, note: g.note, fill: g.fill, km };
+    }
+    return best;
+  }, [rivers.data, company.lat, company.lon]);
   if (region === "fr") {
     const lv = restriction.data?.level;
     return <p className="text-xs"><span className="text-muted-foreground">Now (VigiEau): </span>{restriction.isLoading ? "loading…" : restriction.data ? (lv ? GRAVITE_LABEL[lv] : "No restriction in force") : "not available"}</p>;
@@ -795,6 +805,10 @@ function RiskMatrix({ company, cols, bill, events, qDay, plantName, choice }: {
               <Head title="Source stress" id={region === "fr" ? "vigieau" : region === "de" ? "pegel" : "reservoirsMonthly"} why={`Venaqua screening rule: ${stress.text}.`} />
               {rows.map((r) => <Cell key={r.key} l={stress.level}>{stress.level ? `exposed: ${fmt.format(r.col.mains * 100)}%` : stress.text}</Cell>)}
             </tr>
+            {region !== "de" && <tr className="border-t">
+              <Head title="Nearest river" id={region === "fr" ? "onde" : "acaRivers"} why="Closest river reading within 25 km. Context only: it does not change the scores or costs." />
+              <td colSpan={rows.length} className="px-1 py-1.5 text-[11px] text-muted-foreground">{river ? <><span className={river.fill < 30 ? "font-medium text-foreground" : ""}>{river.note}</span> · {river.name}, {fmt1.format(river.km)} km</> : rivers.isLoading ? "loading" : "no gauge within 25 km"}</td>
+            </tr>}
             <tr className="border-t">
               <Head title="Local visibility" id="screening" why={`Venaqua screening rule: how visible your water use would be in a shortage. Not a measure of public opinion. High when your draw is at least ${fmt1.format(settings.visibleShare * 100)}% of comarca business water or ${fmt.format(settings.visibleResidents)} resident-equivalents, and the town reached exceptional or emergency in the record.`} />
               {rows.map((r) => <Cell key={r.key} l={use ? r.vis : null}>{use ? `${fmtPct(r.fp.shareOfBusiness ?? 0)} · ${fmt.format(r.fp.residents ?? 0)} residents${severeYear ? ` · ${severeYear.phase} in ${severeYear.date.slice(0, 4)}` : ""}` : "not loaded for this region"}</Cell>)}
