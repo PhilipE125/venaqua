@@ -9,7 +9,7 @@ export const Route = createFileRoute("/platform")({
   head: () => ({
     meta: [
       { title: "Venaqua · Platform" },
-      { name: "description", content: "Source, risk and proof for industrial water: what is live in Venaqua today, what is in beta and what is coming." },
+      { name: "description", content: "Source, risk and proof for industrial water: what Venaqua does today." },
       { property: "og:title", content: "Venaqua · Platform" },
       { property: "og:description", content: "Explore Venaqua’s industrial-water tools, with clear availability labels and sources for every figure." },
       { property: "og:type", content: "website" },

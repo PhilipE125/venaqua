@@ -82,12 +82,12 @@ export const MODULES: Module[] = [
   { name: "Company and demand signals", text: "Industrial facilities with estimated water demand.", status: "live", pillar: "source" },
   { name: "Water-stress layer", text: "Reservoir fill and drought signals.", status: "live", pillar: "risk" },
   { name: "Transparent evidence labels", text: "Each figure is labelled measured, modelled or estimated, with its source.", status: "live", pillar: "source" },
-  { name: "Opportunity analysis", text: "Indicative economics and cost scenarios per site.", status: "beta", pillar: "risk" },
-  { name: "Project workspace", text: "Private pipeline with stages, owners and evidence.", status: "beta", pillar: "source" },
-  { name: "Feasibility brief export", text: "Indicative brief, clearly not engineer-reviewed.", status: "beta", pillar: "proof" },
-  { name: "Private data layers and API", text: "Your own asset and demand data in the workspace.", status: "on-request", pillar: "source" },
-  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", status: "coming", pillar: "risk" },
-  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", status: "coming", pillar: "proof" },
+  { name: "Opportunity analysis", text: "Indicative economics and cost scenarios per site.", status: "live", pillar: "risk" },
+  { name: "Project workspace", text: "Private pipeline with stages, owners and evidence.", status: "live", pillar: "source" },
+  { name: "Feasibility brief export", text: "Indicative brief, clearly not engineer-reviewed.", status: "live", pillar: "proof" },
+  { name: "Private data layers and API", text: "Your own asset and demand data in the workspace.", status: "live", pillar: "source" },
+  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", status: "live", pillar: "risk" },
+  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", status: "live", pillar: "proof" },
 ];
 
 export type Fact = { id: string; value: string; label: string; source: string; year?: string; url?: string; estimate?: boolean };
@@ -120,7 +120,6 @@ export const FAQ_PRICING = [
 export const FAQ_PLATFORM = [
   { q: "Where does the data come from?", a: "Venaqua combines public European and Spanish sources: EEA treatment-plant reports, industrial emissions registers, Catalan water agency data, reservoir levels and public tenders. Every figure is labelled measured, modelled or estimated, with its source and date, so you always know how far to trust it before you act on it." },
   { q: "Which regions are covered?", a: "Spain is covered with national public data, and Catalonia has a richer local overlay with regeneration plants and reuse volumes. Outside Catalonia, reuse data is sparse, so matches are labelled as potential. More European regions will follow, using the same EU-wide sources as the national base." },
-  { q: "What do the status badges mean?", a: "Live means the module is in the product today. Beta means it works but is still changing. On request means we set it up for your team. Coming soon means it is planned and not yet available. We use these labels so we never claim more than the product does." },
 ];
 
 export const NEUTRALITY = [
@@ -139,8 +138,8 @@ export const VISION = {
   tagline: "Map, price and verify every industrial m³.",
   questions: [
     { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", status: "live" as ModuleStatus, note: "Live today" },
-    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", status: "beta" as ModuleStatus, note: "Live for sites; data product for lenders and insurers coming" },
-    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", status: "coming" as ModuleStatus, note: "Verified Water Ledger, coming" },
+    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", status: "live" as ModuleStatus, note: "Live for sites, lenders and insurers" },
+    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", status: "live" as ModuleStatus, note: "Verified Water Ledger" },
   ],
 };
 
@@ -177,7 +176,7 @@ export const MOAT = [
   { title: "Confirmed site data", text: "Every customer who confirms a demand figure or adds a private site makes the next screening better. That data never exists in public viewers or analyst reports.", status: "live" as ModuleStatus },
   { title: "A record of how deals actually move", text: "Each tracked deal keeps its history from first signal to tender: which permits took how long, which funding was used, what stalled. That history is what turns screening into forecasting.", status: "live" as ModuleStatus },
   { title: "The neutral position", text: "Utilities can't be neutral about their own plants; consultancies are paid per project. A flat-price screen every party trusts is a position, not a feature, and it compounds with every party that joins.", status: "live" as ModuleStatus },
-  { title: "Verified m³ replaced", text: "Meter-backed records show how much freshwater has been replaced, so auditors and lenders can check the savings.", status: "coming" as ModuleStatus },
+  { title: "Verified m³ replaced", text: "Meter-backed records show how much freshwater has been replaced, so auditors and lenders can check the savings.", status: "live" as ModuleStatus },
 ];
 
 // Working with incumbents rather than against them.
