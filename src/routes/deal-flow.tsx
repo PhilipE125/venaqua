@@ -89,16 +89,15 @@ function DealFlow() {
     <div className="min-h-screen bg-background">
       <PublicHeader />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-5">
-        <p className="label-caps text-primary">Deal Flow · Reuse Pipeline</p>
+        <p className="label-caps text-primary">Deal Flow</p>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Water reuse deals in Spain, sourced and scored</h1>
-          {DEMO_UNLOCK && <Badge variant="secondary">Demo: all {DEALS.length} deals unlocked</Badge>}
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Shared reuse infrastructure in Spain, costed before it is tendered</h1>
+          {DEMO_UNLOCK && <Badge variant="secondary">Demo: everything unlocked</Badge>}
         </div>
-        <Tabs defaultValue="deals" className="mt-6">
-          <TabsList><TabsTrigger value="cases">Investment Cases</TabsTrigger><TabsTrigger value="deals">Tenders &amp; Signals</TabsTrigger></TabsList>
-          <TabsContent value="cases">
-            <div className="mt-4 rounded-xl border bg-card p-6 text-sm text-muted-foreground">Co-investment cases (one plant shared by nearby buyers, with capex split and payback) are being prepared and will appear here.</div>
-          </TabsContent>
+        <Tabs defaultValue="cases" className="mt-6">
+          <TabsList><TabsTrigger value="cases">Investment cases</TabsTrigger><TabsTrigger value="signals">Early signals</TabsTrigger><TabsTrigger value="deals">Tenders</TabsTrigger></TabsList>
+          <TabsContent value="cases"><CasesTab /></TabsContent>
+          <TabsContent value="signals"><SignalsTab onOpen={(id) => set({ deal: id })} /></TabsContent>
           <TabsContent value="deals">
             <div className="mt-4 grid gap-3 sm:grid-cols-4">
               {[["Actionable deals", String(rows.filter((d) => d.is_actionable).length)], ["Total known value", formatEur(totalValue || null)], ["Reclaimed water", `${volume.toFixed(1)} hm³/yr`], ["Deadlines in 30 days", String(soon)]].map(([l, v]) => (
@@ -197,10 +196,21 @@ function DealSheet({ deal: d, onClose }: { deal?: Deal | undefined; onClose: () 
             <p className="mt-3 text-[11px] text-muted-foreground">Analyst judgement, 1-5. Weights: reuse impact 25%, buyers 20%, funding 15%, timing 15%, margin 15%, water stress 10%.</p>
           </div>
           {d.notes && <p className="mt-4 text-sm">{d.notes}</p>}
+          {d.kind === "tender" && (
+            <div className="mt-5 rounded-xl border p-4 text-sm">
+              <div className="flex items-center justify-between"><p className="label-caps">Tender Pack</p><Badge variant="secondary">Included</Badge></div>
+              <ul className="mt-2 space-y-1 text-muted-foreground">
+                <li><span className="font-medium text-foreground">Bid / no-bid:</span> score {Math.round(d.opportunity_score)} of 100, see the breakdown above.</li>
+                <li><span className="font-medium text-foreground">Eligibility:</span> check solvency and classification against the tender documents and your company profile.</li>
+                <li><span className="font-medium text-foreground">Documents by envelope:</span> administrative, technical (judgement criteria), economic offer.</li>
+                <li><span className="font-medium text-foreground">Deadline:</span> {d.deadline ?? "not published yet"}.</li>
+              </ul>
+            </div>
+          )}
           <p className="label-caps mt-5">Sources</p>
           <ul className="mt-1 space-y-1 text-sm">{d.sources.map((s) => <li key={s.url}><a href={s.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">{s.label}<ExternalLink className="h-3 w-3" /></a></li>)}</ul>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Button onClick={() => setContact(`Project Case request for deal ${d.id}: ${d.name}`)}>Request a Project Case</Button>
+            <Button onClick={() => setContact(`Engineer-reviewed case for ${d.id}: ${d.name}`)}>Talk to us about this deal</Button>
             <Button variant="outline" asChild><Link to="/explore">See nearby plants on the map</Link></Button>
           </div>
         </>}
