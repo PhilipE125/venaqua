@@ -16,6 +16,7 @@ import { fetchIed } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
 import { fetchProjects } from "./sources/projects";
 import { fetchGauges, lowWaterShare } from "./sources/pegel";
+import { fetchCatRivers, fetchFrRivers } from "./sources/rivers";
 import { fetchRegen, fetchRegenHistory } from "./sources/regen";
 import { fetchRoadRoute } from "./sources/route";
 import { departmentStress, fetchDepartments, fetchRestriction } from "./sources/vigieau";
@@ -162,6 +163,17 @@ export function useCompanies() {
 /** Catalan reservoirs, or in Germany the federal river gauges (same shape, fill mapped from low/normal/high water). */
 export function useReservoirs() {
   return useQuery(reservoirsQuery(useApp().region));
+}
+/** River flow points: ACA gauges in Catalonia, ONDE field checks in France. Germany uses the gauge layer above. */
+export function useRiverFlows() {
+  const region = useApp().region;
+  const kind = region === "fr" ? "fr" : region === "de" ? "none" : "cat";
+  return useQuery({
+    queryKey: ["river-flows", kind],
+    queryFn: kind === "fr" ? fetchFrRivers : kind === "cat" ? fetchCatRivers : async () => ({ features: [], fetchedAt: new Date().toISOString() }),
+    ...opts,
+    enabled: kind !== "none",
+  });
 }
 export const useReservoirHistory = () =>
   catalanOnly(useQuery({ queryKey: ["reservoirs-90d"], queryFn: fetchReservoirHistory, ...opts }), useApp().region);

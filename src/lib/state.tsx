@@ -4,7 +4,7 @@ import { DEFAULT_SECTOR_DEMAND } from "./sectorDemand";
 import type { SectorId } from "./sectors";
 import type { Phase } from "./sources/drought";
 
-export type LayerKey = "wwtp" | "regen" | "companies" | "reservoirs" | "tenders" | "projects" | "clusters";
+export type LayerKey = "wwtp" | "regen" | "companies" | "reservoirs" | "tenders" | "projects" | "clusters" | "rivers";
 export type Selection =
   | { kind: "wwtp" | "regen" | "company"; id: string }
   | { kind: "comarca"; id: string }
@@ -25,16 +25,16 @@ export const QUESTIONS: { mode: Exclude<Mode, "all">; who: string; short: string
 
 // Which map layers each question needs.
 export const MODE_PRESETS: Record<Mode, Record<LayerKey, boolean>> = {
-  q1: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
-  q2: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
-  q3: { wwtp: false, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
-  q4: { wwtp: true, regen: true, companies: false, reservoirs: true, tenders: false, projects: true, clusters: true },
-  q5: { wwtp: false, regen: true, companies: true, reservoirs: true, tenders: false, projects: false, clusters: false },
+  q1: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false, rivers: false },
+  q2: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false, rivers: false },
+  q3: { wwtp: false, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false, rivers: false },
+  q4: { wwtp: true, regen: true, companies: false, reservoirs: true, tenders: false, projects: true, clusters: true, rivers: false },
+  q5: { wwtp: false, regen: true, companies: true, reservoirs: true, tenders: false, projects: false, clusters: false, rivers: true },
   // No module selected = calm neutral explore view (same as the first load).
-  all: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false },
+  all: { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false, rivers: false },
 };
 // Calm first view: plants first; companies fade in once zoomed in; extras stay off until switched on.
-export const CALM_LAYERS: Record<LayerKey, boolean> = { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false
+export const CALM_LAYERS: Record<LayerKey, boolean> = { wwtp: true, regen: true, companies: true, reservoirs: false, tenders: false, projects: false, clusters: false, rivers: false
 };
 
 export interface Settings {
