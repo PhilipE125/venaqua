@@ -30,11 +30,6 @@ export const Route = createFileRoute("/pricing")({
   component: Pricing,
 });
 
-const STATUS_STYLE: Record<Plan["status"], string> = {
-  live: "bg-primary/10 text-primary",
-  beta: "bg-secondary text-secondary-foreground",
-  "on-request": "bg-muted text-foreground",
-};
 
 function PlanCta({ plan }: { plan: Plan }) {
   const { setContact } = useWorkspace();
@@ -59,10 +54,7 @@ function Pricing() {
                 <tr className="border-b align-top">
                   {PLANS.map((p) => (
                     <th key={p.id} className="p-4 text-left font-normal">
-                      <div className="flex flex-wrap items-center justify-between gap-1">
-                        <span className="font-semibold">{p.name}</span>
-                        <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_STYLE[p.status]}`}>{p.statusLabel}</span>
-                      </div>
+                      <span className="font-semibold">{p.name}</span>
                       <div className="mt-2 flex flex-wrap items-baseline gap-2">
                         <span className="tabular-nums text-lg font-semibold">{p.price}</span>
                         {p.listPrice && <span className="tabular-nums text-sm text-muted-foreground line-through">{p.listPrice}</span>}

@@ -38,7 +38,7 @@ function GaugeStrip({ withSelection }: { withSelection: boolean }) {
       </div>
       <div className="flex min-w-0 items-center gap-3 border-l pl-4">
         <div>
-          <p className="text-[11px] text-muted-foreground">River gauges at low water (PEGELONLINE, live)</p>
+          <p className="text-[11px] text-muted-foreground">River gauges at low water (PEGELONLINE, current reading)</p>
           {g.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : g.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
             <p className="tnum text-xl font-medium">
               {gauges.length ? fmt.format((low / gauges.length) * 100) : 0}%
@@ -64,7 +64,7 @@ function RestrictionStrip({ withSelection }: { withSelection: boolean }) {
       </div>
       <div className="flex min-w-0 items-center gap-3 border-l pl-4">
         <div>
-          <p className="text-[11px] text-muted-foreground">Departments at the highest level, crise (VigiEau, live)</p>
+          <p className="text-[11px] text-muted-foreground">Departments at the highest level, crise (VigiEau, current reading)</p>
           {d.isLoading ? <Skeleton className="mt-1 h-6 w-16" /> : d.isError ? <p className="text-xs text-destructive">Unavailable</p> : (
             <p className="tnum text-xl font-medium">
               {fmt.format(count("crise"))}<span className="text-sm text-muted-foreground"> of {fmt.format(deps.length)}</span>
@@ -108,7 +108,7 @@ function CatalanStrip() {
     <div className={`panel map-context pointer-events-auto absolute bottom-16 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${selection ? "with-selection" : ""}`}>
       <div className="flex flex-col justify-center">
         <p className="label-caps">Water stress now</p>
-        <p className="text-[11px] text-muted-foreground">{region === "es" ? "Live data: Catalonia only" : "Catalonia, internal basins"}</p>
+        <p className="text-[11px] text-muted-foreground">{region === "es" ? "River flow: Catalonia only" : "Catalonia, internal basins"}</p>
       </div>
       <div className="flex items-center border-l pl-4"><WaterPricePanel horizon={ahead} /></div>
       <div className="flex min-w-0 items-center gap-3 border-l pl-4">

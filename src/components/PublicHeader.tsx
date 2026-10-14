@@ -31,7 +31,7 @@ export function PublicHeader() {
   const content: Record<Key, { title: string; body: string; actions: React.ReactNode }> = {
     platform: {
       title: "The Venaqua platform",
-      body: "A live map of water recycling plants, industrial users and water stress, plus Deal Flow: costed investment cases, early signals and tenders.",
+      body: "A map of water recycling plants, industrial users and water stress, plus Deal Flow: costed investment cases, early signals and tenders.",
       actions: (
         <>
           <Button asChild size="sm"><Link to="/platform" onClick={close}>See the platform</Link></Button>
