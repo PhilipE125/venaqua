@@ -76,3 +76,7 @@
 # Pricing simplification (Oct 2026)
 - [x] Two paid options only (Investment cases, Data & API); free map as strip below
 - [x] Removed all Beta/coming labels site-wide; everything presented as live
+
+# Industrial buyer focus (Oct 2026)
+- [x] Water sourcing panel, data additions A-C, model changes 1-3, sourcing map mode
+- [ ] Optional D: river flow near the site (not built)

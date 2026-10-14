@@ -28,3 +28,4 @@
 - API keys are stored only as SHA-256 hashes; the Data API at /api/public/v1/$resource verifies the key and plan in the handler before returning the key owner's data.
 - Pricing product descriptions and enquiry prompts share the marketing content configuration; the existing contact dialog selects by product topic — keeps each CTA coherent without duplicating contact flows.
 - The Explorer starts from CALM_LAYERS in src/lib/state.tsx and keeps stress-horizon/pipe toggles in app state (shown in the Layers tab, Spain only) — keeps the first view quiet and removes floating panels.
+- Clicking a company opens SourcingPanel (five buyer questions); the chosen supply plant is per-company scenario state read by useSupplyPlant, so panel, map and full cost-benefit always use the same plant — prevents the views disagreeing.
