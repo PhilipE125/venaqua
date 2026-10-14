@@ -36,7 +36,7 @@ export function flowState(latest: number, median: number): State {
 const median = (v: number[]) => {
   const s = [...v].sort((a, b) => a - b);
   const h = s.length >> 1;
-  return s.length % 2 ? s[h] : (s[h - 1] + s[h]) / 2;
+  return s.length % 2 ? (s[h] ?? 0) : ((s[h - 1] ?? 0) + (s[h] ?? 0)) / 2;
 };
 
 interface AcaRow { dia: string; codi_estacio: string; estacio: string; subconca?: string; utm_x: string; utm_y: string; codi_variable: string; descripcio_variable: string; valor: string }
@@ -56,14 +56,17 @@ export async function fetchCatRivers(): Promise<SourceResult<Reservoir>> {
   }
   const best = new Map<string, AcaRow[]>();
   for (const list of series.values()) {
-    const prev = best.get(list[0].codi_estacio);
-    if (!prev || list.length > prev.length) best.set(list[0].codi_estacio, list);
+    const first = list[0];
+    if (!first) continue;
+    const prev = best.get(first.codi_estacio);
+    if (!prev || list.length > prev.length) best.set(first.codi_estacio, list);
   }
   const features: Reservoir[] = [];
   for (const list of best.values()) {
     list.sort((a, b) => a.dia.localeCompare(b.dia));
     const vals = list.map((x) => Number(x.valor)).filter(Number.isFinite);
     const last = list[list.length - 1];
+    if (!last) continue;
     const x = Number(last.utm_x), y = Number(last.utm_y);
     if (vals.length < 7 || !x || !y) continue;
     const latest = Number(last.valor), med = median(vals);
