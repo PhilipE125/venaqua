@@ -70,7 +70,7 @@ function LayerRow({
   );
 }
 
-function FutureLayers() {
+export function FutureLayers() {
   const { horizon, setHorizon, showPipes, setShowPipes } = useApp();
   return (
     <div className="border-b py-3 text-xs">

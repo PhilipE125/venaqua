@@ -29,7 +29,7 @@ function GaugeStrip({ withSelection }: { withSelection: boolean }) {
   const gauges = g.data?.features ?? [];
   const low = gauges.filter((x) => x.note === "low water").length;
   return (
-    <div className={`panel map-context pointer-events-auto absolute bottom-4 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${withSelection ? "with-selection" : ""}`}>
+    <div className={`panel map-context pointer-events-auto absolute bottom-16 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${withSelection ? "with-selection" : ""}`}>
       <div className="flex flex-col justify-center">
         <p className="label-caps">Water stress now</p>
         <p className="text-[11px] text-muted-foreground">Germany, federal waterways</p>
@@ -55,7 +55,7 @@ function RestrictionStrip({ withSelection }: { withSelection: boolean }) {
   const deps = d.data ?? [];
   const count = (l: (typeof GRAVITES)[number]) => deps.filter((x) => x.level === l).length;
   return (
-    <div className={`panel map-context pointer-events-auto absolute bottom-4 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${withSelection ? "with-selection" : ""}`}>
+    <div className={`panel map-context pointer-events-auto absolute bottom-16 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${withSelection ? "with-selection" : ""}`}>
       <div className="flex flex-col justify-center">
         <p className="label-caps">Water stress now</p>
         <p className="text-[11px] text-muted-foreground">France, drought restrictions</p>
@@ -92,7 +92,7 @@ function CatalanStrip() {
   const pratTotal = prat.data?.series.reduce((s, d) => s + d.reuse, 0) ?? 0;
   const pratRiver = prat.data?.series.reduce((s, d) => s + d.river, 0) ?? 0;
   return (
-    <div className={`panel map-context pointer-events-auto absolute bottom-4 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${selection ? "with-selection" : ""}`}>
+    <div className={`panel map-context pointer-events-auto absolute bottom-16 left-5 z-10 flex h-[76px] items-stretch gap-4 overflow-hidden rounded-lg px-4 py-2.5 shadow-map-panel ${selection ? "with-selection" : ""}`}>
       <div className="flex flex-col justify-center">
         <p className="label-caps">Water stress now</p>
         <p className="text-[11px] text-muted-foreground">{region === "es" ? "Live data: Catalonia only" : "Catalonia, internal basins"}</p>
