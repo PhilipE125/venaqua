@@ -116,7 +116,7 @@ function LayersTab() {
         ))}
       </LayerRow>
       {spain && <FutureLayers />}
-      {region !== "fr" && <LayerRow k="reservoirs" title={region === "de" ? "Rivers (live gauge levels)" : region === "fr" ? "Reservoirs (none in France)" : "Reservoirs"} q={res} count={res.data?.features.length}>
+      {region !== "fr" && <LayerRow k="reservoirs" title={region === "de" ? "Rivers (live gauge levels)" : "Reservoirs"} q={res} count={res.data?.features.length}>
         {region === "de" ? (
           <>
             <span className="flex items-center gap-1.5"><Dot color={RIVER_COLORS.low} />Low water</span>
