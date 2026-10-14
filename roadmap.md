@@ -36,3 +36,8 @@
 
 - [ ] Philip map-fixes plan (What_s_wrong_now): blue rivers, dry-to-wet colour scale, gauge shapes, no-red sector palette, swatch legend, clickable gauges, country-neutral text
 - [x] Future water stress (2/5/10/15 yrs) + predicted pipe network layers
+
+## Current stress and freshwater prices
+- [ ] Add an explicit Now stress surface, separate from hiding the layer
+- [ ] Add a freshwater price panel with sourced history and clearly assumed stress scenarios
+- [ ] Test price arithmetic and verify the map controls and chart in the browser

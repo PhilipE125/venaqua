@@ -17,7 +17,14 @@ const MENORCA: [number, number][] = [[3.8, 40.0], [4.1, 40.08], [4.33, 39.85], [
 const IBIZA: [number, number][] = [[1.2, 38.9], [1.35, 39.1], [1.6, 39.05], [1.55, 38.85]];
 export const SPAIN_SHAPES = [MAINLAND, MALLORCA, MENORCA, IBIZA];
 
-const YEARS: Record<string, number> = { "2028": 2, "2031": 5, "2036": 10, "2041": 15 };
+export const STRESS_HORIZONS = [
+  { key: "now", label: "Now", year: "2026", ahead: 0 },
+  { key: "2y", label: "2 yrs", year: "2028", ahead: 2 },
+  { key: "5y", label: "5 yrs", year: "2031", ahead: 5 },
+  { key: "10y", label: "10 yrs", year: "2036", ahead: 10 },
+  { key: "15y", label: "15 yrs", year: "2041", ahead: 15 },
+] as const;
+const YEARS: Record<string, number> = Object.fromEntries(STRESS_HORIZONS.map((h) => [h.year, h.ahead]));
 
 // Smooth value in ~0–100 for a location and years ahead.
 export function stressAt(lon: number, lat: number, ahead: number): number {
@@ -47,7 +54,8 @@ export function stressImage(year: string, color: (v: number) => [number, number,
   const W = 1440, H = 1080;
   const cv = document.createElement("canvas");
   cv.width = W; cv.height = H;
-  const ctx = cv.getContext("2d")!;
+  const ctx = cv.getContext("2d");
+  if (!ctx) return "";
   const img = ctx.createImageData(W, H);
   const ahead = YEARS[year] ?? 0;
   const yTop = merc(n0), yBot = merc(s0);
@@ -63,7 +71,9 @@ export function stressImage(year: string, color: (v: number) => [number, number,
   // Draw the field to a buffer, then clip to Spain with a soft edge.
   const buf = document.createElement("canvas");
   buf.width = W; buf.height = H;
-  buf.getContext("2d")!.putImageData(img, 0, 0);
+  const bufferContext = buf.getContext("2d");
+  if (!bufferContext) return "";
+  bufferContext.putImageData(img, 0, 0);
   const toPx = ([lon, lat]: [number, number]) => [((lon - w0) / (e0 - w0)) * W, ((yTop - merc(lat)) / (yTop - yBot)) * H] as const;
   ctx.clearRect(0, 0, W, H);
   ctx.save();
