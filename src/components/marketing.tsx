@@ -56,7 +56,7 @@ export function SourcesList() {
                 <span className="tabular-nums">{i + 1}.</span>
                 <span>
                   {url ? <a href={url} target="_blank" rel="noreferrer" className="underline">{f.source}</a> : f.source}
-                  {year ? `, ${year}` : ""} — {f.label}
+                  {year ? `, ${year}` : ""}: {f.label}
                 </span>
               </li>
             );

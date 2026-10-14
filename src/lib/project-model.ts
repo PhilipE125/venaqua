@@ -30,7 +30,7 @@ function droughtSection(volume: number) {
 Real reference rules: Catalonia 2023 industrial cut 15%, 2024 cut 25%.
 Cost of one ${a.restrictionDays}-day event at a 15% cut: ${eur(cut15)}
 Cost of one ${a.restrictionDays}-day event at a 25% cut: ${eur(cut25)}
-Reuse covering the cut volume — capital ${eur(volume * a.capexPerM3Day * 0.25)}, avoided cost per event ${eur(invest.avoidedPerEvent)}, simple payback ${invest.simplePayback == null ? "not reached" : `${invest.simplePayback.toFixed(1)} years`}
+Reuse covering the cut volume: capital ${eur(volume * a.capexPerM3Day * 0.25)}, avoided cost per event ${eur(invest.avoidedPerEvent)}, simple payback ${invest.simplePayback == null ? "not reached" : `${invest.simplePayback.toFixed(1)} years`}
 Assumptions: €${a.lossPerM3} lost contribution per unmet m³, ${a.backupShare * 100}% backup supply at €${a.backupPremium}/m³ premium, €${a.capexPerM3Day.toLocaleString("en-GB")} capital per m³/day, ${a.eventsPerYear} events per year. These are not recorded losses or a guaranteed return.`;
 }
 

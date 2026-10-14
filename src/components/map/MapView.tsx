@@ -556,13 +556,13 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
                   <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.secondary) }} />
                   <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.tertiary) }} />
                 </span>
-                Treatment plant — colour = treatment level, size = water treated, hollow = our estimate.
+                Treatment plant: colour shows treatment level, size shows water treated, and hollow circles indicate estimates.
               </p>
             )}
             {layers.regen && (
               <p className="flex items-center gap-2">
                 <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border-2" style={{ borderColor: rgb(REGEN_COLOR) }} />
-                Reuse-ready plant — ring = recycled water in use (dark = industry), gap = unused.
+                Reuse-ready plant: the ring shows recycled water in use, dark segments show industry use, and gaps show unused capacity.
               </p>
             )}
             {layers.companies && (
@@ -572,7 +572,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
                   <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/70" />
                   <span className="inline-block h-2 w-2 rounded-full bg-foreground" />
                 </span>
-                {companyOpacity > 0 ? "Company — hollow = potential buyer, grey = water-intensive, solid = confirmed user; border colour = sector once zoomed in." : "Companies appear when you zoom in."}
+                {companyOpacity > 0 ? "Companies: hollow circles are potential buyers, grey circles are water-intensive sites, and solid circles are confirmed users. Border colour shows the sector when zoomed in." : "Companies appear when you zoom in."}
               </p>
             )}
             {layers.clusters && (
@@ -589,7 +589,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
                 <span className="flex shrink-0 items-center gap-1">
                   {Object.values(RIVER_COLORS).map((c) => <span key={c.join()} className="inline-block h-1 w-3 rounded-full" style={{ background: rgb(c) }} />)}
                 </span>
-                River — colour = level at the nearest federal gauge: orange low, blue normal, navy high water.
+                River levels from the nearest federal gauge: orange is low, blue is normal, and navy is high.
               </p>
             )}
             {layers.reservoirs && region !== "de" && (res.data?.features.length ?? 0) > 0 && (
@@ -599,14 +599,14 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
                   <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(45)) }} />
                   <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(80)) }} />
                 </span>
-                Water store — low, medium or high fill.
+                Water storage: low, medium or high fill.
               </p>
             )}
             {stressYear && (
               <div><div className="stress-ramp h-1.5 rounded-full" /><p className="mt-0.5">Illustrative water stress {stressYear}, low → severe. Not an official forecast.</p></div>
             )}
             {pipesVisible && (
-              <p className="flex items-center gap-2"><span className="inline-block h-[3px] w-5 shrink-0 rounded" style={{ background: "rgb(2,132,199)" }} />Illustrative pipe sketch — bold = rural priority, not real routes.</p>
+              <p className="flex items-center gap-2"><span className="inline-block h-[3px] w-5 shrink-0 rounded" style={{ background: "rgb(2,132,199)" }} />Illustrative pipe sketch. Bold lines prioritise rural areas; these are not real routes.</p>
             )}
             {showPipes && spain && !pipesVisible && <p>Zoom in to town level to see the pipe sketch.</p>}
           </div>

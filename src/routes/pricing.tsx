@@ -12,10 +12,10 @@ const priceNumber = (p: string) => Number(p.replace(/[^\d]/g, "").slice(0, 6)) |
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Venaqua · Pricing — Deal Flow and Data" },
+      { title: "Venaqua · Pricing: Deal Flow and Data" },
       { name: "description", content: "Free reuse map. Deal Flow from €2,900/yr (launch price) and Data from €6,000/yr per country. Flat prices, no success fees." },
       { property: "og:title", content: "Venaqua · Pricing" },
-      { property: "og:description", content: "Work the wastewater-reuse deals with Deal Flow, or take the data with Data. All prices under €15,000." },
+      { property: "og:description", content: "Develop wastewater-reuse projects with Deal Flow, or use our data in your own tools. All prices under €15,000." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -78,7 +78,7 @@ function OfferCard({ offer }: { offer: Offer }) {
       </div>
       {offer.addon && (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-md border border-dashed p-3 text-sm">
-          <p><span className="font-medium">Add-on: {offer.addon.name} — {offer.addon.price}.</span> <span className="text-muted-foreground">{offer.addon.text}</span></p>
+          <p><span className="font-medium">Add-on: {offer.addon.name}: {offer.addon.price}.</span> <span className="text-muted-foreground">{offer.addon.text}</span></p>
           <Button size="sm" variant="ghost" onClick={() => setContact(offer.addon!.id)}>{offer.addon.cta}<ArrowRight /></Button>
         </div>
       )}
@@ -109,7 +109,7 @@ function Pricing() {
           <div className="grid gap-5 lg:grid-cols-2">
             {OFFERS.map((o) => <OfferCard key={o.id} offer={o} />)}
           </div>
-          <p className="mt-5 text-center text-sm text-muted-foreground">Currently tracking <span className="font-medium text-foreground tabular-nums">{DEAL_COUNT}</span> reuse deals in Spain — updated weekly. <Link to="/deal-flow" className="font-medium text-primary hover:underline">See the live pipeline</Link></p>
+          <p className="mt-5 text-center text-sm text-muted-foreground">Currently tracking <span className="font-medium text-foreground tabular-nums">{DEAL_COUNT}</span> reuse deals in Spain, updated weekly. <Link to="/deal-flow" className="font-medium text-primary hover:underline">See the live pipeline</Link></p>
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-5 pb-12">

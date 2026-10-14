@@ -31,7 +31,7 @@ function About() {
             <p className="mt-5 text-base leading-relaxed text-muted-foreground">{VISION.description}</p>
             <div className="mt-8 rounded-xl border bg-card p-6">
               <FactValue id="reuseShare" className="text-3xl font-semibold tabular-nums" />
-              <p className="mt-1 text-sm text-muted-foreground">of treated wastewater is reused in Spain. Venaqua finds the reuse projects worth building — and makes them bankable.</p>
+              <p className="mt-1 text-sm text-muted-foreground">of treated wastewater is reused in Spain. Venaqua helps identify reuse projects worth building and prepare them for financing.</p>
               <SourceCaption id="reuseShare" />
             </div>
           </section>
@@ -40,7 +40,7 @@ function About() {
             <div className="mx-auto w-full max-w-3xl px-5 py-12">
               <div className="flex items-center gap-2"><Gauge className="h-5 w-5 text-primary" /><h2 className="text-xl font-semibold tracking-tight">How we measure impact</h2></div>
               <p className="mt-3 text-base leading-relaxed">{VISION.impact}</p>
-              <p className="mt-2 text-sm text-muted-foreground">We report this number only once it is verified — we do not show estimated or running counters.</p>
+              <p className="mt-2 text-sm text-muted-foreground">We publish this figure only after it has been verified. We do not display estimates or running counters.</p>
             </div>
           </section>
 

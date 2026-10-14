@@ -46,7 +46,7 @@ export function ResultsPanel() {
           clusters.length ? <ol className="space-y-1">{clusters.slice(0, 30).map((c, i) => {
             const plant = siteById.get(c.plantId);
             return <li key={c.plantId} className="rounded-md px-2 py-2 hover:bg-muted">
-              <div className="flex items-baseline justify-between gap-2 text-xs"><span className="truncate font-medium"><span className="tnum mr-1.5 text-muted-foreground">{i + 1}</span>{plant?.name ?? "Treatment plant"}</span><span className="tnum shrink-0 font-semibold text-flip">€{fmt2.format(c.costPerM3[0])}–{fmt2.format(c.costPerM3[1])}/m³</span></div>
+              <div className="flex items-baseline justify-between gap-2 text-xs"><span className="truncate font-medium"><span className="tnum mr-1.5 text-muted-foreground">{i + 1}</span>{plant?.name ?? "Treatment plant"}</span><span className="tnum shrink-0 font-semibold text-flip">€{fmt2.format(c.costPerM3[0])}-{fmt2.format(c.costPerM3[1])}/m³</span></div>
               <div className="mt-0.5 text-[11px] text-muted-foreground"><span className="tnum">{c.companyIds.length}</span> companies share one pipe · <span className="tnum">{fmt.format(c.delivered)} m³/day</span> · <span className="tnum">{fmt.format(c.trunkKm + c.spurKm)} km</span> · estimate</div>
               {plant && <Button size="sm" variant="link" className="h-6 px-0 text-xs" onClick={() => select({ kind: plant.kind, id: plant.id })}>Open cost-benefit</Button>}
             </li>;

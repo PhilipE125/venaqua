@@ -31,7 +31,7 @@ function Row({ k, v, info }: { k: string; v: React.ReactNode; info?: React.React
   return (
     <div className="flex justify-between gap-4 border-b py-1.5 text-xs">
       <span className="flex items-center gap-1.5 text-muted-foreground">{k}{info}</span>
-      <span className="tnum text-right">{v || "–"}</span>
+      <span className="tnum text-right">{v || "-"}</span>
     </div>
   );
 }
@@ -257,7 +257,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
             info={<SourceInfo id="eea" quality={supply.actualQuality} note={supply.actualQuality === "assumption" ? plant.national ? "No treated volume: population capacity × 0.2 m³/day." : "No EEA match: design flow × 0.6." : `EEA code ${supply.eeaCode}`} date="2022" />}
             v={<span className="inline-flex items-center gap-1.5"><QualityBadge q={supply.actualQuality} />{fmt.format(supply.actualFlow)}</span>}
           />
-          <Row k="How full the plant runs" v={supply.utilisation != null ? `${fmt.format(supply.utilisation * 100)}%` : "–"} />
+          <Row k="How full the plant runs" v={supply.utilisation != null ? `${fmt.format(supply.utilisation * 100)}%` : "-"} />
           <Row k="Already reused" info={<SourceInfo id={plant.national ? "eea" : "regen"} />} v={plant.national && plant.reuseReported == null ? "No reuse reported" : fmt.format(supply.alreadyReused)} />
           <Row k="Available reclaimed" v={<span className="font-medium">{fmt.format(supply.availableReclaimed)}</span>} />
           {supply.suspect && <p className="mt-1.5 text-[11px] text-destructive">Suspect value: {supply.suspect}. Excluded from costs.</p>}
@@ -293,7 +293,7 @@ function SiteDetail({ site }: { site: SupplySite }) {
           </>
         )}
         <p className="mt-2 text-xs text-muted-foreground">
-          Steps: {(site.kind === "wwtp" ? site.steps : site.treatments).join(" → ") || "–"}
+          Steps: {(site.kind === "wwtp" ? site.steps : site.treatments).join(" → ") || "-"}
         </p>
       </Section>
 
@@ -425,7 +425,7 @@ function ComarcaDetail({ comarca }: { comarca: string }) {
         <Row k="Treated outflow" info={<SourceInfo id="eea" />} v={`${fmt1.format(agg.actual / 1e6)} Mm³/yr`} />
         <Row k="Reused" v={`${agg.actual > 0 ? fmt.format((agg.reused / agg.actual) * 100) : 0}%`} />
         <Row k="Companies in plant municipalities" v={fmt.format(agg.companies)} />
-        <Row k="Reservoir fill, Catalonia" info={<SourceInfo id="reservoirs" />} v={fill != null ? `${fmt1.format(fill)}%` : "–"} />
+        <Row k="Reservoir fill, Catalonia" info={<SourceInfo id="reservoirs" />} v={fill != null ? `${fmt1.format(fill)}%` : "-"} />
       </Section>
     </>
   );
@@ -458,7 +458,7 @@ function RegionDetail() {
     <>
       <Answer
         eyebrow="Answer"
-        big={clusters[0] ? <>{fmt2.format(clusters[0].costPerM3[0])}–{fmt2.format(clusters[0].costPerM3[1])} <span className="text-sm font-normal text-muted-foreground">€/m³ pipe cost, best shared link</span></> : undefined}
+        big={clusters[0] ? <>{fmt2.format(clusters[0].costPerM3[0])}-{fmt2.format(clusters[0].costPerM3[1])} <span className="text-sm font-normal text-muted-foreground">€/m³ pipe cost, best shared link</span></> : undefined}
       >
         {clusters.length
           ? `${clusters.length} groups of companies could share one pipe from a plant within ${maxKm} km. The best one serves ${clusters[0]!.companyIds.length} companies near ${siteById.get(clusters[0]!.plantId)?.name ?? "a plant"}.`
@@ -490,7 +490,7 @@ function RegionDetail() {
             ))}
           </tbody>
         </table>
-        <p className="mt-1.5 text-[11px] text-muted-foreground">Pipe cost only, {eurK(settings.pipeCostPerKm[0])}–{eurK(settings.pipeCostPerKm[1])} per km, over {settings.years} years.</p>
+        <p className="mt-1.5 text-[11px] text-muted-foreground">Pipe cost only, {eurK(settings.pipeCostPerKm[0])}-{eurK(settings.pipeCostPerKm[1])} per km, over {settings.years} years.</p>
       </Section>
 
       <Section title="Links that relieve the most stressed sources" note="top 10">

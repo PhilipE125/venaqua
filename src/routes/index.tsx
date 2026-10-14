@@ -63,7 +63,7 @@ const WHY = [
   },
   {
     title: "Pipes are the biggest cost",
-    text: "At €0.35–0.85M per km, distance decides viability. Venaqua ranks matches by connection length and shows indicative cost ranges before anyone pays for a feasibility study.",
+    text: "At €0.35-0.85M per km, distance decides viability. Venaqua ranks matches by connection length and shows indicative cost ranges before anyone pays for a feasibility study.",
   },
   {
     title: "Someone has to pay",
@@ -74,7 +74,7 @@ const WHY = [
 const WHY_NOW = [
   { value: "2039", text: "EU deadline for extra treatment at large plants (Directive 2024/3019). The upgrade makes reuse-quality water cheaper to produce." },
   { value: "RD 1085/2024", text: "Spain's 2024 reuse decree sets the authorisation rules every project now has to follow." },
-  { value: "€0.10–0.19 vs €1.73–2.59", text: "Cost per m³ of reclaimed water against industrial mains water in the Barcelona area — the saving exists in wet years too." },
+  { value: "€0.10-0.19 vs €1.73-2.59", text: "Reclaimed-water production costs compared with industrial mains-water tariffs in the Barcelona area. The cost difference matters in wet years too." },
 ];
 
 const STEPS = [
@@ -144,8 +144,8 @@ function Landing() {
         <section id="modules" className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-5xl px-5 py-16">
             <p className="label-caps text-primary">Our platform</p>
-            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">One map. Five modules to a reuse project.</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">We model when the math flips: every site ranked by cost per m³ against the alternative, with the year reuse becomes cheaper.</p>
+            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">Five ways to develop a reuse project, all on one map.</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Compare each site by cost per m³ and see when reuse could become cheaper than the alternative.</p>
             <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {DECK_MODULES.map((m) => (
                 <Link key={m.mode} to="/explore" search={{ module: m.mode }} className="group rounded-xl border bg-card p-5 transition-colors hover:border-primary/60">
@@ -182,7 +182,7 @@ function Landing() {
 
         <section id="why-now" className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-5xl px-5 py-16">
-            <p className="label-caps text-primary">Why now — not only in droughts</p>
+            <p className="label-caps text-primary">Why reuse matters beyond droughts</p>
             <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">Regulation and price push reuse forward, wet year or dry.</h2>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {WHY_NOW.map((w) => (
@@ -285,7 +285,7 @@ function Landing() {
         <section className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-5xl px-5 py-16">
             <p className="label-caps text-primary">What gets harder to copy every week</p>
-            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">Public data is the start. What customers confirm, and how deals move, is the product.</h2>
+            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">Public data is just the start. Confirmed site details and project histories add the value.</h2>
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{(dealData as { deals: unknown[] }).deals.length} reuse deals in Spain are tracked and updated weekly today.</p>
             <div className="mt-8 grid gap-5 sm:grid-cols-2">
               {MOAT.map((m) => (
