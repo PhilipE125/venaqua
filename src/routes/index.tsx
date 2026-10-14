@@ -20,6 +20,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
+import { FACTS, MODULES, VISION, type FactId } from "@/content/venaqua";
+import { FactValue, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
+
+const HOME_FACTS: FactId[] = ["reuseShare", "industryShare", "bcnTariff"];
 
 const MapView = lazy(() => import("@/components/map/MapView"));
 
@@ -27,7 +31,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Venaqua · Industrial water reuse opportunities" },
-      { name: "description", content: "Find water reuse opportunities across Spain, evaluate project economics and develop a feasibility case with the Venaqua team." },
+      { name: "description", content: "Venaqua is building the neutral system of record for industrial water: where a site's water can come from, what it will cost and risk, and what it saved." },
       { property: "og:title", content: "Venaqua · Industrial water reuse opportunities" },
       { property: "og:description", content: "Explore supply and buyers, compare water options and turn promising opportunities into validated projects." },
       { property: "og:type", content: "website" },
@@ -93,31 +97,23 @@ const TEAMS = [
   { icon: Landmark, title: "Public planning teams", text: "See where reuse demand, drought stress and treatment capacity overlap." },
 ];
 
-const PROOF = [
-  "Searchable Spain/Catalonia map",
-  "Treatment and water recycling plants",
-  "Company and demand signals",
-  "Water-stress layer",
-  "Opportunity analysis",
-  "Project workspace",
-  "Transparent evidence labels",
-];
 
 function Landing() {
   const { setAuthOpen, setContact } = useWorkspace();
   return (
+    <SourcesProvider ids={HOME_FACTS}>
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
       <MapBackdrop />
       <PublicHeader />
 
       <main className="relative z-10 flex flex-1 flex-col">
         <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-5 pb-16 pt-20 text-center sm:pt-28">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Industrial water reuse · Europe</p>
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">The neutral system of record for industrial water</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-            Find the water-reuse projects worth building
+            Every industrial m³, mapped, priced and proven
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Venaqua brings water recycling capacity, industrial demand, water stress and project constraints into one workspace — so teams can identify and qualify reuse infrastructure opportunities faster.
+            Find where a site's water can come from, what it will cost and risk by 2035, and what it can prove it saved. Starting with water reuse in Spain.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">
@@ -126,6 +122,17 @@ function Landing() {
             <Button variant="outline" size="lg" onClick={() => setAuthOpen(true)}>Get started</Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">No account needed for the map. Free to explore.</p>
+          <div className="mt-10 grid w-full gap-3 text-left sm:grid-cols-3">
+            {VISION.questions.map((q) => (
+              <a key={q.pillar} href="/platform#three-questions" className="rounded-xl border bg-card/90 p-4 transition-colors hover:border-primary/60">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="label-caps text-primary">{q.label}</span>
+                  <StatusBadge status={q.status} />
+                </div>
+                <p className="mt-2 text-sm leading-snug">{q.question}</p>
+              </a>
+            ))}
+          </div>
         </section>
 
         <section id="why" className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
@@ -134,6 +141,9 @@ function Landing() {
             <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
               Water reuse projects often stall before engineering begins.
             </h2>
+            <div className="mt-6 grid gap-5 sm:grid-cols-3">
+              {HOME_FACTS.map((id) => <HomeFact key={id} id={id} />)}
+            </div>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
               {WHY.map((w) => (
                 <div key={w.title} className="rounded-xl border bg-card p-6">
@@ -184,16 +194,19 @@ function Landing() {
           <div className="mx-auto grid w-full max-w-5xl gap-8 px-5 py-16 md:grid-cols-[1fr_1.2fr]">
             <div>
               <p className="label-caps text-primary">What you can do today</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Everything below is live in the product</h2>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">What is in the product, and what is not yet</h2>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                No concepts or mockups — this is the current Venaqua workspace, built on public European water data.
+                Every module carries its real status, so you know exactly what works today. Built on public European water data.
               </p>
             </div>
             <ul className="grid gap-2.5 sm:grid-cols-2">
-              {PROOF.map((p) => (
-                <li key={p} className="flex items-start gap-2 text-sm">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <span>{p}</span>
+              {MODULES.map((m) => (
+                <li key={m.name} className="flex items-start justify-between gap-2 text-sm">
+                  <span className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <span>{m.name}</span>
+                  </span>
+                  <StatusBadge status={m.status} />
                 </li>
               ))}
             </ul>
@@ -230,6 +243,7 @@ function Landing() {
             </p>
           </div>
         </section>
+        <div className="relative"><SourcesList /></div>
       </main>
 
       <footer className="relative z-10 border-t border-border/60 bg-background/70 px-5 py-6 text-center text-xs text-muted-foreground backdrop-blur-sm">
@@ -239,6 +253,16 @@ function Landing() {
           <a href="mailto:support@venaqua.com" className="underline">support@venaqua.com</a>
         </div>
       </footer>
+    </div>
+    </SourcesProvider>
+  );
+}
+
+function HomeFact({ id }: { id: FactId }) {
+  return (
+    <div className="rounded-xl border bg-card p-5">
+      <FactValue id={id} className="text-2xl font-semibold tabular-nums tracking-tight" />
+      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{FACTS[id].label}</p>
     </div>
   );
 }
