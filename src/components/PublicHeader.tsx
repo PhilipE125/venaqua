@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useWorkspace } from "@/lib/workspace";
+import { VISION } from "@/content/venaqua";
 
 type Key = "platform" | "how" | "pricing" | "resources" | "about";
 type Panel = Key | "menu";
@@ -60,7 +61,7 @@ export function PublicHeader() {
     },
     about: {
       title: "About Venaqua",
-      body: "We help water operators, industry and planners find the reuse projects worth building — starting in Spain, expanding across Europe.",
+      body: `${VISION.mission} ${VISION.description} Starting in Spain, with a vision to expand across Europe.`,
       actions: <Button asChild size="sm"><a href="/#why" onClick={close}>Why Venaqua</a></Button>,
     },
   };

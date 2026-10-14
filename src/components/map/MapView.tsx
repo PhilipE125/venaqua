@@ -112,7 +112,8 @@ function useBasemapStyle(dark: boolean) {
   return style;
 }
 
-export default function MapView() {
+export default function MapView({ presentation = "explorer" }: { presentation?: "explorer" | "landing" } = {}) {
+  const isLanding = presentation === "landing";
   const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus } = useApp();
   const pr = useProjects();
   const [popup, setPopup] = useState<ReuseProject | null>(null);
@@ -145,12 +146,13 @@ export default function MapView() {
   // Fly to the region when it changes; on first mount keep a saved camera (e.g. coming back from /analysis).
   const firstRun = useRef(true);
   useEffect(() => {
+    if (isLanding) return;
     const first = firstRun.current;
     firstRun.current = false;
     if (first && camera) return;
     const v = VIEWS[region];
     mapRef.current?.flyTo({ center: [v.longitude, v.latitude], zoom: v.zoom, duration: 700 });
-  }, [region]);
+  }, [region, isLanding]);
 
   const selectedSite =
     selection && selection.kind !== "company" ? siteById.get(selection.id) : undefined;
@@ -208,6 +210,7 @@ export default function MapView() {
 
   // Fly to whatever is selected, from the map, a list or search.
   useEffect(() => {
+    if (isLanding) return;
     if (!selection || cameraFocus === `${selection.kind}:${selection.id}` || selection.kind === "comarca" || selection.kind === "region") return;
     const f = selection.kind === "company" ? companyById.get(selection.id) : siteById.get(selection.id);
     if (!f) return;
@@ -216,7 +219,7 @@ export default function MapView() {
     const z = m.getZoom();
     setCameraFocus(`${selection.kind}:${selection.id}`);
     m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [0, -70], duration: 900 });
-  }, [selection, companyById, siteById]);
+  }, [selection, companyById, siteById, isLanding]);
 
   const stressYear = HORIZONS.find((h) => h.key === horizon)?.year;
   const stressAhead = HORIZONS.find((h) => h.key === horizon)?.ahead ?? 0;
@@ -419,9 +422,10 @@ export default function MapView() {
     <div className="relative h-full w-full">
       <Map
         ref={mapRef}
-        onMoveEnd={e => setCamera(e.viewState)}
+        onMoveEnd={e => { if (!isLanding) setCamera(e.viewState); }}
+        onLoad={() => { if (isLanding) mapRef.current?.fitBounds([[-9.5, 35.8], [4.6, 43.9]], { padding: 32, duration: 0 }); }}
         onZoom={e => { setScale(zoomScale(e.viewState.zoom)); setZoomLvl(Math.floor(e.viewState.zoom * 2) / 2); }}
-        initialViewState={camera ?? VIEWS[region]}
+        initialViewState={isLanding ? { ...VIEWS.es, zoom: 4.7 } : camera ?? VIEWS[region]}
         mapStyle={
           basemap ??
           (dark
