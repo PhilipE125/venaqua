@@ -606,6 +606,24 @@ export function Drawer() {
     <p className="mt-3 text-sm">{company || site ? count ? `${count} potential ${company ? "suppliers" : "buyers"} within ${maxKm} km. Validate supply and demand before investing.` : "Needs validation: no ranked link within the current filters." : "Compare potential links and shared-pipe opportunities."}</p>
     {(company || site) && <p className="tnum mt-3 text-xl font-semibold">{fmt.format(company ? demand : supply)} <span className="text-xs font-normal text-muted-foreground">m³/day · {company ? "indicative demand" : "potential supply"}</span></p>}
     <p className="mt-2 text-xs text-muted-foreground">{site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow · spare supply needs confirmation" : company && demandOverride[company.id] != null ? "Your demand figure · needs confirmation" : "Estimated · needs confirmation"}</p>
+    {company && <CompanyAnswer id={company.id} />}
     <Button asChild className="mt-4 w-full"><Link to="/analysis" search={{ kind: selection.kind, id: selection.id }} resetScroll={false}>Open analysis<ArrowRight /></Link></Button>
   </aside>;
+}
+
+// Answer first, as in the deck: cheapest route and the year the math flips, then the exports.
+function CompanyAnswer({ id }: { id: string }) {
+  const { rows } = useFlipTable();
+  const { user, setAuthOpen } = useWorkspace();
+  const r = rows?.find(x => x.company.id === id);
+  if (!r) return null;
+  const when = r.flipYear == null ? "does not flip by 2050" : r.flipYear <= 2026 ? "is cheaper now" : `flips in ${r.flipYear}`;
+  return <div className="mt-3 rounded-md border bg-muted/40 p-3 text-xs">
+    <p className="label-caps">The answer</p>
+    <p className="mt-1 text-sm">{r.option === "B" ? `Connecting to ${r.plant}` : "An own reuse facility"} <span className="font-semibold text-flip">{when}</span>: <span className="tnum">€{fmt2.format(r.perM3)} vs €{fmt2.format(r.statusQuo)} per m³</span>.</p>
+    <p className="mt-1 text-[11px] text-muted-foreground">Screening estimate with default inputs; open the analysis for treatment, location and rules-and-rights costs.</p>
+    <p className="label-caps mt-3">Exports</p>
+    <div className="mt-1 flex flex-wrap gap-1">{["Risk management plan", "Tender application", "Cost-benefit report"].map(e => <button key={e} onClick={() => !user && setAuthOpen(true)} className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] hover:bg-muted">{!user && <Lock className="h-3 w-3" />}{e}</button>)}</div>
+    {!user && <p className="mt-1 text-[10px] text-muted-foreground">Pre-filled exports are in the full version.</p>}
+  </div>;
 }
