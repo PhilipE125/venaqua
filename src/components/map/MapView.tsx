@@ -124,6 +124,7 @@ export default function MapView() {
   const { matches, siteById, companyById } = useMatches();
   const setHover = useRef<(h: Hover) => void>(() => {});
   const [scale, setScale] = useState(() => zoomScale((camera ?? VIEWS[region]).zoom));
+  const basemap = useBasemapStyle(dark);
   // Fly to the region when it changes; on first mount keep a saved camera (e.g. coming back from /analysis).
   const firstRun = useRef(true);
   useEffect(() => {
@@ -372,9 +373,10 @@ export default function MapView() {
         onZoom={e => setScale(zoomScale(e.viewState.zoom))}
         initialViewState={camera ?? VIEWS[region]}
         mapStyle={
-          dark
+          basemap ??
+          (dark
             ? "https://tiles.openfreemap.org/styles/dark"
-            : "https://tiles.openfreemap.org/styles/positron"
+            : "https://tiles.openfreemap.org/styles/positron")
         }
         style={{ width: "100%", height: "100%" }}
         attributionControl={{ compact: true }}
