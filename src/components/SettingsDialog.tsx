@@ -21,18 +21,22 @@ const CITATIONS: { label: string; url: string }[] = [
   { label: "Hilbig et al. 2020, J. Water Reuse Desal.: modular cost functions for industrial reuse", url: "https://iwaponline.com/jwrd/article/10/4/419/77806/Economic-evaluation-of-different-treatment-options" },
 ];
 
-export function SettingsDialog({ children }: { children: ReactNode }) {
+export function SettingsDialog({ children, open: ctlOpen, onOpenChange }: { children?: ReactNode; open?: boolean; onOpenChange?: (o: boolean) => void }) {
   const { settings, setSettings, region } = useApp();
   const [draft, setDraft] = useState<Settings>(settings);
-  const [open, setOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const controlled = ctlOpen !== undefined;
+  const open = controlled ? ctlOpen : ownOpen;
+  const setOpen = (o: boolean) => (controlled ? onOpenChange?.(o) : setOwnOpen(o));
+  useEffect(() => { if (open) setDraft(settings); }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const setR = (k: keyof Settings, i: 0 | 1, v: string) => {
     const r = [...(draft[k] as Range)] as Range;
     r[i] = n(v);
     setDraft({ ...draft, [k]: r });
   };
   return (
-    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setDraft(settings); }}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+    <Dialog open={open} onOpenChange={(o) => setOpen(o)}>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Assumptions</DialogTitle>
