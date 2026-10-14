@@ -23,6 +23,7 @@ import { fetchPratHistory, fetchPratYearly, fetchReservoirHistory, fetchReservoi
 import { searchTenders } from "./sources/ted.functions";
 import { fetchWwtps } from "./sources/wwtp";
 import { useApp, type Region, type Settings } from "./state";
+import { evaluateCompany } from "./companyEval";
 import type { Company, Plant, SupplySite } from "./types";
 
 const H = 60 * 60 * 1000;
@@ -257,7 +258,7 @@ export interface FlipRow {
  * and friction only (no road or elevation lookups per row), today's drought phase.
  */
 export function useFlipTable() {
-  const { settings, demandOverride, region } = useApp();
+  const { settings, demandOverride, region, scenarioValues } = useApp();
   const c = useCompanies();
   const w = useWwtps();
   const drought = useDrought();
@@ -270,21 +271,22 @@ export function useFlipTable() {
     for (const co of c.data.features) {
       const q = demandOverride[co.id] ?? (settings.sectorDemand[co.sector] ?? 0) * 365;
       if (q <= 0) continue;
-      const cand = pickSupplyPlant(plants, co, q, settings);
+      // Respect the plant the user picked in the sourcing panel, so list and panel agree.
+      const chosen = scenarioValues[sourcePlantKey(co.id)] as string | undefined;
+      const cand = (chosen ? rankSupplyPlants(plants, co, q, settings, 5).find((x) => x.p.id === chosen) : undefined) ?? pickSupplyPlant(plants, co, q, settings);
       const events = drought.data?.byMuni.get(muniKey(co.municipi));
-      const distanceKm = cand ? cand.d * settings.detourFactor : 0;
-      const r = evaluateOptions({
+      const r = evaluateCompany({
         q,
         tariff: t.supply,
-        dischargeCharge: t.discharge * 0.8,
+        dischargeCharge: t.discharge,
         rate: settings.rate,
         years: settings.years,
         electricity: settings.electricity.base,
-        plant: cand ? { distanceKm, liftM: (settings.frictionPer10km * distanceKm) / 10, reuseReady: cand.p.supply.reuseReady, availableM3PerDay: cand.p.supply.availableReclaimed } : null,
-        effluentK: EFFLUENT[defaultEffluent(co.sector)].k,
+        effluent: defaultEffluent(co.sector),
+        plant: cand ? { straightKm: cand.d, reuseReady: cand.p.supply.reuseReady, availableM3PerDay: cand.p.supply.availableReclaimed } : null,
         cut: settings.droughtCut[currentPhase(events)?.phase ?? "normal"],
         events,
-        s: settings,
+        settings,
       });
       let freq = freqs.get(events);
       if (!freq) freqs.set(events, (freq = historicFrequencies(events)));
@@ -301,8 +303,8 @@ export function useFlipTable() {
     }
     // Soonest flip first; ties and non-flippers by how close reuse is to the status quo per m³.
     return out.sort((a, b) => (a.flipYear ?? 9999) - (b.flipYear ?? 9999) || a.perM3 - a.statusQuo - (b.perM3 - b.statusQuo));
-  }, [c.data, w.data, drought.data, settings, demandOverride, region]);
-  return { rows, isLoading: c.isLoading || w.isLoading };
+  }, [c.data, w.data, drought.data, settings, demandOverride, region, scenarioValues]);
+  return { rows, isLoading: c.isLoading || w.isLoading, isError: c.isError || w.isError };
 }
 
 export function useElevation(a?: { lat: number; lon: number }, b?: { lat: number; lon: number }) {
@@ -407,16 +409,16 @@ export const eurK = (v: number) =>
 
 /** Shared-pipe clusters around plants with available reclaimed water. */
 export function useClusters() {
-  const { maxKm, settings } = useApp();
+  const { maxKm, settings, demandOverride } = useApp();
   const w = useWwtps();
   const c = useCompanies();
-  return shared(slots.clusters, [w.data, c.data, maxKm, settings], () => {
+  return shared(slots.clusters, [w.data, c.data, maxKm, settings, demandOverride], () => {
     if (!w.data || !c.data) return [];
     const plants = w.data.features
       .filter((p) => p.supply && p.supply.availableReclaimed > 0)
       .map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, available: p.supply!.availableReclaimed }));
     const companies = c.data.features
-      .map((x) => ({ id: x.id, lat: x.lat, lon: x.lon, demand: settings.sectorDemand[x.sector] ?? 0 }));
+      .map((x) => ({ id: x.id, lat: x.lat, lon: x.lon, demand: demandOverride[x.id] != null ? demandOverride[x.id]! / 365 : (settings.sectorDemand[x.sector] ?? 0) }));
     return findClusters(plants, companies, { maxKm, pipeCostPerKm: settings.pipeCostPerKm, rate: settings.rate, years: settings.years });
   });
 }

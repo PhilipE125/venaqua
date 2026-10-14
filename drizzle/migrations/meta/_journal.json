@@ -22,6 +22,13 @@
       "when": 1791969781865,
       "tag": "0002_api_keys_revoke_only",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791978213717,
+      "tag": "0003_enquiry_length_checks",
+      "breakpoints": true
     }
   ]
 }
