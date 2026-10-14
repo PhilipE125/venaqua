@@ -72,6 +72,7 @@ export function SettingsDialog({ children, open: ctlOpen, onOpenChange }: { chil
           <RangeField label="Capex € per m³/day" value={draft.onsiteCapex} step={100} onChange={(i, v) => setR("onsiteCapex", i, v)} />
           <RangeField label="Opex €/m³" value={draft.onsiteOpex} onChange={(i, v) => setR("onsiteOpex", i, v)} />
           <Field label="Scale exponent (assumption)" value={draft.onsiteScaleExponent} onChange={(v) => setDraft({ ...draft, onsiteScaleExponent: Math.min(1, Math.max(0.4, n(v))) })} />
+          <Field label="On-site output cut with mains (0-1)" value={draft.ownFeedCoupling} onChange={(v) => setDraft({ ...draft, ownFeedCoupling: Math.min(1, Math.max(0, n(v))) })} />
         </div>
         <p className="text-[11px] text-muted-foreground">Assumption: capex per m³/day is scaled by (capacity / 1,000)^(exponent − 1), so small sites cost more per m³. 1 means a flat cost. Both Iglesias et al. 2017 and Hilbig et al. 2020 (below) report higher unit costs for smaller plants.</p>
 
