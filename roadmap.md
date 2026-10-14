@@ -80,3 +80,6 @@
 # Industrial buyer focus (Oct 2026)
 - [x] Water sourcing panel, data additions A-C, model changes 1-3, sourcing map mode
 - [ ] Optional D: river flow near the site (not built)
+
+- [ ] Live river layers: Catalonia ACA flow (hprm-xuw7) and France Hub'Eau ONDE on the map (brief: river-data upload)
+- [ ] Restore the full right-hand plant panel (supply volume and plant statistics) when a treatment plant is clicked

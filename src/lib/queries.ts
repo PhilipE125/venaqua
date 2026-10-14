@@ -250,6 +250,8 @@ export interface FlipRow {
   perM3: number; // mid €/m³ of that option, including mains water it does not replace
   statusQuo: number; // €/m³ today: supply + discharge
   flipYear: number | null; // first year its cumulative cost beats status quo, mid tariff growth
+  own: number; // mid €/m³ of on-site reuse (C)
+  connect: number | null; // mid €/m³ of the plant connection (B), when a plant is in reach
 }
 
 /**
@@ -299,6 +301,8 @@ export function useFlipTable() {
         perM3: mid(useB ? r.B!.perM3 : r.C.perM3),
         statusQuo: mid(r.A.perM3),
         flipYear: useB ? f.payB : f.payC,
+        own: mid(r.C.perM3),
+        connect: r.B ? mid(r.B.perM3) : null,
       });
     }
     // Soonest flip first; ties and non-flippers by how close reuse is to the status quo per m³.

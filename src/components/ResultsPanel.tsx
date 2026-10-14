@@ -61,11 +61,16 @@ export function ResultsPanel() {
               <li key={r.company.id} className="rounded-md px-2 py-2 hover:bg-muted">
                 <div className="flex items-baseline justify-between gap-2 text-xs">
                   <span className="truncate font-medium"><span className="tnum mr-1.5 text-muted-foreground">{i + 1}</span>{r.company.name}</span>
-                  <span className="tnum shrink-0 text-sm font-semibold text-flip">{flipLabel(r.flipYear)}</span>
+                  <span className="tnum shrink-0 text-sm font-semibold text-flip">{flipLabel(r.flipYear)}{r.flipYear != null && r.flipYear <= 2026 ? (r.option === "B" ? " · connect" : " · own plant") : ""}</span>
                 </div>
                 <div className="mt-0.5 flex justify-between gap-2 text-[11px] text-muted-foreground">
                   <span className="truncate">{r.option === "B" ? `Connect to ${r.plant}` : "Own reuse facility"}</span>
-                  <span className="tnum shrink-0">€{fmt2.format(r.perM3)} vs €{fmt2.format(r.statusQuo)} per m³</span>
+                  {mode === "q3" ? (
+                    <span className="tnum shrink-0">
+                      <span className={r.connect == null || r.own <= r.connect ? "font-medium text-flip" : ""}>Own €{fmt2.format(r.own)}</span>
+                      {r.connect != null && <> · <span className={r.connect < r.own ? "font-medium text-flip" : ""}>Connect €{fmt2.format(r.connect)}</span></>}
+                    </span>
+                  ) : <span className="tnum shrink-0">€{fmt2.format(r.perM3)} vs €{fmt2.format(r.statusQuo)} per m³</span>}
                 </div>
                 <Button size="sm" variant="link" className="h-6 px-0 text-xs" onClick={() => select({ kind: "company", id: r.company.id })}>Open cost-benefit</Button>
               </li>

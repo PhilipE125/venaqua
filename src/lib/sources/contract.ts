@@ -262,6 +262,37 @@ export const META = {
     quality: "assumption",
     knownIssues: ["Benchmark ranges, not a design"],
   },
+  comarcaWater: {
+    id: "comarcaWater",
+    name: "Network water use by comarca",
+    publisher: "Agència Catalana de l'Aigua via Transparència Catalunya",
+    url: "https://analisi.transparenciacatalunya.cat/d/2gws-ubmt",
+    unitNotes: "m³ per year supplied through the network to households and to economic activities, plus household litres per person per day, 2012-2025.",
+    updateFrequency: "Yearly",
+    quality: "measured",
+    knownIssues: ["Catalonia only", "Network water only; own wells and surface abstractions are not included"],
+    euEquivalent: "National statistics offices (water supply by use)",
+  },
+  muniWaterPrice: {
+    id: "muniWaterPrice",
+    name: "Household water price by municipality",
+    publisher: "Agència Catalana de l'Aigua via Transparència Catalunya",
+    url: "https://analisi.transparenciacatalunya.cat/d/6st4-ptsi",
+    unitNotes: "€/m³ household price (supply, water levy and sewerage), 2017-2025, about 947 municipalities a year. Shown for reference only; not used in the cost model.",
+    updateFrequency: "Yearly",
+    quality: "measured",
+    knownIssues: ["Household tariff, not an industrial tariff"],
+  },
+  screening: {
+    id: "screening",
+    name: "Venaqua screening rule",
+    publisher: "Venaqua",
+    url: "#settings",
+    unitNotes: "A rule we define to sort risks into Low, Medium and High. The thresholds are settings you can change.",
+    updateFrequency: "Static",
+    quality: "assumption",
+    knownIssues: ["A screening convention, not a regulatory or engineering standard"],
+  },
 } satisfies Record<string, SourceMeta>;
 
 export type SourceId = keyof typeof META;

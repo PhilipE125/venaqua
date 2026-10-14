@@ -45,3 +45,17 @@ export function evaluateCompany(i: CompanyEvalInput) {
   });
   return { ...r, tariff, distanceKm, liftM };
 }
+
+/** One candidate plant through the same evaluation as the answer, so a row and the answer always agree. */
+export function evaluateCandidate(
+  base: Omit<CompanyEvalInput, "plant" | "roadKm" | "heightM">,
+  cand: { d: number; p: { supply: { reuseReady: boolean; availableReclaimed: number } } } | null,
+  geo?: { roadKm?: number | null; heightM?: number | null },
+) {
+  return evaluateCompany({
+    ...base,
+    plant: cand ? { straightKm: cand.d, reuseReady: cand.p.supply.reuseReady, availableM3PerDay: cand.p.supply.availableReclaimed } : null,
+    roadKm: geo?.roadKm ?? null,
+    heightM: geo?.heightM ?? null,
+  });
+}

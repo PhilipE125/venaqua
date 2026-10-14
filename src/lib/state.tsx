@@ -56,6 +56,10 @@ export interface Settings {
   valuePerM3Lost: number;
   onsiteScaleExponent: number; // economies of scale for on-site reuse
   capexGrantShare: number; // 0-0.5, grants that reduce B and C capex
+  riskHighShare: number; // risk matrix: High above this share of the yearly water bill
+  riskMediumShare: number;
+  visibleShare: number; // local visibility: share of comarca business water
+  visibleResidents: number; // local visibility: resident-equivalents
 }
 
 export interface Tariff {
@@ -96,6 +100,10 @@ export const DEFAULT_SETTINGS: Settings = {
   valuePerM3Lost: 5,
   onsiteScaleExponent: 0.7,
   capexGrantShare: 0,
+  riskHighShare: 0.02,
+  riskMediumShare: 0.005,
+  visibleShare: 0.01,
+  visibleResidents: 5000,
 };
 
 // v3: tariffs became per region; older saved settings would keep the double-counted 1.92 + 0.8.
