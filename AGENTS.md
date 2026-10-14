@@ -20,3 +20,4 @@
 - Spain treatment plants normalize EEA records through nationalPlant while joined Catalan records retain their richer overlay — preserves local calculations and source provenance.
 - AppStateProvider lives in the root; camera and per-opportunity scenario values stay in this context across map and analysis routes — returning to discovery must not discard user inputs.
 - The map renders only a compact opportunity preview; detailed views are reused on the public analysis route — keeps discovery visually separate from project evaluation.
+- Map price history is a sourced supply-only snapshot in its own source module; commercial-price scenarios use pure tested compounding separately from the illustrative stress surface — prevents synthetic map values being presented as calibrated tariff forecasts.

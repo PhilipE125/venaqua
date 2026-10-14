@@ -21,6 +21,17 @@ export interface SourceStatus {
 }
 
 export const META = {
+  waterPrices: {
+    id: "waterPrices",
+    name: "Historical water-supply costs",
+    publisher: "Instituto Nacional de Estadística (INE), table 01003",
+    url: "https://www.ine.es/jaxi/files/_px/csv_bd/t26/p069/p03/l0/serie/01003.csv",
+    unitNotes: "EUR/m³, national average water-supply component (1.1 Suministro de agua), 2010–2022. All user groups; not a commercial-only tariff. Excludes sewerage and treatment.",
+    updateFrequency: "Biennial survey · verified snapshot October 2026",
+    quality: "measured",
+    knownIssues: ["Not a local commercial tariff", "VAT and fixed/local charges require bill-specific confirmation", "No verified post-2022 observations included"],
+    euEquivalent: "National statistical offices and Eurostat water-service statistics; tariff definitions vary",
+  },
   stressScenario: {
     id: "stressScenario",
     name: "Illustrative water-stress surface",
