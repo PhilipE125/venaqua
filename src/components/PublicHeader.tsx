@@ -85,6 +85,7 @@ export function PublicHeader() {
               {i.label}
             </button>
           ))}
+          <Link to="/deal-flow" className="whitespace-nowrap rounded-full px-2.5 py-1.5 transition-colors hover:bg-muted hover:text-foreground">Reuse Pipeline</Link>
         </nav>
         <div className="flex shrink-0 items-center gap-1.5">
           <Button variant="ghost" size="sm" className="whitespace-nowrap" onClick={() => setAuthOpen(true)}>Sign in</Button>
@@ -112,6 +113,7 @@ export function PublicHeader() {
                     {i.label}
                   </button>
                 ))}
+                <Link to="/deal-flow" onClick={close} className="rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted">Reuse Pipeline</Link>
               </div>
             </>
           ) : current && (

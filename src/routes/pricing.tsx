@@ -109,7 +109,7 @@ function Pricing() {
           <div className="grid gap-5 lg:grid-cols-2">
             {OFFERS.map((o) => <OfferCard key={o.id} offer={o} />)}
           </div>
-          <p className="mt-5 text-center text-sm text-muted-foreground">Currently tracking <span className="font-medium text-foreground tabular-nums">{DEAL_COUNT}</span> reuse deals in Spain — updated weekly.</p>
+          <p className="mt-5 text-center text-sm text-muted-foreground">Currently tracking <span className="font-medium text-foreground tabular-nums">{DEAL_COUNT}</span> reuse deals in Spain — updated weekly. <Link to="/deal-flow" className="font-medium text-primary hover:underline">See the live pipeline</Link></p>
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-5 pb-12">
