@@ -62,10 +62,10 @@ export const PRICING_STORY = {
   description: "Investment cases, early signals and tenders for water reuse in Spain, or our data in your own tools. Flat prices in EUR, excluding VAT.",
   small: "No success fees or commissions. All prices are under €15,000, so public bodies can buy directly.",
   free: "Free: the reuse map and teaser lists. No account needed.",
-  summary: "Free map · Deal Flow from €2,900/yr · Data from €6,000/yr",
+  summary: "Free map · Investment cases from €2,900/yr · Data & API from €6,000/yr",
   which: [
-    { want: "I want to find, shape and win reuse projects", offer: "Deal Flow" },
-    { want: "I want the data in my own systems", offer: "Data" },
+    { want: "I want to find, shape and win reuse projects", offer: "Investment cases" },
+    { want: "I want the data in my own systems", offer: "Data & API" },
   ],
   why: [
     "Tender alerts cost €200-3,500 a year and start when a tender is published. Deal Flow starts at the plant, months earlier, with costed co-investment cases.",

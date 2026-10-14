@@ -39,7 +39,6 @@ const STATUS_STYLE: Record<Plan["status"], string> = {
 
 function PlanCta({ plan }: { plan: Plan }) {
   const { setContact } = useWorkspace();
-  if (plan.id === "free") return <Button asChild variant="outline" size="sm" className="w-full"><Link to="/explore">{plan.cta}</Link></Button>;
   const id = plan.id;
   return <Button size="sm" className="w-full" variant={plan.cta === "Start pilot" ? "default" : "outline"} onClick={() => setContact(id)}>{plan.cta}</Button>;
 }
