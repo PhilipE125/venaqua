@@ -27,3 +27,4 @@
 - Plan entitlements live in src/lib/plans.ts and are enforced server-side (project-limit trigger, API plan check); plans are written only by the team via the backend — users must never be able to grant themselves a plan.
 - API keys are stored only as SHA-256 hashes; the Data API at /api/public/v1/$resource verifies the key and plan in the handler before returning the key owner's data.
 - Pricing product descriptions and enquiry prompts share the marketing content configuration; the existing contact dialog selects by product topic — keeps each CTA coherent without duplicating contact flows.
+- The Explorer starts from CALM_LAYERS in src/lib/state.tsx and keeps stress-horizon/pipe toggles in app state (shown in the Layers tab, Spain only) — keeps the first view quiet and removes floating panels.
