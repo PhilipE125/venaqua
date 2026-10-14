@@ -1,3 +1,4 @@
+import { QualityBadge } from "./SourceInfo";
 import { useEffect, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -45,8 +46,8 @@ export function SettingsDialog({ children, open: ctlOpen, onOpenChange }: { chil
 
         <p className="label-caps">Prices and finance</p>
         <div className="grid grid-cols-4 gap-3">
-          <Field label={`Supply tariff €/m³ · ${REGION_NAME[region]}`} value={draft.tariffs[region].supply} onChange={(v) => setDraft({ ...draft, tariffs: { ...draft.tariffs, [region]: { ...draft.tariffs[region], supply: n(v) } } })} />
-          <Field label={`Sewerage €/m³ · ${REGION_NAME[region]}`} value={draft.tariffs[region].discharge} onChange={(v) => setDraft({ ...draft, tariffs: { ...draft.tariffs, [region]: { ...draft.tariffs[region], discharge: n(v) } } })} />
+          <Field label={`Supply tariff €/m³ · ${REGION_NAME[region]}`} value={draft.tariffs[region].supply} onChange={(v) => setDraft({ ...draft, tariffs: { ...draft.tariffs, [region]: { ...draft.tariffs[region], supply: n(v) } } })} measured />
+          <Field label={`Sewerage €/m³ · ${REGION_NAME[region]}`} value={draft.tariffs[region].discharge} onChange={(v) => setDraft({ ...draft, tariffs: { ...draft.tariffs, [region]: { ...draft.tariffs[region], discharge: n(v) } } })} measured />
           <Field label="Discount rate" value={draft.rate} onChange={(v) => setDraft({ ...draft, rate: n(v) })} />
           <Field label="Lifetime, years" value={draft.years} step={1} onChange={(v) => setDraft({ ...draft, years: Math.max(1, n(v)) })} />
           <Field label="Electricity low €/kWh" value={draft.electricity.low} onChange={(v) => setDraft({ ...draft, electricity: { ...draft.electricity, low: n(v) } })} />
@@ -79,6 +80,14 @@ export function SettingsDialog({ children, open: ctlOpen, onOpenChange }: { chil
           <Field label="Capex grants (0-0.5)" value={draft.capexGrantShare} onChange={(v) => setDraft({ ...draft, capexGrantShare: Math.min(0.5, n(v)) })} />
         </div>
         <p className="text-[11px] text-muted-foreground">Capex grants (for example PERTE or EU funds): enter the share you expect. It reduces the capex of options B and C. Default 0, so no number changes.</p>
+
+        <p className="label-caps mt-2">Risk matrix thresholds (Venaqua screening rule)</p>
+        <div className="grid grid-cols-4 gap-3">
+          <Field label="High: share of bill" value={draft.riskHighShare} step={0.001} onChange={(v) => setDraft({ ...draft, riskHighShare: n(v) })} />
+          <Field label="Medium: share of bill" value={draft.riskMediumShare} step={0.001} onChange={(v) => setDraft({ ...draft, riskMediumShare: n(v) })} />
+          <Field label="Visible: share of comarca business water" value={draft.visibleShare} step={0.001} onChange={(v) => setDraft({ ...draft, visibleShare: n(v) })} />
+          <Field label="Visible: residents" value={draft.visibleResidents} step={100} onChange={(v) => setDraft({ ...draft, visibleResidents: n(v) })} />
+        </div>
 
         <p className="label-caps mt-2">Industrial supply cut by drought phase (placeholders to validate)</p>
         <div className="grid grid-cols-5 gap-3">
@@ -121,10 +130,10 @@ export function SettingsDialog({ children, open: ctlOpen, onOpenChange }: { chil
   );
 }
 
-function Field({ label, value, onChange, step = 0.01 }: { label: string; value: number; onChange: (v: string) => void; step?: number }) {
+function Field({ label, value, onChange, step = 0.01, measured = false }: { label: string; value: number; onChange: (v: string) => void; step?: number; measured?: boolean }) {
   return (
     <div className="space-y-1">
-      <Label className="text-xs font-normal capitalize text-muted-foreground">{label}</Label>
+      <Label className="flex items-center gap-1 text-xs font-normal capitalize text-muted-foreground">{label}{!measured && <QualityBadge q="assumption" />}</Label>
       <Input type="number" step={step} className="tnum h-8 text-xs" value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
@@ -133,7 +142,7 @@ function Field({ label, value, onChange, step = 0.01 }: { label: string; value: 
 function RangeField({ label, value, onChange, step = 0.01 }: { label: string; value: Range; onChange: (i: 0 | 1, v: string) => void; step?: number }) {
   return (
     <div className="space-y-1">
-      <Label className="text-xs font-normal text-muted-foreground">{label}</Label>
+      <Label className="flex items-center gap-1 text-xs font-normal text-muted-foreground">{label}<QualityBadge q="assumption" /></Label>
       <div className="flex gap-1">
         <Input type="number" step={step} aria-label={`${label} low`} className="tnum h-8 px-1.5 text-xs" value={value[0]} onChange={(e) => onChange(0, e.target.value)} />
         <Input type="number" step={step} aria-label={`${label} high`} className="tnum h-8 px-1.5 text-xs" value={value[1]} onChange={(e) => onChange(1, e.target.value)} />
