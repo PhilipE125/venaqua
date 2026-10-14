@@ -25,7 +25,7 @@ export const Route = createFileRoute("/explore")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>): { module?: Exclude<Mode, "all"> } => (typeof s.module === "string" && /^q[1-5]$/.test(s.module) ? { module: s.module as Exclude<Mode, "all"> } : {}),
+  validateSearch: (s: Record<string, unknown>): { module?: Exclude<Mode, "all"> } => (typeof s["module"] === "string" && /^q[1-5]$/.test(s["module"]) ? { module: s["module"] as Exclude<Mode, "all"> } : {}),
   component: Index,
 });
 
