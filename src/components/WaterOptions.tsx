@@ -8,17 +8,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { crf, droughtLoss, mid, opportunityCost, optionA, optionB, optionC, type CostInputs, type Range } from "@/lib/costs";
-import { eurK, fmt, fmt1, fmt2, useDrought, useElevation, useRestriction, useWwtps } from "@/lib/queries";
-import { haversineKm } from "@/lib/score";
+import { eurK, fmt, fmt1, fmt2, SUPPLY_SEARCH_KM as SEARCH_KM, useDrought, useWwtps, useElevation, useRestriction, useRoadRoute, useSupplyPlant } from "@/lib/queries";
 import { muniKey } from "@/lib/sectors";
 import { currentPhase, phaseDaysInYear, PHASES, type Phase } from "@/lib/sources/drought";
 import { useApp, useScenarioState, type Mode } from "@/lib/state";
 import { Answer, Details } from "./Drawer";
 import { FuturePanel, type FutureInputs } from "./FuturePanel";
-import type { Company, Plant } from "@/lib/types";
+import type { Company } from "@/lib/types";
 import { QualityBadge, SourceInfo } from "./SourceInfo";
 
-const SEARCH_KM = 30;
 
 function NumField({ label, value, onChange, step = 0.01, suffix }: { label: string; value: number; onChange: (n: number) => void; step?: number; suffix?: string }) {
   return (
@@ -88,16 +86,9 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
   const userQ = demandOverride[company.id];
   const Q = userQ ?? sectorQ;
 
-  // Candidate plant: available reclaimed > 0, prefer reuse-ready, then nearest.
-  const candidate = useMemo(() => {
-    const list = (w.data?.features ?? [])
-      .filter((p): p is Plant & { supply: NonNullable<Plant["supply"]> } => !!p.supply && p.supply.availableReclaimed > 0)
-      .map((p) => ({ p, d: haversineKm(p, company) }))
-      .filter((x) => x.d <= SEARCH_KM)
-      .sort((a, b) => a.d - b.d);
-    return list.find((x) => x.p.supply.reuseReady) ?? list[0] ?? null;
-  }, [w.data, company]);
+  const candidate = useSupplyPlant(company);
   const elev = useElevation(candidate?.p, company);
+  const road = useRoadRoute(candidate?.p, company);
 
   // France: today's VigiEau restriction stands in for the Catalan drought-phase history.
   const events = region === "fr" ? (restriction.data ? [restriction.data] : undefined) : drought.data?.byMuni.get(muniKey(company.municipi));
@@ -110,7 +101,8 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
     // Discharge charge applies to the share of water discharged, spread over total demand.
     const inputs: CostInputs = { demandM3PerYear: Q, tariff, dischargeCharge: local.dischargeCharge * (dischargePct / 100), rate: local.rate, years: local.years, electricity: [e, e] };
     const A = optionA(inputs);
-    const distanceKm = candidate ? candidate.d * settings.detourFactor : 0;
+    // Road distance when the router answered; otherwise straight line × detour factor.
+    const distanceKm = candidate ? (road.data?.km ?? candidate.d * settings.detourFactor) : 0;
     const liftM = elev.data ? Math.max(0, elev.data.b - elev.data.a) + (settings.frictionPer10km * distanceKm) / 10 : (settings.frictionPer10km * distanceKm) / 10;
     const B = candidate
       ? optionB(inputs, {
@@ -152,7 +144,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
       C: { capex: mid(C.capex), opexAtT0: mid(C.annualCost) - mid(C.capex) * k, mainsShare: 1 - mid(settings.recoveryRate), protectedShare: mid(settings.recoveryRate) },
     };
     return { tariff, A, B, C, distanceKm, liftM, lossA, lossB, lossC, opp, cheapest, days2023, cut, future };
-  }, [Q, local, tariffShock, elec, settings, candidate, elev.data, phase, replay, events, effluent, dischargePct]);
+  }, [Q, local, tariffShock, elec, settings, candidate, elev.data, road.data, phase, replay, events, effluent, dischargePct]);
 
   const { A, B, C } = calc;
   const deliveredCost = B ? `€${fmt2.format(B.perM3[0])}–${fmt2.format(B.perM3[1])}/m³` : "No connection identified";
@@ -192,7 +184,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
     );
 
   if (view === "overview") return <section className="mt-5 space-y-5">{answer}
-    <div className="grid grid-cols-2 gap-5 border-y py-5"><div><p className="label-caps">Indicative demand · our estimate</p><p className="tnum mt-1 text-xl font-semibold">{fmt.format(Q / 365)} <span className="text-xs font-normal text-muted-foreground">m³/day</span></p></div><div><p className="label-caps">Delivered-water cost · modelled</p><p className="mt-1 text-lg font-semibold">{deliveredCost}</p></div><div><p className="label-caps">Nearest candidate</p><p className="mt-1 text-sm font-medium">{candidate?.p.name ?? "None within 30 km"}</p></div><div><p className="label-caps">Straight-line distance</p><p className="tnum mt-1 text-sm font-medium">{candidate ? `${fmt1.format(candidate.d)} km` : "Not available"}</p></div></div>
+    <div className="grid grid-cols-2 gap-5 border-y py-5"><div><p className="label-caps">Indicative demand · our estimate</p><p className="tnum mt-1 text-xl font-semibold">{fmt.format(Q / 365)} <span className="text-xs font-normal text-muted-foreground">m³/day</span></p></div><div><p className="label-caps">Delivered-water cost · modelled</p><p className="mt-1 text-lg font-semibold">{deliveredCost}</p></div><div><p className="label-caps">Nearest candidate</p><p className="mt-1 text-sm font-medium">{candidate?.p.name ?? "None within 30 km"}</p></div><div><p className="label-caps">{road.data ? "Pipe route by road" : "Straight-line distance"}</p><p className="tnum mt-1 text-sm font-medium">{candidate ? (road.data ? `${fmt1.format(road.data.km)} km (${fmt1.format(candidate.d)} km straight)` : `${fmt1.format(candidate.d)} km`) : "Not available"}</p></div></div>
     <div><p className="label-caps">Main blocker</p><p className="mt-1 text-sm">{calc.cheapest === "A" ? "Cost exceeds the current bill. Confirm your tariff and shorten the route, or test shared infrastructure." : "Firm demand, water quality and the pipe route need validation."}</p></div>
     <div className="border-l-2 border-primary pl-4"><p className="label-caps">Recommended next step</p><p className="mt-1 text-sm font-medium">Confirm annual demand and water-quality requirements with the site team.</p></div>
     {focus === "q5" && <FuturePanel inputs={calc.future} />}
@@ -292,7 +284,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
             </button>
             {candidate.p.supply.reuseReady ? <span className="ml-1.5 text-muted-foreground">reuse-ready</span> : <span className="ml-1.5 text-muted-foreground">needs polishing</span>}
             <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-muted-foreground">
-              <span>Pipe distance</span><span className="tnum text-right text-foreground">{fmt1.format(calc.distanceKm)} km</span>
+              <span className="flex items-center gap-1">Pipe distance <SourceInfo id="route" note={road.data ? "Along roads, where reuse pipes are normally laid." : `Straight line × ${settings.detourFactor} detour; road route unavailable.`} /></span><span className="tnum text-right text-foreground">{road.isLoading ? "…" : `${fmt1.format(calc.distanceKm)} km${road.data ? " by road" : " est."}`}</span>
               <span className="flex items-center gap-1">Lift <SourceInfo id="meteo" note="Elevation difference plus friction allowance." /></span><span className="tnum text-right text-foreground">{elev.isLoading ? "…" : `${fmt.format(calc.liftM)} m`}</span>
               <span className="flex items-center gap-1">Available <SourceInfo id="eea" quality={candidate.p.supply.actualQuality} /></span><span className="tnum text-right text-foreground">{fmt.format(candidate.p.supply.availableReclaimed)} m³/day</span>
               <span>Demand covered</span><span className="tnum text-right text-foreground">{fmt.format((B?.coverage ?? 0) * 100)}%</span>

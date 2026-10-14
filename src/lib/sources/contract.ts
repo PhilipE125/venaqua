@@ -149,6 +149,16 @@ export const META = {
     quality: "modelled",
     euEquivalent: "Same API, global",
   },
+  route: {
+    id: "route",
+    name: "Road routes",
+    publisher: "OSRM on OpenStreetMap",
+    url: "https://project-osrm.org",
+    unitNotes: "Road distance in km between plant and site; used as the pipe route.",
+    updateFrequency: "On request",
+    quality: "modelled",
+    euEquivalent: "Same service, worldwide",
+  },
   ted: {
     id: "ted",
     name: "EU tenders",

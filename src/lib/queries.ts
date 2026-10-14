@@ -4,7 +4,7 @@ import { useCallback, useMemo } from "react";
 import { findClusters } from "./clusters";
 import { knownUserSource } from "./knownUsers";
 import { mergeCompanies } from "./merge";
-import { effectiveSupply, scorePairs, type Match } from "./score";
+import { effectiveSupply, haversineKm, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
 import { fetchDrought } from "./sources/drought";
 import { enrichPlants, fetchEea, nationalPlant, type Country } from "./sources/eea";
@@ -13,12 +13,13 @@ import { fetchMeteo } from "./sources/meteo";
 import { fetchProjects } from "./sources/projects";
 import { fetchGauges, lowWaterShare } from "./sources/pegel";
 import { fetchRegen } from "./sources/regen";
+import { fetchRoadRoute } from "./sources/route";
 import { departmentStress, fetchDepartments, fetchRestriction } from "./sources/vigieau";
 import { fetchPratHistory, fetchReservoirHistory, fetchReservoirs } from "./sources/reservoirs";
 import { searchTenders } from "./sources/ted.functions";
 import { fetchWwtps } from "./sources/wwtp";
 import { useApp, type Region } from "./state";
-import type { Company, SupplySite } from "./types";
+import type { Company, Plant, SupplySite } from "./types";
 
 const H = 60 * 60 * 1000;
 const opts = { staleTime: H, gcTime: 2 * H, retry: 1, refetchOnWindowFocus: false } as const;
@@ -174,6 +175,33 @@ export const useMeteo = (lat?: number, lon?: number) =>
     enabled: lat != null && lon != null,
     ...opts,
   });
+
+/** Road route between two points, cached per pair. */
+export function useRoadRoute(a?: { lat: number; lon: number }, b?: { lat: number; lon: number }) {
+  return useQuery({
+    queryKey: ["route", a?.lat, a?.lon, b?.lat, b?.lon],
+    enabled: !!a && !!b,
+    ...opts,
+    staleTime: Infinity,
+    queryFn: () => fetchRoadRoute(a!, b!),
+  });
+}
+
+export const SUPPLY_SEARCH_KM = 30;
+
+/** The plant that would supply a company: spare reclaimed water, reuse-ready first, then nearest. */
+export function useSupplyPlant(company?: Company) {
+  const w = useWwtps();
+  return useMemo(() => {
+    if (!company) return null;
+    const list = (w.data?.features ?? [])
+      .filter((p): p is Plant & { supply: NonNullable<Plant["supply"]> } => !!p.supply && p.supply.availableReclaimed > 0)
+      .map((p) => ({ p, d: haversineKm(p, company) }))
+      .filter((x) => x.d <= SUPPLY_SEARCH_KM)
+      .sort((a, b) => a.d - b.d);
+    return list.find((x) => x.p.supply.reuseReady) ?? list[0] ?? null;
+  }, [w.data, company]);
+}
 
 export function useElevation(a?: { lat: number; lon: number }, b?: { lat: number; lon: number }) {
   return useQuery({
