@@ -33,8 +33,8 @@ export function PublicHeader() {
       body: "A live map of water recycling plants, industrial water users and water stress. Spot reuse opportunities, then save and develop them as projects.",
       actions: (
         <>
-          <Button asChild size="sm"><Link to="/explore" onClick={close}>Explore the free map</Link></Button>
-          <Button asChild size="sm" variant="outline"><Link to="/projects" onClick={close}>Projects</Link></Button>
+          <Button asChild size="sm"><Link to="/platform" onClick={close}>See the platform</Link></Button>
+          <Button asChild size="sm" variant="outline"><Link to="/explore" onClick={close}>Explore the free map</Link></Button>
         </>
       ),
     },
