@@ -346,6 +346,7 @@ function CompanyDetail({ company, view = "overview", onSummary }: { company: Com
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant="secondary">{sectorById[company.sector].label}</Badge>
         <StatusChip s={status} />
+        {company.sendsToPlant && <Badge variant="outline" className="h-5 border-primary px-1.5 text-[10px] text-primary">Already sends wastewater to a plant</Badge>}
         {company.sources.map((s) => (
           <Badge key={s} variant="outline" className="h-5 px-1.5 text-[10px] font-normal">{s === "aca" ? "ACA permit" : "EEA IED"}</Badge>
         ))}
@@ -363,6 +364,7 @@ function CompanyDetail({ company, view = "overview", onSummary }: { company: Com
         <Row k="Activity" info={<SourceInfo id={company.sources.includes("aca") ? "companies" : "ied"} />} v={<span className="line-clamp-2 max-w-[220px]">{company.ccae}</span>} />
         <Row k="Type" v={`${company.tipus}${company.subtipus ? ` · ${company.subtipus}` : ""}`} />
         {company.dischargesToWater != null && <Row k="Releases to water (E-PRTR)" info={<SourceInfo id="ied" />} v={company.dischargesToWater ? "Yes" : "No report"} />}
+        {company.sendsToPlant && <Row k="Wastewater to a treatment plant (E-PRTR)" info={<SourceInfo id="ied" />} v="Yes, already connected" />}
         {company.activity && <p className="mt-2 text-xs text-muted-foreground first-letter:uppercase">{company.activity}</p>}
       </Section>
       <Section title="Water demand" note={<span className="flex items-center gap-1">{demandOverride[company.id] != null ? "your figure" : "estimate"} <SourceInfo id="demand" /></span>}>

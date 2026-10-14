@@ -37,6 +37,7 @@ export function iedToCompany(f: IedFacility): Company | null {
     sources: ["eea"],
     iedActivity: f.activity,
     dischargesToWater: f.water,
+    sendsToPlant: f.toPlant,
   };
 }
 
@@ -72,6 +73,7 @@ export function mergeCompanies(aca: Company[], ied: IedFacility[]) {
       if (!hit.sources.includes("eea")) hit.sources.push("eea");
       hit.iedActivity = f.activity;
       hit.dischargesToWater = hit.dischargesToWater || f.water;
+      hit.sendsToPlant = hit.sendsToPlant || f.toPlant;
     } else out.push(co);
   }
   return { companies: out, merged, excluded };

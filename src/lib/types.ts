@@ -82,6 +82,7 @@ export interface Company extends BaseFeature {
   sources: ("aca" | "eea")[];
   iedActivity?: string | undefined;
   dischargesToWater?: boolean | undefined;
+  sendsToPlant?: boolean | undefined; // already sends wastewater to a municipal treatment plant (E-PRTR)
   confirmedSource?: string | undefined;
 }
 

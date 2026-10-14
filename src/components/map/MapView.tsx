@@ -7,7 +7,7 @@ import { PathStyleExtension } from "@deck.gl/extensions";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Map, { NavigationControl, useControl, type MapRef } from "react-map-gl/maplibre";
-import { eur, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useWwtps } from "@/lib/queries";
+import { eur, fmt1, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useRoadRoute, useSupplyPlant, useWwtps } from "@/lib/queries";
 import { buyerStatus, KNOWN_USERS } from "@/lib/knownUsers";
 import { normalize } from "@/lib/sectors";
 import { sectorById } from "@/lib/sectors";
@@ -153,6 +153,12 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
     const v = VIEWS[region];
     mapRef.current?.flyTo({ center: [v.longitude, v.latitude], zoom: v.zoom, duration: 700 });
   }, [region, isLanding]);
+
+  // Selected company: the plant that would supply it and the road route a pipe would follow.
+  const selectedCompany = selection?.kind === "company" ? companyById.get(selection.id) : undefined;
+  const supply = useSupplyPlant(selectedCompany);
+  const road = useRoadRoute(supply?.p, selectedCompany);
+  const roadData = useMemo(() => (road.data ? [road.data] : []), [road.data]);
 
   const selectedSite =
     selection && selection.kind !== "company" ? siteById.get(selection.id) : undefined;
@@ -364,6 +370,29 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         jointRounded: true,
         pickable: true,
       }),
+    roadData.length > 0 &&
+      new PathLayer<(typeof roadData)[number]>({
+        id: "road-route-casing",
+        data: roadData,
+        getPath: (d) => d.path,
+        getColor: dark ? [20, 20, 20, 230] : [255, 255, 255, 240],
+        getWidth: 8,
+        widthUnits: "pixels",
+        capRounded: true,
+        jointRounded: true,
+      }),
+    roadData.length > 0 &&
+      new PathLayer<(typeof roadData)[number]>({
+        id: "road-route",
+        data: roadData,
+        getPath: (d) => d.path,
+        getColor: [11, 110, 138, 255],
+        getWidth: 4,
+        widthUnits: "pixels",
+        capRounded: true,
+        jointRounded: true,
+        pickable: true,
+      }),
     layers.wwtp &&
       new ScatterplotLayer<Plant>({
         id: "wwtp",
@@ -443,6 +472,8 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
           onHover={(info) => {
             const st = info.object as { kind?: string; name?: string; risk?: Record<string, number> } | undefined;
             if (st?.kind === "stress" && stressYear) return setHover.current({ x: info.x, y: info.y, text: `${st.name} · illustrative stress scenario · ${stressYear}` });
+            const rr = info.object as { km?: number; path?: unknown } | undefined;
+            if (rr?.km != null && rr.path && supply) return setHover.current({ x: info.x, y: info.y, text: `Pipe route along roads from ${supply.p.name} · ${fmt1.format(rr.km)} km` });
             const river = info.object as { gauge?: Reservoir } | undefined;
             if (river?.gauge) return setHover.current({ x: info.x, y: info.y, text: `${river.gauge.name} · ${river.gauge.note} at the nearest gauge` });
             const raw = info.object as { name?: string; kind?: string; fill?: number; note?: string; g?: RegenPlant; buyer?: string; object?: string } | undefined;
@@ -533,6 +564,12 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
             Water store — low, medium or high fill.
           </p>
         )}
+        {roadData.length > 0 && (
+          <p className="flex items-center gap-2">
+            <span className="inline-block h-1 w-5 shrink-0 rounded-full" style={{ background: rgb(LEVEL_COLORS.tertiary) }} />
+            Pipe route along roads to the supplying plant ({fmt1.format(road.data!.km)} km).
+          </p>
+        )}
         {selectedSite && (
           <p className="flex items-center gap-2">
             <span className="inline-block h-0 w-5 shrink-0 border-t-2 border-dashed" style={{ borderColor: rgb(LEVEL_COLORS.tertiary) }} />
@@ -574,7 +611,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
           </div>
         )}
         <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 border-t pt-2">
-          <span className="font-medium">Predicted pipe network</span>
+          <span className="font-medium">Illustrative pipe layout</span>
           <input type="checkbox" className="accent-[var(--primary)]" checked={showPipes} onChange={(e) => setShowPipes(e.target.checked)} />
         </label>
         {showPipes && !pipesVisible && <p className="mt-1.5 text-[10px] text-muted-foreground">Zoom in closer to see pipe routes.</p>}
@@ -584,7 +621,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
             <p className="flex items-center gap-2"><span className="inline-block h-[2px] w-5 rounded" style={{ background: "rgba(11,110,138,0.55)" }} />Urban</p>
           </div>
         )}
-        <p className="mt-2 text-[10px] leading-snug text-muted-foreground">Indicative scenario and inferred routes — not an official forecast or as-built map.</p>
+        <p className="mt-2 text-[10px] leading-snug text-muted-foreground">Illustrative layout and stress scenario, not real routes. Select a company to see its pipe route along real roads.</p>
         <WaterPricePanel horizon={stressAhead} />
       </div>
     </div>
