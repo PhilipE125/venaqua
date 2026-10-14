@@ -15,6 +15,13 @@
       "when": 1791969670587,
       "tag": "0001_deal_flow_and_data_features",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791969781865,
+      "tag": "0002_api_keys_revoke_only",
+      "breakpoints": true
     }
   ]
 }
