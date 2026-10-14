@@ -17,6 +17,8 @@ import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as WorkspaceRouteImport } from './routes/workspace'
+import { Route as ApiPublicV1ResourceRouteImport } from './routes/api/public/v1.$resource'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -58,6 +60,16 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkspaceRoute = WorkspaceRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1ResourceRoute = ApiPublicV1ResourceRouteImport.update({
+  id: '/api/public/v1/$resource',
+  path: '/api/public/v1/$resource',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +80,8 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/workspace': typeof WorkspaceRoute
+  '/api/public/v1/$resource': typeof ApiPublicV1ResourceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +92,8 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/workspace': typeof WorkspaceRoute
+  '/api/public/v1/$resource': typeof ApiPublicV1ResourceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +105,8 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/workspace': typeof WorkspaceRoute
+  '/api/public/v1/$resource': typeof ApiPublicV1ResourceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +119,8 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/projects'
     | '/reset-password'
+    | '/workspace'
+    | '/api/public/v1/$resource'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +131,8 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/projects'
     | '/reset-password'
+    | '/workspace'
+    | '/api/public/v1/$resource'
   id:
     | '__root__'
     | '/'
@@ -121,6 +143,8 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/projects'
     | '/reset-password'
+    | '/workspace'
+    | '/api/public/v1/$resource'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +156,8 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   ProjectsRoute: typeof ProjectsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  WorkspaceRoute: typeof WorkspaceRoute
+  ApiPublicV1ResourceRoute: typeof ApiPublicV1ResourceRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +218,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workspace': {
+      id: '/workspace'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof WorkspaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/$resource': {
+      id: '/api/public/v1/$resource'
+      path: '/api/public/v1/$resource'
+      fullPath: '/api/public/v1/$resource'
+      preLoaderRoute: typeof ApiPublicV1ResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +244,8 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   ProjectsRoute: ProjectsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  WorkspaceRoute: WorkspaceRoute,
+  ApiPublicV1ResourceRoute: ApiPublicV1ResourceRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

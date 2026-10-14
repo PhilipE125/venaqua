@@ -20,6 +20,7 @@ import { STRESS_BOUNDS, STRESS_HORIZONS, stressAt, stressImage } from "@/lib/str
 import { Button } from "@/components/ui/button";
 import { WaterPricePanel } from "./WaterPricePanel";
 import { SourceInfo } from "@/components/SourceInfo";
+import { useWorkspace } from "@/lib/workspace";
 
 setWorkerUrl(workerUrl);
 
@@ -115,6 +116,8 @@ function useBasemapStyle(dark: boolean) {
 export default function MapView({ presentation = "explorer" }: { presentation?: "explorer" | "landing" } = {}) {
   const isLanding = presentation === "landing";
   const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus } = useApp();
+  const { privateSites: allPrivate } = useWorkspace();
+  const privateSites = isLanding ? [] : allPrivate;
   const pr = useProjects();
   const [popup, setPopup] = useState<ReuseProject | null>(null);
   const clusters = useClusters();
@@ -435,6 +438,19 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         lineWidthMinPixels: 3,
         pickable: true,
         updateTriggers: { getLineColor: [selection] },
+      }),
+    privateSites.length > 0 &&
+      new ScatterplotLayer<(typeof privateSites)[number]>({
+        id: "private-sites",
+        data: privateSites,
+        getPosition: (d) => [d.lon, d.lat],
+        getRadius: 7,
+        radiusUnits: "pixels",
+        getFillColor: (d) => (d.kind === "supply" ? [20, 160, 140, 230] : [230, 160, 30, 230]),
+        stroked: true,
+        getLineColor: [20, 20, 20, 255],
+        lineWidthMinPixels: 2,
+        pickable: true,
       }),
     layers.projects &&
       new IconLayer<ReuseProject>({
