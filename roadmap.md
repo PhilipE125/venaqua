@@ -72,3 +72,7 @@
 - [ ] Investment Cases tab (needs investment_cases.json + cases.ts — not uploaded)
 - [ ] Deals on the explore map, near-plant deals on analysis, homepage top-3 deals
 - [ ] Block 4 database + plan gating; Block 5 AI review queue
+
+# Pricing simplification (Oct 2026)
+- [x] Two paid options only (Investment cases, Data & API); free map as strip below
+- [ ] Remove all Beta/coming labels site-wide; present as full solution
