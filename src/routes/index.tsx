@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
+import dealData from "@/data/dealflow-deals.json";
 import { AUDIENCES, FACTS, MODULES, NEUTRALITY, VISION, type AudienceIcon, type FactId } from "@/content/venaqua";
 import { FactValue, SourceCaption, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
 
@@ -233,6 +234,18 @@ function Landing() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-5xl px-5 py-16">
+            <p className="label-caps text-primary">Beyond public data</p>
+            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">The map is the start. The record we build each week is the product.</h2>
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              <div className="rounded-xl border bg-card p-6"><h3 className="font-semibold">A tracked deal pipeline</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{(dealData as { deals: unknown[] }).deals.length} reuse deals in Spain, sourced, scored and updated weekly — each with its history from first signal to tender.</p></div>
+              <div className="rounded-xl border bg-card p-6"><h3 className="font-semibold">Customer-confirmed data</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Teams add private supply and demand sites and confirm estimates, so the evidence improves where it matters. Shared only with the owner's consent.</p></div>
+              <div className="rounded-xl border bg-card p-6"><h3 className="font-semibold">Verified savings <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">Coming soon</span></h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Meter-backed records of freshwater replaced, that auditors and lenders can check.</p></div>
+            </div>
           </div>
         </section>
 
