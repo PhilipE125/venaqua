@@ -76,3 +76,36 @@ export async function fetchPratHistory() {
   const series = [...byDay.values()].map((e) => ({ ...e, value: e.reuse }));
   return { series, fetchedAt: new Date().toISOString() };
 }
+
+/** Volume-weighted fill per month since 2000, grouped on the server (same weighting as fetchReservoirHistory). */
+export async function fetchReservoirHistoryMonthly() {
+  const rows = await socrata<{ m: string; v: string; cap: string }>(RESERVOIRS_ID, {
+    $select: "date_trunc_ym(dia) as m, sum(volum_embassat) as v, sum(volum_embassat * 100 / percentatge_volum_embassat) as cap",
+    $where: "dia >= '2000-01-01' AND percentatge_volum_embassat > 0",
+    $group: "m",
+    $order: "m",
+  });
+  return {
+    series: rows.map((r) => ({ month: r.m.slice(0, 7), value: num(r.cap) > 0 ? (num(r.v) / num(r.cap)) * 100 : 0 })),
+    fetchedAt: new Date().toISOString(),
+  };
+}
+
+/** El Prat yearly average outflow since 2019, m³/day: pumped to Can Solé for reuse vs sent to the river. */
+export async function fetchPratYearly() {
+  const rows = await socrata<{ y: string; descripcio_variable: string; q: string }>(PRAT_ID, {
+    $select: "date_extract_y(dia) as y, descripcio_variable, avg(cabal_canal_m3_s) as q",
+    $where: "dia >= '2019-01-01'",
+    $group: "y, descripcio_variable",
+    $order: "y",
+  });
+  const byYear = new Map<string, { year: string; reuse: number; river: number }>();
+  for (const r of rows) {
+    const e = byYear.get(r.y) ?? { year: r.y, reuse: 0, river: 0 };
+    const v = num(r.q) * 86400;
+    if (/a riu/i.test(r.descripcio_variable)) e.river += v;
+    else e.reuse += v;
+    byYear.set(r.y, e);
+  }
+  return { series: [...byYear.values()], fetchedAt: new Date().toISOString() };
+}

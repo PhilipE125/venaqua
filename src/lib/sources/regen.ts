@@ -1,10 +1,11 @@
 import { normalize } from "../sectors";
-import type { Plant, RegenPlant, SourceResult } from "../types";
+import type { Plant, RegenPlant, ReuseByUse, SourceResult } from "../types";
 import { num, socrata, type Row } from "./socrata";
 import { titleCase } from "./wwtp";
 
 export const REGEN_ID = "5bep-wiuf";
 const CACHE_KEY = "reuse-match:nominatim";
+const regenId = (era: string) => `regen-${normalize(era).replace(/\W+/g, "-")}`;
 
 function readCache(): Record<string, [number, number] | null> {
   try {
@@ -59,7 +60,7 @@ export async function fetchRegen(wwtps: Plant[]): Promise<SourceResult<RegenPlan
     }
     if (!coords) continue;
     features.push({
-      id: `regen-${normalize(r.era).replace(/\W+/g, "-")}`,
+      id: regenId(r.era),
       kind: "regen",
       name: `${titleCase(r.era)} water recycling plant`,
       lat: coords[0],
@@ -84,4 +85,34 @@ export async function fetchRegen(wwtps: Plant[]): Promise<SourceResult<RegenPlan
     });
   }
   return { features, fetchedAt: new Date().toISOString(), fetchedCount: latest.size, latestDataDate: String(Math.max(...[...latest.values()].map((r) => num(r.any)))) };
+}
+
+export interface RegenYear {
+  year: number;
+  total: number; // m3/year
+  byUse: ReuseByUse;
+}
+
+/** Reused volume per year for every regeneration plant, keyed by the same id as fetchRegen. */
+export async function fetchRegenHistory(): Promise<Map<string, RegenYear[]>> {
+  const rows = await socrata(REGEN_ID);
+  const out = new Map<string, RegenYear[]>();
+  for (const r of rows) {
+    const id = regenId(r.era);
+    const arr = out.get(id) ?? [];
+    arr.push({
+      year: num(r.any),
+      total: num(r.volum_total_aigua_reutilitzada),
+      byUse: {
+        agricultural: num(r.volum_aigua_reutilitzada),
+        environmental: num(r.volum_aigua_reutilitzada_1),
+        urban: num(r.volum_aigua_reutilitzada_2),
+        recreational: num(r.volum_aigua_reutilitzada_3),
+        industrial: num(r.volum_aigua_reutilitzada_4),
+      },
+    });
+    out.set(id, arr);
+  }
+  for (const a of out.values()) a.sort((x, y) => x.year - y.year);
+  return out;
 }

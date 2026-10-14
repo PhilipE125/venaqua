@@ -26,10 +26,11 @@ export function useModulePicker() {
 }
 
 export function ModuleBar() {
-  const { mode, panelOpen } = useApp();
+  const { mode, panelOpen, selection } = useApp();
   const pick = useModulePicker();
+  const sourcing = selection?.kind === "company"; // the company panel needs the map clear
   const [userCollapsed, setUserCollapsed] = useState(false);
-  const collapsed = userCollapsed || panelOpen;
+  const collapsed = userCollapsed || panelOpen || sourcing;
   return <>
     {/* Desktop: vertical numbered list */}
     <nav aria-label="Modules" className="panel pointer-events-auto absolute left-5 top-4 z-20 hidden rounded-lg p-1.5 shadow-map-panel md:block">

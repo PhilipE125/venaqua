@@ -54,6 +54,8 @@ export interface Settings {
   onsiteOpex: Range; // €/m3
   droughtCut: Record<Phase, number>; // share of industrial supply cut
   valuePerM3Lost: number;
+  onsiteScaleExponent: number; // economies of scale for on-site reuse
+  capexGrantShare: number; // 0-0.5, grants that reduce B and C capex
 }
 
 export interface Tariff {
@@ -92,6 +94,8 @@ export const DEFAULT_SETTINGS: Settings = {
   onsiteOpex: [0.5, 1.2],
   droughtCut: { normal: 0, "pre-alert": 0, alert: 0.05, exceptional: 0.15, emergency: 0.25 },
   valuePerM3Lost: 5,
+  onsiteScaleExponent: 0.7,
+  capexGrantShare: 0,
 };
 
 // v3: tariffs became per region; older saved settings would keep the double-counted 1.92 + 0.8.

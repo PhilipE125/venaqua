@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { FUTURE_END, FUTURE_START, GROWTH, projectFuture, type FutureInputs } from "@/lib/projection";
+import { droughtRecordLabel, FUTURE_END, FUTURE_START, GROWTH, projectFuture, type FutureInputs } from "@/lib/projection";
 import { eurK, fmt1 } from "@/lib/queries";
 import { climateFactor } from "@/lib/sources/aqueduct";
 import { useApp, useScenarioState } from "@/lib/state";
@@ -66,7 +66,7 @@ export function FuturePanel({ inputs }: { inputs: FutureInputs }) {
           <div><p className="label-caps">C by {year}</p><p>{eurK(row["C"]!)}</p></div>
         </div>
         <p className="text-[11px] text-muted-foreground">
-          In {year}: tariff {fmt1.format(f.tariffFor(year))} €/m³, expected supply cut {fmt1.format(f.cutFor(year) * 100)}% (historic drought frequency 2008-2025 × climate factor {fmt1.format(climateFactor(year))}).
+          In {year}: tariff {fmt1.format(f.tariffFor(year))} €/m³, expected supply cut {fmt1.format(f.cutFor(year) * 100)}% ({droughtRecordLabel(inputs.events)}, × climate factor {fmt1.format(climateFactor(year))}).
         </p>
       </div>
     </div>
