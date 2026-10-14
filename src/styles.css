@@ -162,7 +162,7 @@
 .opportunity-drawer { position: absolute; right: 20px; top: 20px; bottom: 20px; width: 440px; z-index: 30; box-shadow: var(--map-panel-shadow); }
 .map-context { max-width: calc(100% - 40px); }
 .map-context.with-selection { max-width: calc(100% - 500px); }
-.map-legend { position: absolute; right: 12px; bottom: 44px; display: flex; flex-direction: column; align-items: flex-end; }
+.map-legend { position: absolute; right: 12px; bottom: 110px; display: flex; flex-direction: column; align-items: flex-end; }
 .map-legend.with-selection { display: none; }
 .maplibregl-ctrl-bottom-right { bottom: 102px !important; }
 .opportunity-drawer h3 { letter-spacing: 0; }

@@ -120,6 +120,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
   const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus, horizon, showPipes, setPanelOpen } = useApp();
   const [legendOpen, setLegendOpen] = useState(false);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastDbl = useRef(0);
   const { privateSites: allPrivate } = useWorkspace();
   const privateSites = isLanding ? [] : allPrivate;
   const pr = useProjects();
@@ -494,7 +495,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         ref={mapRef}
         onMoveEnd={e => { if (!isLanding) setCamera(e.viewState); }}
         onLoad={() => { if (isLanding) mapRef.current?.fitBounds([[-9.5, 35.8], [4.6, 43.9]], { padding: 32, duration: 0 }); }}
-        onDblClick={() => { if (clickTimer.current) clearTimeout(clickTimer.current); clickTimer.current = null; }}
+        onDblClick={() => { lastDbl.current = Date.now(); if (clickTimer.current) clearTimeout(clickTimer.current); clickTimer.current = null; }}
         onZoom={e => { setScale(zoomScale(e.viewState.zoom)); setZoomLvl(Math.floor(e.viewState.zoom * 2) / 2); }}
         initialViewState={isLanding ? { ...VIEWS.es, zoom: 4.7 } : camera ?? VIEWS[region]}
         mapStyle={
@@ -539,12 +540,12 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
           onClick={(info, ev) => {
             // Double-click only zooms: defer the selection and cancel it if a second click follows.
             if (clickTimer.current) { clearTimeout(clickTimer.current); clickTimer.current = null; return; }
-            if ((ev as { srcEvent?: MouseEvent })?.srcEvent?.detail === 2) return;
-            clickTimer.current = setTimeout(() => { clickTimer.current = null; handleClick(info); }, 230);
+            if ((ev as { srcEvent?: MouseEvent })?.srcEvent?.detail >= 2 || Date.now() - lastDbl.current < 500) return;
+            clickTimer.current = setTimeout(() => { clickTimer.current = null; if (Date.now() - lastDbl.current > 500) handleClick(info); }, 260);
           }}
         />
       </Map>
-      <div className={`map-legend z-10 ${selection ? "with-selection" : ""}`}>
+      <div className={`map-legend z-20 ${selection ? "with-selection" : ""}`}>
         {legendOpen ? (
           <div className="panel max-w-[300px] space-y-1 rounded-md px-3 py-2 text-[10px] text-muted-foreground shadow-md">
             <div className="flex items-center justify-between"><p className="label-caps">Legend</p><button className="text-muted-foreground hover:text-foreground" aria-label="Close legend" onClick={() => setLegendOpen(false)}>×</button></div>
