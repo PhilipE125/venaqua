@@ -41,9 +41,9 @@ export function predictPipes(
     const tree: Pt[] = [p];
     const left = cand.map((c) => c.s);
     while (left.length) {
-      let bi = 0, bt = tree[0], bd = Infinity;
+      let bi = 0, bt: Pt = p, bd = Infinity;
       left.forEach((s, i) => tree.forEach((t) => { const d = km(s, t); if (d < bd) { bd = d; bi = i; bt = t; } }));
-      const s = left.splice(bi, 1)[0];
+      const s = left.splice(bi, 1)[0]!;
       segs.push({ path: route(bt, s), kind: "branch", rural });
       tree.push(s);
     }

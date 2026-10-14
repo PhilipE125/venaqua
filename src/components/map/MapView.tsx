@@ -184,8 +184,8 @@ export default function MapView() {
         id: "future-stress",
         data: STRESS,
         getPolygon: (d) => d.polygon,
-        getFillColor: (d) => stressColor(d.risk[stressYear], 150),
-        getLineColor: (d) => stressColor(d.risk[stressYear], 230),
+        getFillColor: (d) => stressColor(d.risk[stressYear] ?? 0, 150),
+        getLineColor: (d) => stressColor(d.risk[stressYear] ?? 0, 230),
         lineWidthMinPixels: 0.6,
         stroked: true,
         pickable: true,
@@ -363,7 +363,7 @@ export default function MapView() {
           getCursor={({ isHovering }) => (isHovering ? "pointer" : "grab")}
           onHover={(info) => {
             const st = info.object as { kind?: string; name?: string; risk?: Record<string, number> } | undefined;
-            if (st?.kind === "stress" && st.risk && stressYear) return setHover.current({ x: info.x, y: info.y, text: `${st.name} · stress index ${Math.round(st.risk[stressYear])} in ${stressYear}` });
+            if (st?.kind === "stress" && st.risk && stressYear) return setHover.current({ x: info.x, y: info.y, text: `${st.name} · stress index ${Math.round(st.risk[stressYear] ?? 0)} in ${stressYear}` });
             const raw = info.object as { name?: string; kind?: string; fill?: number; note?: string; g?: RegenPlant; buyer?: string; object?: string } | undefined;
             const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
             const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
