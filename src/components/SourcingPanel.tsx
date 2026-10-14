@@ -710,7 +710,7 @@ function RiskMatrix({ company, cols, bill, events, qDay, plantName, choice }: {
   const river = useMemo(() => {
     let best: { name: string; note?: string | undefined; fill: number; km: number } | null = null;
     for (const g of rivers.data?.features ?? []) {
-      const km = haversineKm(company.lat, company.lon, g.lat, g.lon);
+      const km = haversineKm(company, g);
       if (km <= 25 && (!best || km < best.km)) best = { name: g.name, note: g.note, fill: g.fill, km };
     }
     return best;
