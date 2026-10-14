@@ -207,11 +207,10 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
   const clusterData = useMemo(() => clusters.slice(0, 40), [clusters]);
   const [horizon, setHorizon] = useState<string | null>(null);
   const [showPipes, setShowPipes] = useState(false);
-  // Predicted pipes are sketched for Catalonia only to keep the whole-Spain view fast.
+  // Predicted pipes are sketched across the whole of Spain from the national plant and company data.
   const pipes = useMemo(() => {
     if (!showPipes) return [];
-    const inCat = (p: { lon: number; lat: number }) => p.lon > 0.15 && p.lon < 3.35 && p.lat > 40.5 && p.lat < 42.9;
-    return predictPipes((w.data?.features ?? []).filter(inCat), (c.data?.features ?? []).filter(inCat));
+    return predictPipes(w.data?.features ?? [], c.data?.features ?? []);
   }, [showPipes, w.data, c.data]);
 
   // Fly to whatever is selected, from the map, a list or search.
