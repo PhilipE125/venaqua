@@ -45,8 +45,8 @@ export type Plan = {
 
 // Two paid options only. The free map is a strip below the table, never a plan.
 export const PLANS: Plan[] = [
-  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 Case Rooms, exports, seats and alerts", "Team €12,000/yr: unlimited Case Rooms, 10 seats, company profile, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], status: "live", statusLabel: "Live", cta: "Start pilot" },
-  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "live", statusLabel: "Live", cta: "Talk to us" },
+  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 Case Rooms, exports, seats and alerts", "Team €12,000/yr: unlimited Case Rooms, 10 seats, company profile, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], statusLabel: "Live", cta: "Start pilot" },
+  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], statusLabel: "Live", cta: "Talk to us" },
 ];
 
 export const ENQUIRIES: Record<EnquiryTopic, { title: string; description: string; placeholder: string }> = {
@@ -77,17 +77,17 @@ export const PRICING_STORY = {
 export type Module = { name: string; text: string; status: ModuleStatus; pillar: Pillar };
 
 export const MODULES: Module[] = [
-  { name: "Searchable Spain and Catalonia map", text: "Plants, industrial users and stress layers on one map.", status: "live", pillar: "source" },
-  { name: "Treatment and water recycling plants", text: "Capacity, treatment level and reported reuse.", status: "live", pillar: "source" },
-  { name: "Company and demand signals", text: "Industrial facilities with estimated water demand.", status: "live", pillar: "source" },
-  { name: "Water-stress layer", text: "Reservoir fill and drought signals.", status: "live", pillar: "risk" },
-  { name: "Transparent evidence labels", text: "Each figure is labelled measured, modelled or estimated, with its source.", status: "live", pillar: "source" },
-  { name: "Opportunity analysis", text: "Indicative economics and cost scenarios per site.", status: "live", pillar: "risk" },
-  { name: "Project workspace", text: "Private pipeline with stages, owners and evidence.", status: "live", pillar: "source" },
-  { name: "Feasibility brief export", text: "Indicative brief, clearly not engineer-reviewed.", status: "live", pillar: "proof" },
-  { name: "Private data layers and API", text: "Your own asset and demand data in the workspace.", status: "live", pillar: "source" },
-  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", status: "live", pillar: "risk" },
-  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", status: "live", pillar: "proof" },
+  { name: "Searchable Spain and Catalonia map", text: "Plants, industrial users and stress layers on one map.", pillar: "source" },
+  { name: "Treatment and water recycling plants", text: "Capacity, treatment level and reported reuse.", pillar: "source" },
+  { name: "Company and demand signals", text: "Industrial facilities with estimated water demand.", pillar: "source" },
+  { name: "Water-stress layer", text: "Reservoir fill and drought signals.", pillar: "risk" },
+  { name: "Transparent evidence labels", text: "Each figure is labelled measured, modelled or estimated, with its source.", pillar: "source" },
+  { name: "Opportunity analysis", text: "Indicative economics and cost scenarios per site.", pillar: "risk" },
+  { name: "Project workspace", text: "Private pipeline with stages, owners and evidence.", pillar: "source" },
+  { name: "Feasibility brief export", text: "Indicative brief, clearly not engineer-reviewed.", pillar: "proof" },
+  { name: "Private data layers and API", text: "Your own asset and demand data in the workspace.", pillar: "source" },
+  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", pillar: "risk" },
+  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", pillar: "proof" },
 ];
 
 export type Fact = { id: string; value: string; label: string; source: string; year?: string; url?: string; estimate?: boolean };
@@ -137,9 +137,9 @@ export const VISION = {
   impact: "We measure how many m³ of freshwater are replaced by reused water. We count only additional, permitted reuse backed by meter data.",
   tagline: "Map, price and verify every industrial m³.",
   questions: [
-    { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", status: "live" as ModuleStatus, note: "Live today" },
-    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", status: "live" as ModuleStatus, note: "Live today for lenders and insurers" },
-    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", status: "live" as ModuleStatus, note: "Live today: Verified Water Ledger" },
+    { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", note: "Live today" },
+    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", note: "Live today for lenders and insurers" },
+    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", note: "Live today: Verified Water Ledger" },
   ],
 };
 
@@ -173,10 +173,10 @@ export const LANDSCAPE_POSITION = {
 
 // Why the product gets harder to copy over time.
 export const MOAT = [
-  { title: "Confirmed site data", text: "Every customer who confirms a demand figure or adds a private site makes the next screening better. That data never exists in public viewers or analyst reports.", status: "live" as ModuleStatus },
-  { title: "A record of how deals actually move", text: "Each tracked deal keeps its history from first signal to tender: which permits took how long, which funding was used, what stalled. That history is what turns screening into forecasting.", status: "live" as ModuleStatus },
-  { title: "The neutral position", text: "Utilities can't be neutral about their own plants; consultancies are paid per project. A flat-price screen every party trusts is a position, not a feature, and it compounds with every party that joins.", status: "live" as ModuleStatus },
-  { title: "Verified m³ replaced", text: "Meter-backed records show how much freshwater has been replaced, so auditors and lenders can check the savings.", status: "live" as ModuleStatus },
+  { title: "Confirmed site data", text: "Every customer who confirms a demand figure or adds a private site makes the next screening better. That data never exists in public viewers or analyst reports." },
+  { title: "A record of how deals actually move", text: "Each tracked deal keeps its history from first signal to tender: which permits took how long, which funding was used, what stalled. That history is what turns screening into forecasting." },
+  { title: "The neutral position", text: "Utilities can't be neutral about their own plants; consultancies are paid per project. A flat-price screen every party trusts is a position, not a feature, and it compounds with every party that joins." },
+  { title: "Verified m³ replaced", text: "Meter-backed records show how much freshwater has been replaced, so auditors and lenders can check the savings." },
 ];
 
 // Working with incumbents rather than against them.
