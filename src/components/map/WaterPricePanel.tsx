@@ -11,21 +11,23 @@ import { useWorkspace } from "@/lib/workspace";
 
 const money = (v: number) => new Intl.NumberFormat("en", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(v);
 const fields = [
-  { key: "dailyDemand", label: "Water demand · m³/day", initial: "1000", max: 100000000, step: "1" },
+  { key: "dailyDemand", label: "Water demand · m³/day", initial: "50000", max: 100000000, step: "1" },
   { key: "restrictionDays", label: "Restriction days per event", initial: "90", max: 365, step: "1" },
-  { key: "lossPerM3", label: "Lost contribution · €/unmet m³", initial: "10", max: 1000000, step: "0.1" },
+  { key: "lossPerM3", label: "Lost contribution · €/unmet m³", initial: "50", max: 1000000, step: "0.1" },
   { key: "backupPercent", label: "Restricted volume covered by backup · %", initial: "40", max: 100, step: "1" },
   { key: "backupPremium", label: "Extra backup cost · €/m³", initial: "3", max: 1000000, step: "0.1" },
-  { key: "responseCost", label: "One-off response cost · €/event", initial: "2000", max: 1000000000, step: "100" },
+  { key: "responseCost", label: "One-off response cost · €/event", initial: "250000", max: 1000000000, step: "100" },
   { key: "protectedPercent", label: "Demand on independent supply · %", initial: "0", max: 100, step: "1" },
 ] as const;
 type FieldKey = typeof fields[number]["key"];
 const defaults = Object.fromEntries(fields.map((f) => [f.key, f.initial])) as Record<FieldKey, string>;
 const investmentFields = [
-  { key: "reusePercent", label: "Additional demand protected by reuse · %", initial: "50", max: 100, step: "1" },
-  { key: "capital", label: "Installed investment · €", initial: "250000", max: 1000000000, step: "1000" },
-  { key: "operating", label: "Incremental annual running cost · €", initial: "15000", max: 1000000000, step: "100" },
+  { key: "reusePercent", label: "Additional demand protected by reuse · %", initial: "60", max: 100, step: "1" },
+  { key: "capital", label: "Installed investment · €", initial: "8000000", max: 1000000000, step: "1000" },
+  { key: "operating", label: "Incremental annual running cost · €", initial: "600000", max: 1000000000, step: "100" },
   { key: "frequency", label: "Assumed restriction events per year", initial: "0.5", max: 1, step: "0.1" },
+  { key: "waterSales", label: "Annual sales of cleaned water to neighbours · €", initial: "1500000", max: 1000000000, step: "1000" },
+  { key: "energySales", label: "Annual energy sales to neighbours · €", initial: "2500000", max: 1000000000, step: "1000" },
 ] as const;
 type InvestmentKey = typeof investmentFields[number]["key"];
 
@@ -48,7 +50,7 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
   const event = valid ? droughtEventCost(inputs, 0.25) : null;
   const investmentValid = investmentFields.every(f => investment[f.key].trim() !== "" && Number.isFinite(Number(investment[f.key])) && Number(investment[f.key]) >= 0 && Number(investment[f.key]) <= f.max);
   const scenario = DROUGHT_COST_SCENARIOS.find(s => s.id === scenarioId) ?? DROUGHT_COST_SCENARIOS[1];
-  const project = { additionalProtectedShare: Number(investment.reusePercent) / 100, capitalCost: Number(investment.capital), annualOperatingCost: Number(investment.operating), eventsPerYear: Number(investment.frequency), years: 10 };
+  const project = { additionalProtectedShare: Number(investment.reusePercent) / 100, capitalCost: Number(investment.capital), annualOperatingCost: Number(investment.operating), eventsPerYear: Number(investment.frequency), years: 10, annualWaterSales: Number(investment.waterSales), annualEnergySales: Number(investment.energySales) };
   const comparison = valid && investmentValid ? reuseInvestmentCase(inputs, scenario.cut, restrictionDaysAt(inputs.restrictionDays, scenario.durationGrowth, ahead), project) : null;
   const comparisonRows = comparison ? [{ name: "Without additional reuse", cost: comparison.baseline.total }, { name: "With additional reuse", cost: comparison.withReuse.total }] : [];
 
@@ -95,8 +97,9 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
             <p className="mb-3 text-[11px] text-muted-foreground">{scenario.cut * 100}% cut · {Math.round(restrictionDaysAt(inputs.restrictionDays, scenario.durationGrowth, ahead))} days · event in {year}</p>
             <div className="grid gap-4 sm:grid-cols-3" aria-live="polite">
               <div><p className="text-[11px] text-muted-foreground">Potential avoided cost / event</p><p className="mt-1 text-2xl font-semibold text-primary tnum">{money(comparison.avoidedPerEvent)}</p><p className="mt-1 text-[11px] text-muted-foreground">{Math.round(comparison.protectedVolume).toLocaleString("en")} m³ of restriction shortfall avoided</p></div>
-              <div><p className="text-[11px] text-muted-foreground">Net annual resilience benefit</p><p className="mt-1 text-2xl font-semibold tnum">{money(comparison.annualNet)}</p><p className="mt-1 text-[11px] text-muted-foreground">After running costs, before financing</p></div>
-              <div><p className="text-[11px] text-muted-foreground">Simple payback from resilience alone</p><p className="mt-1 text-2xl font-semibold tnum">{comparison.simplePayback === null ? "Not reached" : `${comparison.simplePayback.toFixed(1)} years`}</p><p className="mt-1 text-[11px] text-muted-foreground">Not a guaranteed return</p></div>
+              <div><p className="text-[11px] text-muted-foreground">Annual sales to neighbours</p><p className="mt-1 text-2xl font-semibold tnum">{money(comparison.annualRevenue)}</p><p className="mt-1 text-[11px] text-muted-foreground">Cleaned water + energy · your assumption</p></div>
+              <div><p className="text-[11px] text-muted-foreground">Net annual benefit incl. sales</p><p className="mt-1 text-2xl font-semibold tnum">{money(comparison.annualNet)}</p><p className="mt-1 text-[11px] text-muted-foreground">After running costs, before financing</p></div>
+              <div><p className="text-[11px] text-muted-foreground">Simple payback</p><p className="mt-1 text-2xl font-semibold tnum">{comparison.simplePayback === null ? "Not reached" : `${comparison.simplePayback.toFixed(1)} years`}</p><p className="mt-1 text-[11px] text-muted-foreground">Not a guaranteed return</p></div>
             </div>
             <div className="mt-4 space-y-3" aria-label="Drought event cost with and without reuse">
               {comparisonRows.map((row, index) => <div key={row.name}><div className="mb-1 flex justify-between gap-3 text-xs"><span>{row.name}</span><span className="font-medium tnum">{money(row.cost)}</span></div><div className="h-3 overflow-hidden rounded-sm bg-muted"><svg width="100%" height="12" aria-hidden="true"><rect width={`${comparison.baseline.total > 0 ? row.cost / comparison.baseline.total * 100 : 0}%`} height="12" fill={index === 0 ? "var(--chart-3)" : "var(--primary)"} /></svg></div></div>)}

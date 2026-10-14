@@ -63,3 +63,17 @@ describe("reuse investment resilience screening", () => {
     expect(() => reuseInvestmentCase(inputs, 0.25, 90, { ...project, additionalProtectedShare: 1.1 })).toThrow(RangeError);
   });
 });
+describe("reuseInvestmentCase with neighbour sales", () => {
+  const inputs: DroughtCostInputs = { dailyDemand: 50000, restrictionDays: 90, lossPerM3: 50, backupShare: 0.4, backupPremium: 3, responseCost: 250000, protectedShare: 0 };
+  it("adds water and energy sales to the annual net benefit", () => {
+    const base = reuseInvestmentCase(inputs, 0.25, 90, { additionalProtectedShare: 0.6, capitalCost: 8000000, annualOperatingCost: 600000, eventsPerYear: 0.5, years: 10 });
+    const withSales = reuseInvestmentCase(inputs, 0.25, 90, { additionalProtectedShare: 0.6, capitalCost: 8000000, annualOperatingCost: 600000, eventsPerYear: 0.5, years: 10, annualWaterSales: 1500000, annualEnergySales: 2500000 });
+    expect(withSales.annualRevenue).toBe(4000000);
+    expect(withSales.annualNet).toBeCloseTo(base.annualNet + 4000000);
+    expect(withSales.netOverPeriod).toBeCloseTo(base.netOverPeriod + 40000000);
+    expect(withSales.simplePayback!).toBeLessThan(base.simplePayback!);
+  });
+  it("rejects negative sales figures", () => {
+    expect(() => reuseInvestmentCase(inputs, 0.25, 90, { additionalProtectedShare: 0.6, capitalCost: 8000000, annualOperatingCost: 600000, eventsPerYear: 0.5, years: 10, annualWaterSales: -1 })).toThrow(RangeError);
+  });
+});
