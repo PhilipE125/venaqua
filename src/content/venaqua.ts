@@ -1,7 +1,6 @@
 // Single source of truth for Venaqua marketing content.
 // Pricing, Platform and the homepage must read from here so they never contradict each other.
 
-export type ModuleStatus = "live" | "beta" | "on-request";
 export type Pillar = "source" | "risk" | "proof";
 
 export type EnquiryTopic = "deal_flow_pro" | "deal_flow_team" | "investment_case" | "data_export" | "data_api";
@@ -15,8 +14,6 @@ export type OfferTier = {
   chip?: string;
   detail: string;
   includes: string[];
-  status: ModuleStatus;
-  statusLabel: string;
   cta: string;
 };
 
@@ -38,15 +35,13 @@ export type Plan = {
   listPrice?: string;
   priceNote: string;
   includes: string[];
-  status: ModuleStatus;
-  statusLabel: string;
   cta: "Start pilot" | "Talk to us";
 };
 
 // Two paid options only. The free map is a strip below the table, never a plan.
 export const PLANS: Plan[] = [
-  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 Case Rooms, exports, seats and alerts", "Team €12,000/yr: unlimited Case Rooms, 10 seats, company profile, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], statusLabel: "Live", cta: "Start pilot" },
-  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], statusLabel: "Live", cta: "Talk to us" },
+  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 Case Rooms, exports, seats and alerts", "Team €12,000/yr: unlimited Case Rooms, 10 seats, company profile, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], cta: "Start pilot" },
+  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], cta: "Talk to us" },
 ];
 
 export const ENQUIRIES: Record<EnquiryTopic, { title: string; description: string; placeholder: string }> = {
@@ -74,7 +69,7 @@ export const PRICING_STORY = {
   ],
 };
 
-export type Module = { name: string; text: string; status: ModuleStatus; pillar: Pillar };
+export type Module = { name: string; text: string; pillar: Pillar };
 
 export const MODULES: Module[] = [
   { name: "Searchable Spain and Catalonia map", text: "Plants, industrial users and stress layers on one map.", pillar: "source" },
