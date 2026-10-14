@@ -46,7 +46,7 @@ export function PublicHeader() {
     },
     pricing: {
       title: "Pricing",
-      body: "The map is free. Paid plans add full economics, private project pipelines and feasibility briefs for teams.",
+      body: "Free map · Deal Flow from €2,900/yr · Data from €6,000/yr. Flat prices, no success fees.",
       actions: <Button asChild size="sm"><Link to="/pricing" onClick={close}>See plans</Link></Button>,
     },
     resources: {

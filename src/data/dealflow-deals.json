@@ -1,0 +1,1347 @@
+{
+ "generated": "2026-10-14",
+ "weights": {
+  "reuse_impact": 0.25,
+  "offtaker": 0.2,
+  "funding": 0.15,
+  "timing": 0.15,
+  "margin": 0.15,
+  "water_stress": 0.1
+ },
+ "deals": [
+  {
+   "id": "ES-005",
+   "name": "Guadalhorce tertiary phase 2 (+15 hm³/yr)",
+   "kind": "project",
+   "stage": "planning",
+   "region": "Andalucía",
+   "province": "Málaga",
+   "municipality": "Málaga",
+   "lat": 36.67,
+   "lng": -4.47,
+   "location_precision": "site",
+   "scope": [
+    "tertiary_upgrade",
+    "regeneration_plant"
+   ],
+   "offtaker_sectors": [
+    "agriculture",
+    "municipal_green"
+   ],
+   "buyer": "Junta de Andalucía",
+   "offtakers": "Agriculture, environment, supply",
+   "deal_model": "EPC + O&M",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": 15.0,
+   "volume_basis": "source",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Diario de Huelva",
+     "url": "https://www.diariodehuelva.es/politica/moreno/20241118130548321950.html"
+    }
+   ],
+   "notes": "Flagship of the Andalusian regenerated-water strategy",
+   "score_reuse_impact": 5,
+   "score_offtaker": 4,
+   "score_funding": 4,
+   "score_timing": 3,
+   "score_margin": 4,
+   "score_water_stress": 5,
+   "nuts3": "ES617",
+   "value_band": "unknown",
+   "opportunity_score": 84.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": 15.0,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-006",
+   "name": "Costa del Sol reuse expansion (Acosol, 7 plants)",
+   "kind": "project",
+   "stage": "planning",
+   "region": "Andalucía",
+   "province": "Málaga",
+   "municipality": "Marbella / Estepona / Mijas / Fuengirola / Benalmádena / Manilva",
+   "lat": 36.51,
+   "lng": -4.88,
+   "location_precision": "multi",
+   "scope": [
+    "reuse_network",
+    "tertiary_upgrade"
+   ],
+   "offtaker_sectors": [
+    "golf_tourism",
+    "municipal_green",
+    "indirect_potable"
+   ],
+   "buyer": "Acosol",
+   "offtakers": "Golf, hotels, municipal irrigation; indirect potable study",
+   "deal_model": "EPC + network concession",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": 44.7,
+   "volume_basis": "derived",
+   "deadline": null,
+   "follow_on_expected": true,
+   "verification_status": "verified",
+   "sources": [
+    {
+     "label": "Área Costa del Sol",
+     "url": "https://www.areacostadelsol.com/benalmadena/acosol-impulsa-un-plan-para-aumentar-el-uso-de-agua-regenerada-en-la-costa-del-sol/"
+    }
+   ],
+   "notes": "Only 12.39% of 51 hm³ treated in 2024 reused; strategic plan contract (€38,115) due 30 May 2026 → action plan and works should follow. Volume = unreused share",
+   "score_reuse_impact": 5,
+   "score_offtaker": 4,
+   "score_funding": 3,
+   "score_timing": 3,
+   "score_margin": 5,
+   "score_water_stress": 5,
+   "nuts3": "ES617",
+   "value_band": "unknown",
+   "opportunity_score": 84.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": 44.7,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-010",
+   "name": "AITASA Tarragona regeneration expansion (6 → 9 hm³/yr)",
+   "kind": "project",
+   "stage": "in_execution",
+   "region": "Cataluña",
+   "province": "Tarragona",
+   "municipality": "Tarragona / Vila-seca",
+   "lat": 41.11,
+   "lng": 1.21,
+   "location_precision": "site",
+   "scope": [
+    "regeneration_plant",
+    "industrial_supply"
+   ],
+   "offtaker_sectors": [
+    "industry_chemical"
+   ],
+   "buyer": "AITASA / ACA",
+   "offtakers": "~24 industrial shareholders incl. BASF, Covestro, DuPont, Repsol, Shell, Ercros",
+   "deal_model": "Private industrial utility",
+   "value_eur": 10000000,
+   "value_basis": "investment_announced",
+   "volume_hm3": 3.0,
+   "volume_basis": "source",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "verified",
+   "sources": [
+    {
+     "label": "El Nacional",
+     "url": "https://www.elnacional.cat/oneconomia/es/empresas/aitasa-amplia-planta-regeneracion-agua-industria-quimica-tarragona_1636594_102.html"
+    }
+   ],
+   "notes": "Reclaimed water = 18–19% of AITASA supply; path to 40%; 12.6 hm³ supplied in 2024",
+   "score_reuse_impact": 4,
+   "score_offtaker": 5,
+   "score_funding": 4,
+   "score_timing": 4,
+   "score_margin": 4,
+   "score_water_stress": 4,
+   "nuts3": "ES514",
+   "value_band": "10-50M",
+   "opportunity_score": 84.0,
+   "is_actionable": false,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": 3.0,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-009",
+   "name": "Huelva chemical pole – industrial regeneration plant (greenfield)",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Andalucía",
+   "province": "Huelva",
+   "municipality": "Huelva / Palos de la Frontera",
+   "lat": 37.21,
+   "lng": -6.93,
+   "location_precision": "municipality",
+   "scope": [
+    "regeneration_plant",
+    "industrial_supply"
+   ],
+   "offtaker_sectors": [
+    "industry_chemical",
+    "hydrogen"
+   ],
+   "buyer": "Private SPV + Junta (to form)",
+   "offtakers": "Moeve, Atlantic Copper, Fertiberia, hydrogen valley",
+   "deal_model": "Water-as-a-service / take-or-pay",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Huelva24",
+     "url": "https://www.huelva24.com/huelva/junta-adjudica-obras-adecuacion-depuradora-huelva-326-20251028173316-nth.html"
+    }
+   ],
+   "notes": "Venaqua thesis: upgraded effluent next to large industrial buyers; hydrogen needs demineralised water",
+   "score_reuse_impact": 4,
+   "score_offtaker": 5,
+   "score_funding": 3,
+   "score_timing": 3,
+   "score_margin": 5,
+   "score_water_stress": 4,
+   "nuts3": "ES615",
+   "value_band": "unknown",
+   "opportunity_score": 81.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-017",
+   "name": "New Sagunto EDAR with tertiary (PowerCo area)",
+   "kind": "tender",
+   "stage": "in_execution",
+   "region": "Comunitat Valenciana",
+   "province": "Valencia",
+   "municipality": "Sagunto",
+   "lat": 39.68,
+   "lng": -0.27,
+   "location_precision": "site",
+   "scope": [
+    "plant_expansion",
+    "tertiary_upgrade"
+   ],
+   "offtaker_sectors": [
+    "industry_manufacturing",
+    "agriculture"
+   ],
+   "buyer": "EPSAR",
+   "offtakers": "PowerCo gigafactory, agriculture",
+   "deal_model": "EPC",
+   "value_eur": 60840090,
+   "value_basis": "tender_budget",
+   "volume_hm3": 10.95,
+   "volume_basis": "capacity_derived",
+   "deadline": null,
+   "follow_on_expected": true,
+   "verification_status": "verified",
+   "sources": [
+    {
+     "label": "Valencia Plaza",
+     "url": "https://valenciaplaza.com/el-consell-da-luz-verde-a-la-nueva-depuradora-para-powerco-y-el-entorno-de-sagunt-por-60-millones"
+    },
+    {
+     "label": "El Periòdic",
+     "url": "https://www.elperiodic.com/sagunto/salome-pradas-nueva-estacion-depuradora-aguas-residuales-edar-sagunt-sera-capaz-reciclar-30000-metros-cubicos-agua_957783"
+    }
+   ],
+   "notes": "€60.84M authorised Oct 2024, 25 months; 30,000 m³/day first phase, all water reusable after tertiary; volume = capacity, not contracted reuse; contractor not verified",
+   "score_reuse_impact": 4,
+   "score_offtaker": 5,
+   "score_funding": 5,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES523",
+   "value_band": ">50M",
+   "opportunity_score": 81.0,
+   "is_actionable": true,
+   "access_tier": "free",
+   "freshwater_displaced_hm3": 10.95,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-021",
+   "name": "Aragón data-centre campuses – reclaimed cooling water",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Aragón",
+   "province": "Zaragoza",
+   "municipality": "Zaragoza area",
+   "lat": 41.65,
+   "lng": -0.88,
+   "location_precision": "province",
+   "scope": [
+    "industrial_supply",
+    "reuse_network"
+   ],
+   "offtaker_sectors": [
+    "data_centre"
+   ],
+   "buyer": "Instituto Aragonés del Agua / utilities + hyperscalers",
+   "offtakers": "Data-centre developers",
+   "deal_model": "BOO supply contract",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": 14.1,
+   "volume_basis": "scenario",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "elEconomista",
+     "url": "https://www.eleconomista.es/infraestructuras-servicios/noticias/14020571/10/26/el-80-de-los-data-center-estara-en-cuencas-con-estres-hidrico-en-2030.html"
+    }
+   ],
+   "notes": "Volume = high-demand scenario for data centres in the Ebro basin, not a contract",
+   "score_reuse_impact": 4,
+   "score_offtaker": 5,
+   "score_funding": 3,
+   "score_timing": 4,
+   "score_margin": 4,
+   "score_water_stress": 4,
+   "nuts3": "ES243",
+   "value_band": "unknown",
+   "opportunity_score": 81.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": 14.1,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-013",
+   "name": "Gavà regeneration plant (350 l/s)",
+   "kind": "project",
+   "stage": "in_execution",
+   "region": "Cataluña",
+   "province": "Barcelona",
+   "municipality": "Gavà",
+   "lat": 41.3,
+   "lng": 2.0,
+   "location_precision": "site",
+   "scope": [
+    "regeneration_plant"
+   ],
+   "offtaker_sectors": [
+    "aquifer_recharge",
+    "municipal_green"
+   ],
+   "buyer": "ACA",
+   "offtakers": "Supply / aquifer",
+   "deal_model": "EPC",
+   "value_eur": 20000000,
+   "value_basis": "investment_announced",
+   "volume_hm3": 11.0,
+   "volume_basis": "derived",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Crónica Global",
+     "url": "https://cronicaglobal.elespanol.com/vida/20250323/del-pantano-sau-cadaques-infraestructuras-fortaleceran-cataluna/933156728_0.html"
+    }
+   ],
+   "notes": "Volume derived from 350 l/s",
+   "score_reuse_impact": 4,
+   "score_offtaker": 4,
+   "score_funding": 5,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 5,
+   "nuts3": "ES511",
+   "value_band": "10-50M",
+   "opportunity_score": 79.0,
+   "is_actionable": false,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": 11.0,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-011",
+   "name": "Tarragona phase III + internal effluent recirculation",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Cataluña",
+   "province": "Tarragona",
+   "municipality": "Tarragona",
+   "lat": 41.11,
+   "lng": 1.21,
+   "location_precision": "municipality",
+   "scope": [
+    "regeneration_plant",
+    "industrial_supply"
+   ],
+   "offtaker_sectors": [
+    "industry_chemical"
+   ],
+   "buyer": "AITASA / AEQT",
+   "offtakers": "Chemical pole",
+   "deal_model": "EPC / BOO",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "RETEMA",
+     "url": "https://www.retema.es/articulos-reportajes/gestion-del-agua-en-la-industria-quimica-de-tarragona"
+    }
+   ],
+   "notes": "Large users still mostly on river water; next step after phase II",
+   "score_reuse_impact": 4,
+   "score_offtaker": 5,
+   "score_funding": 3,
+   "score_timing": 3,
+   "score_margin": 4,
+   "score_water_stress": 4,
+   "nuts3": "ES514",
+   "value_band": "unknown",
+   "opportunity_score": 78.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-012",
+   "name": "Barcelona Besòs regeneration plant (indirect potable, Llobregat model)",
+   "kind": "project",
+   "stage": "planning",
+   "region": "Cataluña",
+   "province": "Barcelona",
+   "municipality": "Sant Adrià de Besòs",
+   "lat": 41.41,
+   "lng": 2.23,
+   "location_precision": "site",
+   "scope": [
+    "regeneration_plant",
+    "tertiary_upgrade"
+   ],
+   "offtaker_sectors": [
+    "indirect_potable",
+    "industry_manufacturing",
+    "agriculture"
+   ],
+   "buyer": "Generalitat / ACA / AMB",
+   "offtakers": "Metropolitan supply, industry, agriculture",
+   "deal_model": "EPC mega-project",
+   "value_eur": 1500000000,
+   "value_basis": "estimate",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "verified",
+   "sources": [
+    {
+     "label": "Converses a Catalunya",
+     "url": "https://conversesacatalunya.cat/es/agua-regenerada-para-afrontar-la-sequia/"
+    }
+   ],
+   "notes": "Valued at ~€1.5bn (estimator not named); would add ~15% of current metro consumption; no timetable",
+   "score_reuse_impact": 5,
+   "score_offtaker": 5,
+   "score_funding": 2,
+   "score_timing": 1,
+   "score_margin": 4,
+   "score_water_stress": 5,
+   "nuts3": "ES511",
+   "value_band": ">50M",
+   "opportunity_score": 76.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-015",
+   "name": "EPSAR plan – 21 tertiary systems",
+   "kind": "programme",
+   "stage": "planning",
+   "region": "Comunitat Valenciana",
+   "province": "Valencia",
+   "municipality": "122 municipalities",
+   "lat": 39.47,
+   "lng": -0.38,
+   "location_precision": "multi",
+   "scope": [
+    "tertiary_upgrade"
+   ],
+   "offtaker_sectors": [
+    "agriculture",
+    "municipal_green"
+   ],
+   "buyer": "EPSAR",
+   "offtakers": "Agriculture, municipal",
+   "deal_model": "EPC + O&M",
+   "value_eur": 665000000,
+   "value_basis": "plan_total",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Generalitat Valenciana",
+     "url": "https://comunica.gva.es/es/detalle?id=401338888&site=373428693"
+    }
+   ],
+   "notes": "€665M four-year plan in 122 municipalities (whole plan, not only reuse); 21 tertiary systems",
+   "score_reuse_impact": 4,
+   "score_offtaker": 3,
+   "score_funding": 5,
+   "score_timing": 4,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES523",
+   "value_band": ">50M",
+   "opportunity_score": 76.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-018",
+   "name": "PowerCo Sagunto reuse plant (6,240 m³/day)",
+   "kind": "project",
+   "stage": "in_execution",
+   "region": "Comunitat Valenciana",
+   "province": "Valencia",
+   "municipality": "Sagunto",
+   "lat": 39.66,
+   "lng": -0.24,
+   "location_precision": "site",
+   "scope": [
+    "regeneration_plant",
+    "industrial_supply"
+   ],
+   "offtaker_sectors": [
+    "industry_manufacturing"
+   ],
+   "buyer": "PowerCo (VW)",
+   "offtakers": "Gigafactory cooling towers",
+   "deal_model": "Private EPC (Lantania)",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": 2.28,
+   "volume_basis": "capacity_derived",
+   "deadline": "2027-06-30",
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Lantania",
+     "url": "https://www.lantania.com/lantania-construira-una-planta-de-aguas-regeneradas-para-la-gigafactoria-de-powerco-en-sagunto/"
+    }
+   ],
+   "notes": "Template for other Parc Sagunt II tenants",
+   "score_reuse_impact": 3,
+   "score_offtaker": 5,
+   "score_funding": 5,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES523",
+   "value_band": "unknown",
+   "opportunity_score": 76.0,
+   "is_actionable": false,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": 2.28,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-022",
+   "name": "Madrid data-centre corridor – reclaimed water supply",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Comunidad de Madrid",
+   "province": "Madrid",
+   "municipality": "Alcalá / San Fernando / Getafe",
+   "lat": 40.42,
+   "lng": -3.55,
+   "location_precision": "province",
+   "scope": [
+    "industrial_supply",
+    "reuse_network"
+   ],
+   "offtaker_sectors": [
+    "data_centre"
+   ],
+   "buyer": "Canal de Isabel II + developers",
+   "offtakers": "Data-centre developers",
+   "deal_model": "BOO supply contract",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "RETEMA",
+     "url": "https://www.retema.es/articulos-reportajes/centros-de-datos-el-desafio-invisible-del-agua"
+    }
+   ],
+   "notes": "Tajo basin under structural stress",
+   "score_reuse_impact": 3,
+   "score_offtaker": 5,
+   "score_funding": 3,
+   "score_timing": 4,
+   "score_margin": 4,
+   "score_water_stress": 4,
+   "nuts3": "ES300",
+   "value_band": "unknown",
+   "opportunity_score": 76.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-007",
+   "name": "Andalusia strategy – Almería tertiaries (El Bobar, El Toyo, Vera, Mojácar, Huércal-Overa, Cuevas)",
+   "kind": "programme",
+   "stage": "planning",
+   "region": "Andalucía",
+   "province": "Almería",
+   "municipality": "Several",
+   "lat": 36.84,
+   "lng": -2.46,
+   "location_precision": "multi",
+   "scope": [
+    "tertiary_upgrade"
+   ],
+   "offtaker_sectors": [
+    "agriculture"
+   ],
+   "buyer": "Junta de Andalucía",
+   "offtakers": "Greenhouse agriculture",
+   "deal_model": "EPC + O&M",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Diario de Huelva",
+     "url": "https://www.diariodehuelva.es/politica/moreno/20241118130548321950.html"
+    }
+   ],
+   "notes": "Part of a >€400M strategy to 2027",
+   "score_reuse_impact": 4,
+   "score_offtaker": 3,
+   "score_funding": 4,
+   "score_timing": 4,
+   "score_margin": 3,
+   "score_water_stress": 5,
+   "nuts3": "ES611",
+   "value_band": "unknown",
+   "opportunity_score": 75.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-004",
+   "name": "Málaga Guadalhorce reuse network (EMASA) + airport UF line",
+   "kind": "tender",
+   "stage": "in_execution",
+   "region": "Andalucía",
+   "province": "Málaga",
+   "municipality": "Málaga / Torremolinos",
+   "lat": 36.67,
+   "lng": -4.47,
+   "location_precision": "municipality",
+   "scope": [
+    "reuse_network"
+   ],
+   "offtaker_sectors": [
+    "municipal_green",
+    "golf_tourism",
+    "airport"
+   ],
+   "buyer": "EMASA (Ayto. Málaga), Diputación, Ayto. Torremolinos",
+   "offtakers": "Parks, Parador golf, Málaga CF, Aena airport",
+   "deal_model": "EPC + follow-on branches",
+   "value_eur": 6562339,
+   "value_basis": "tender_budget",
+   "volume_hm3": 2.0,
+   "volume_basis": "source",
+   "deadline": null,
+   "follow_on_expected": true,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "EMASA",
+     "url": "https://www.emasa.es/los-ayuntamientos-de-malaga-y-torremolinos-y-la-diputacion-avanzan-en-la-creacion-de-una-red-de-aguas-regeneradas-para-el-riego-de-zonas-verdes-de-ambos-municipios/"
+    }
+   ],
+   "notes": "10.3 km of pipes and 2 pumping stations; 2,278 m ultrafiltered line to the airport; further branches pending",
+   "score_reuse_impact": 3,
+   "score_offtaker": 4,
+   "score_funding": 5,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 5,
+   "nuts3": "ES617",
+   "value_band": "1-10M",
+   "opportunity_score": 74.0,
+   "is_actionable": true,
+   "access_tier": "free",
+   "freshwater_displaced_hm3": 2.0,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-001",
+   "name": "EDAR Puerto del Rosario expansion + regeneration",
+   "kind": "tender",
+   "stage": "tender_open",
+   "region": "Canarias",
+   "province": "Fuerteventura",
+   "municipality": "Puerto del Rosario",
+   "lat": 28.5,
+   "lng": -13.86,
+   "location_precision": "municipality",
+   "scope": [
+    "plant_expansion",
+    "tertiary_upgrade"
+   ],
+   "offtaker_sectors": [
+    "agriculture",
+    "municipal_green"
+   ],
+   "buyer": "Gobierno de Canarias – DG Aguas",
+   "offtakers": "Primary sector irrigation, green areas",
+   "deal_model": "EPC works",
+   "value_eur": 14195881,
+   "value_basis": "tender_budget",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": "2026-11-09",
+   "follow_on_expected": false,
+   "verification_status": "verified",
+   "sources": [
+    {
+     "label": "Gobierno de Canarias",
+     "url": "https://www3.gobiernodecanarias.org/noticias/el-gobierno-de-canarias-licita-por-142-millones-de-euros-las-obras-de-ampliacion-de-la-edar-de-puerto-del-rosario/"
+    }
+   ],
+   "notes": "Open procedure on PLACSP; 20 months; capacity ~3,000 → 6,000 m³/day; part of the water regenerated for irrigation",
+   "score_reuse_impact": 3,
+   "score_offtaker": 2,
+   "score_funding": 5,
+   "score_timing": 5,
+   "score_margin": 3,
+   "score_water_stress": 5,
+   "nuts3": "ES704",
+   "value_band": "10-50M",
+   "opportunity_score": 72.0,
+   "is_actionable": true,
+   "access_tier": "free",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-014",
+   "name": "Catalonia new regeneration plants (La Garriga, Reus …)",
+   "kind": "programme",
+   "stage": "planning",
+   "region": "Cataluña",
+   "province": "Barcelona",
+   "municipality": "Several",
+   "lat": 41.68,
+   "lng": 1.95,
+   "location_precision": "multi",
+   "scope": [
+    "regeneration_plant"
+   ],
+   "offtaker_sectors": [
+    "agriculture",
+    "municipal_green",
+    "industry_manufacturing",
+    "aquifer_recharge"
+   ],
+   "buyer": "ACA",
+   "offtakers": "Agriculture, municipal, industry, recharge",
+   "deal_model": "EPC + O&M",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Catalunya Plural",
+     "url": "https://catalunyaplural.es/la-desalinizacion-y-regeneracion-salvan-al-area-metropolitana-de-las-restricciones-frente-a-la-sequia/"
+    }
+   ],
+   "notes": "Regeneration plants to grow from ~24 to ~40 within a larger drought-infrastructure plan",
+   "score_reuse_impact": 4,
+   "score_offtaker": 3,
+   "score_funding": 4,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 5,
+   "nuts3": "ES511",
+   "value_band": "unknown",
+   "opportunity_score": 72.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-024",
+   "name": "Canal de Isabel II – Arroyo Culebro industrial water + hydrogen",
+   "kind": "project",
+   "stage": "operating",
+   "region": "Comunidad de Madrid",
+   "province": "Madrid",
+   "municipality": "Pinto",
+   "lat": 40.24,
+   "lng": -3.7,
+   "location_precision": "site",
+   "scope": [
+    "industrial_supply"
+   ],
+   "offtaker_sectors": [
+    "industry_manufacturing",
+    "hydrogen"
+   ],
+   "buyer": "Canal de Isabel II",
+   "offtakers": "Paper mill, 1 MW hydrogen pilot, industry",
+   "deal_model": "Industrial supply contracts",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": 4.38,
+   "volume_basis": "capacity_derived",
+   "deadline": null,
+   "follow_on_expected": true,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Ecoticias",
+     "url": "https://www.ecoticias.com/hoyeco/espana-estrena-en-madrid-la-primera-fabrica-de-hidrogeno-verde-con-agua-regenerada-en-vez-de-potable-con-capacidad-para-producir-400-kilos-al-dia-los-mismos-que-recorrer-40-000-km-en-carretera/37586/"
+    }
+   ],
+   "notes": "12,000 m³/day premium-grade capacity; expandable to more users",
+   "score_reuse_impact": 3,
+   "score_offtaker": 4,
+   "score_funding": 4,
+   "score_timing": 4,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES300",
+   "value_band": "unknown",
+   "opportunity_score": 72.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": 4.38,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-016",
+   "name": "Elche EDAR full reform",
+   "kind": "project",
+   "stage": "planning",
+   "region": "Comunitat Valenciana",
+   "province": "Alicante",
+   "municipality": "Elche",
+   "lat": 38.27,
+   "lng": -0.7,
+   "location_precision": "site",
+   "scope": [
+    "tertiary_upgrade",
+    "plant_expansion"
+   ],
+   "offtaker_sectors": [
+    "agriculture"
+   ],
+   "buyer": "EPSAR",
+   "offtakers": "Agriculture",
+   "deal_model": "EPC",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Generalitat Valenciana",
+     "url": "https://comunica.gva.es/es/detalle?id=401338888&site=373428693"
+    }
+   ],
+   "notes": "Within the €665M plan",
+   "score_reuse_impact": 3,
+   "score_offtaker": 3,
+   "score_funding": 5,
+   "score_timing": 4,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES521",
+   "value_band": "unknown",
+   "opportunity_score": 71.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-019",
+   "name": "Parc Sagunt II – reuse supply for other industrial tenants",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Comunitat Valenciana",
+   "province": "Valencia",
+   "municipality": "Sagunto",
+   "lat": 39.66,
+   "lng": -0.24,
+   "location_precision": "municipality",
+   "scope": [
+    "industrial_supply",
+    "reuse_network"
+   ],
+   "offtaker_sectors": [
+    "industry_manufacturing"
+   ],
+   "buyer": "Private SPV / EPSAR",
+   "offtakers": "Industrial park tenants",
+   "deal_model": "BOO take-or-pay",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Lantania",
+     "url": "https://www.lantania.com/lantania-construira-una-planta-de-aguas-regeneradas-para-la-gigafactoria-de-powerco-en-sagunto/"
+    }
+   ],
+   "notes": "Venaqua thesis: new tertiary plant + existing reuse line next to a growing park",
+   "score_reuse_impact": 3,
+   "score_offtaker": 4,
+   "score_funding": 3,
+   "score_timing": 3,
+   "score_margin": 4,
+   "score_water_stress": 4,
+   "nuts3": "ES523",
+   "value_band": "unknown",
+   "opportunity_score": 69.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-027",
+   "name": "Guadalquivir basin reuse concessions (BOE notices)",
+   "kind": "market_signal",
+   "stage": "signal",
+   "region": "Andalucía",
+   "province": "Sevilla",
+   "municipality": "Several",
+   "lat": 37.39,
+   "lng": -5.98,
+   "location_precision": "multi",
+   "scope": [
+    "reuse_network",
+    "o_and_m"
+   ],
+   "offtaker_sectors": [
+    "agriculture"
+   ],
+   "buyer": "Concession applicants",
+   "offtakers": "Agriculture",
+   "deal_model": "Equipment / O&M",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "BOE",
+     "url": "https://www.boe.es/boe/dias/2026/09/15/pdfs/BOE-B-2026-29937.pdf"
+    }
+   ],
+   "notes": "Each concession notice signals a new reuse system",
+   "score_reuse_impact": 3,
+   "score_offtaker": 3,
+   "score_funding": 4,
+   "score_timing": 4,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES618",
+   "value_band": "unknown",
+   "opportunity_score": 68.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-008",
+   "name": "Huelva EDAR upgrade (city + chemical pole)",
+   "kind": "tender",
+   "stage": "in_execution",
+   "region": "Andalucía",
+   "province": "Huelva",
+   "municipality": "Huelva",
+   "lat": 37.25,
+   "lng": -6.95,
+   "location_precision": "site",
+   "scope": [
+    "plant_expansion"
+   ],
+   "offtaker_sectors": [
+    "industry_chemical"
+   ],
+   "buyer": "Junta de Andalucía",
+   "offtakers": "Treats city, business park and chemical-pole wastewater",
+   "deal_model": "EPC",
+   "value_eur": 32600000,
+   "value_basis": "award",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "verified",
+   "sources": [
+    {
+     "label": "Huelva24",
+     "url": "https://www.huelva24.com/huelva/junta-adjudica-obras-adecuacion-depuradora-huelva-326-20251028173316-nth.html"
+    }
+   ],
+   "notes": "Award >€32.6M: pumping, biological reactors, hydrolysis pretreatment, pipelines, cogeneration; 48,500 m³/day; source does not mention reuse",
+   "score_reuse_impact": 2,
+   "score_offtaker": 4,
+   "score_funding": 5,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES615",
+   "value_band": "10-50M",
+   "opportunity_score": 67.0,
+   "is_actionable": false,
+   "access_tier": "free",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-026",
+   "name": "RD 1085/2024 risk plans (PGRAR) and municipal reuse plans",
+   "kind": "market_signal",
+   "stage": "signal",
+   "region": "Multiple",
+   "province": "",
+   "municipality": "All",
+   "lat": 40.42,
+   "lng": -3.7,
+   "location_precision": "multi",
+   "scope": [
+    "consulting"
+   ],
+   "offtaker_sectors": [
+    "municipal_green",
+    "agriculture"
+   ],
+   "buyer": "Municipalities / concession holders",
+   "offtakers": "—",
+   "deal_model": "Consulting",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "MITECO",
+     "url": "https://www.miteco.gob.es/en/agua/temas/concesiones-y-autorizaciones/reutilizacion-aguas-depuradas.html"
+    }
+   ],
+   "notes": "Many small contracts; feeder to capex projects",
+   "score_reuse_impact": 2,
+   "score_offtaker": 3,
+   "score_funding": 4,
+   "score_timing": 5,
+   "score_margin": 4,
+   "score_water_stress": 3,
+   "nuts3": null,
+   "value_band": "unknown",
+   "opportunity_score": 67.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-020",
+   "name": "Cartagena Escombreras – reclaimed water for hydrogen and industry",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Región de Murcia",
+   "province": "Murcia",
+   "municipality": "Cartagena",
+   "lat": 37.56,
+   "lng": -0.95,
+   "location_precision": "municipality",
+   "scope": [
+    "industrial_supply"
+   ],
+   "offtaker_sectors": [
+    "hydrogen",
+    "industry_chemical"
+   ],
+   "buyer": "Private (Repsol and partners)",
+   "offtakers": "Repsol hydrogen project, valley industry",
+   "deal_model": "Backup / alternative supply",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Industria Química",
+     "url": "https://www.industriaquimica.es/noticias/20260716/-planta-hidrogeno-verde-repsol-en-cartagena-supera-examen-ambiental"
+    }
+   ],
+   "notes": "Planned supply is desalination; Murcia already reuses most effluent, so spare volume is limited",
+   "score_reuse_impact": 3,
+   "score_offtaker": 5,
+   "score_funding": 2,
+   "score_timing": 2,
+   "score_margin": 3,
+   "score_water_stress": 5,
+   "nuts3": "ES620",
+   "value_band": "unknown",
+   "opportunity_score": 66.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-023",
+   "name": "Talavera de la Reina – data-centre water",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Castilla-La Mancha",
+   "province": "Toledo",
+   "municipality": "Talavera de la Reina",
+   "lat": 39.96,
+   "lng": -4.83,
+   "location_precision": "municipality",
+   "scope": [
+    "industrial_supply"
+   ],
+   "offtaker_sectors": [
+    "data_centre"
+   ],
+   "buyer": "Municipal utility + developer",
+   "offtakers": "Data-centre developer",
+   "deal_model": "BOO supply contract",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "elEconomista",
+     "url": "https://www.eleconomista.es/infraestructuras-servicios/noticias/14020571/10/26/el-80-de-los-data-center-estara-en-cuencas-con-estres-hidrico-en-2030.html"
+    }
+   ],
+   "notes": "Small net demand; best as add-on buyer on a shared line",
+   "score_reuse_impact": 2,
+   "score_offtaker": 5,
+   "score_funding": 2,
+   "score_timing": 3,
+   "score_margin": 4,
+   "score_water_stress": 4,
+   "nuts3": "ES425",
+   "value_band": "unknown",
+   "opportunity_score": 65.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-025",
+   "name": "Aena airports in stressed areas – ultrafiltered water lines (replicate Málaga)",
+   "kind": "private_opportunity",
+   "stage": "signal",
+   "region": "Multiple",
+   "province": "",
+   "municipality": "Alicante / Palma / Ibiza / Canarias",
+   "lat": 38.28,
+   "lng": -0.56,
+   "location_precision": "multi",
+   "scope": [
+    "reuse_network"
+   ],
+   "offtaker_sectors": [
+    "airport"
+   ],
+   "buyer": "Aena + local utilities",
+   "offtakers": "Airports",
+   "deal_model": "EPC / supply",
+   "value_eur": null,
+   "value_basis": "unknown",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "EMASA",
+     "url": "https://www.emasa.es/los-ayuntamientos-de-malaga-y-torremolinos-y-la-diputacion-avanzan-en-la-creacion-de-una-red-de-aguas-regeneradas-para-el-riego-de-zonas-verdes-de-ambos-municipios/"
+    }
+   ],
+   "notes": "Venaqua thesis based on the Málaga airport line",
+   "score_reuse_impact": 2,
+   "score_offtaker": 4,
+   "score_funding": 3,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": null,
+   "value_band": "unknown",
+   "opportunity_score": 61.0,
+   "is_actionable": true,
+   "access_tier": "deal_flow",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-003",
+   "name": "Artà EDAR upgrade – project drafting (reuse-ready)",
+   "kind": "tender",
+   "stage": "awarded",
+   "region": "Illes Balears",
+   "province": "Mallorca",
+   "municipality": "Artà",
+   "lat": 39.69,
+   "lng": 3.35,
+   "location_precision": "municipality",
+   "scope": [
+    "engineering_study",
+    "tertiary_upgrade"
+   ],
+   "offtaker_sectors": [
+    "environmental"
+   ],
+   "buyer": "ABAQUA",
+   "offtakers": "Environmental uses",
+   "deal_model": "Engineering → works tender later",
+   "value_eur": 140360,
+   "value_basis": "tender_budget",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": true,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Mallorca Informa",
+     "url": "https://mallorcainforma.com/2026/07/15/licitan-la-redaccion-del-proyecto-de-mejora-de-la-depuradora-de-arta-por-140-360-euros/"
+    }
+   ],
+   "notes": "Design contract; the works tender should follow",
+   "score_reuse_impact": 2,
+   "score_offtaker": 2,
+   "score_funding": 4,
+   "score_timing": 3,
+   "score_margin": 3,
+   "score_water_stress": 4,
+   "nuts3": "ES532",
+   "value_band": "<1M",
+   "opportunity_score": 56.0,
+   "is_actionable": true,
+   "access_tier": "free",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  },
+  {
+   "id": "ES-002",
+   "name": "Cheles EDAR reuse pilot (SOLLAGUA wetlands)",
+   "kind": "tender",
+   "stage": "awarded",
+   "region": "Extremadura",
+   "province": "Badajoz",
+   "municipality": "Cheles",
+   "lat": 38.51,
+   "lng": -7.28,
+   "location_precision": "municipality",
+   "scope": [
+    "reuse_network"
+   ],
+   "offtaker_sectors": [
+    "municipal_green",
+    "environmental"
+   ],
+   "buyer": "Promedio – Diputación de Badajoz",
+   "offtakers": "Pilot garden irrigation",
+   "deal_model": "Small works",
+   "value_eur": 99999,
+   "value_basis": "tender_budget",
+   "volume_hm3": null,
+   "volume_basis": "unknown",
+   "deadline": null,
+   "follow_on_expected": false,
+   "verification_status": "source_linked",
+   "sources": [
+    {
+     "label": "Diputación de Badajoz",
+     "url": "https://www.dip-badajoz.es/agenda/index.php?id=3&agenda=24580"
+    }
+   ],
+   "notes": "Interreg SUDOE demo; template for small rural reuse",
+   "score_reuse_impact": 1,
+   "score_offtaker": 1,
+   "score_funding": 5,
+   "score_timing": 3,
+   "score_margin": 1,
+   "score_water_stress": 3,
+   "nuts3": "ES431",
+   "value_band": "<1M",
+   "opportunity_score": 42.0,
+   "is_actionable": false,
+   "access_tier": "free",
+   "freshwater_displaced_hm3": null,
+   "last_verified": "2026-10-14"
+  }
+ ]
+}
