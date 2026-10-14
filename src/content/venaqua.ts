@@ -61,17 +61,17 @@ export const ENQUIRIES: Record<EnquiryTopic, { title: string; description: strin
 
 export const PRICING_STORY = {
   title: "Pricing",
-  description: "Use Deal Flow to develop reuse projects, or bring our data into your own tools. Flat prices, no success fees.",
-  small: "EUR, excluding VAT. All prices are under Spain's €15,000 minor-contract limit, so public bodies can buy directly.",
-  free: "Free: the reuse map, plant pages and the list of public reuse tenders. No account needed.",
+  description: "Investment cases, early signals and tenders for water reuse in Spain, or our data in your own tools. Flat prices in EUR, excluding VAT.",
+  small: "No success fees or commissions. All prices are under €15,000, so public bodies can buy directly.",
+  free: "Free: the reuse map and teaser lists. No account needed.",
   summary: "Free map · Deal Flow from €2,900/yr · Data from €6,000/yr",
   which: [
-    { want: "I want to find and win reuse projects", offer: "Deal Flow" },
+    { want: "I want to find, shape and win reuse projects", offer: "Deal Flow" },
     { want: "I want the data in my own systems", offer: "Data" },
   ],
   why: [
-    "Tender alerts cost €200-3,500 a year and start when a tender is published. Deal Flow starts at the plant, months earlier, and includes the analysis.",
-    "A feasibility study can cost €150-300k. An engineer-reviewed Investment Case is €4,900.",
+    "Tender alerts cost €200-3,500 a year and start when a tender is published. Deal Flow starts at the plant, months earlier, with costed co-investment cases.",
+    "A feasibility study can cost €150-300k. An engineer-reviewed case starts at €4,900.",
     "We never take a cut of a deal, so our numbers stay neutral.",
   ],
 };
@@ -112,8 +112,8 @@ export const FACTS = {
 export type FactId = keyof typeof FACTS;
 
 export const FAQ_PRICING = [
-  { q: "What's in an Investment Case?", a: "Supply, demand, pipe and cost ranges, the water price, payback, funding options and every source used. Deal Flow plans export it automatically for each deal. The engineer-reviewed version (€4,900 fixed per deal) adds a check by partner engineers." },
-  { q: "Is it engineering advice?", a: "No. Investment Cases are indicative screening documents that help you decide whether a full engineering study is worth commissioning. They do not replace engineering design, legal advice or permitting review." },
+  { q: "What's in an investment case?", a: "The parties, shared infrastructure, capex, delivered cost per m³ against today's cost, yearly saving, payback and a verdict. Pro and Team open each one in a Case Room with the permit path, risk-plan checklist, term-sheet draft and funding. The engineer-reviewed version (from €4,900, scoped per case) adds a check by partner engineers." },
+  { q: "Is it engineering advice?", a: "No. Cases are estimates from public data and stated assumptions. They help you decide whether a full engineering study is worth commissioning, and do not replace engineering design, legal advice or permitting review." },
   { q: "Can public bodies buy without a tender?", a: "Yes. Every price is under Spain's €15,000 minor-contract limit (excluding VAT), so agencies and municipal water companies can buy directly." },
   { q: "Do you take a commission?", a: "No. We charge flat subscriptions and fixed fees, with no success fees, commissions or paid ranking. Our fee does not change when a deal goes ahead." },
   { q: "What's the difference between Deal Flow and Data?", a: "Deal Flow is the deal pipeline plus the analysis, used inside Venaqua to find and win projects. Data is the same structured data delivered to your own tools by file export or API." },
