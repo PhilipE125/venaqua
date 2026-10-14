@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { crf, defaultEffluent, droughtLoss, EFFLUENT, evaluateOptions, mid, pumpingKWhPerM3} from "@/lib/costs";
-import { droughtRecordLabel, GROWTH, projectFuture } from "@/lib/projection";
+import { droughtRecordLabel, GROWTH, historicFrequencies, projectFuture } from "@/lib/projection";
+import { evaluateCompany } from "@/lib/companyEval";
 import {
   eurK, fmt, fmt1, fmt2, SUPPLY_SEARCH_KM, useClusters, useDrought, useElevation, usePratYearly, useRegen, useRegenHistory,
   useReservoirMonthly, useRestriction, useRoadRoute, useSourcing, useStress, type SupplyCandidate,
@@ -70,20 +71,18 @@ export function SourcingPanel({ company }: { company: Company }) {
   const userQ = demandOverride[company.id];
 
   const calc = useMemo(() => {
-    const tariff = local.tariff * (1 + Number(tariffShock) / 100);
-    const distanceKm = selected ? (road.data?.km ?? selected.d * settings.detourFactor) : 0;
     const heightM = elev.data ? elev.data.b - elev.data.a : null;
-    const liftM = (heightM != null ? Math.max(0, heightM) : 0) + (settings.frictionPer10km * distanceKm) / 10;
-    const r = evaluateOptions({
-      q, tariff, dischargeCharge: local.dischargeCharge * (dischargePct / 100), rate: local.rate, years: local.years,
-      electricity: settings.electricity[elec],
-      plant: selected ? { distanceKm, liftM, reuseReady: selected.p.supply.reuseReady, availableM3PerDay: selected.p.supply.availableReclaimed } : null,
-      effluentK: EFFLUENT[effluent].k,
+    const r = evaluateCompany({
+      q, tariff: local.tariff, tariffShockPct: Number(tariffShock), dischargeCharge: local.dischargeCharge, dischargePct,
+      rate: local.rate, years: local.years, electricity: settings.electricity[elec], effluent,
+      plant: selected ? { straightKm: selected.d, reuseReady: selected.p.supply.reuseReady, availableM3PerDay: selected.p.supply.availableReclaimed } : null,
+      roadKm: road.data?.km ?? null, heightM,
       cut: settings.droughtCut[currentPhase(events)?.phase ?? "normal"],
-      events,
-      s: settings,
+      events, settings,
     });
-    const f = projectFuture(r.future, GROWTH.mid);
+    // Same drought frequencies as the ranked list, so the flip year matches it.
+    const f = projectFuture(r.future, GROWTH.mid, historicFrequencies(events));
+    const { distanceKm, liftM, tariff } = r;
     return { ...r, f, distanceKm, heightM, liftM, tariff, k: crf(local.rate, local.years) };
   }, [q, local, tariffShock, elec, effluent, dischargePct, selected, road.data, elev.data, settings, events]);
 

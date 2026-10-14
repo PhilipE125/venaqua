@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { defaultEffluent, EFFLUENT, evaluateOptions, mid, type Range } from "@/lib/costs";
+import { defaultEffluent, EFFLUENT, mid, type Range } from "@/lib/costs";
+import { evaluateCompany } from "@/lib/companyEval";
 import { eurK, fmt, fmt1, fmt2, SUPPLY_SEARCH_KM as SEARCH_KM, useDrought, useWwtps, useElevation, useRestriction, useRoadRoute, useSupplyPlant } from "@/lib/queries";
 import { muniKey } from "@/lib/sectors";
 import { currentPhase, phaseDaysInYear, PHASES, type Phase } from "@/lib/sources/drought";
@@ -94,10 +95,6 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
   const phase: Phase = phaseOverride === "current" ? (cur?.phase ?? "normal") : phaseOverride;
 
   const calc = useMemo(() => {
-    const tariff = local.tariff * (1 + Number(tariffShock) / 100);
-    // Road distance when the router answered; otherwise straight line × detour factor.
-    const distanceKm = candidate ? (road.data?.km ?? candidate.d * settings.detourFactor) : 0;
-    const liftM = elev.data ? Math.max(0, elev.data.b - elev.data.a) + (settings.frictionPer10km * distanceKm) / 10 : (settings.frictionPer10km * distanceKm) / 10;
     // Drought: current/selected phase, or 2023 replay weighted by days in each phase.
     let cut = settings.droughtCut[phase];
     let days2023: Record<Phase, number> | null = null;
@@ -105,21 +102,14 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
       days2023 = phaseDaysInYear(events, 2023);
       cut = PHASES.reduce((s, ph) => s + (days2023![ph] / 365) * settings.droughtCut[ph], 0);
     }
-    const r = evaluateOptions({
-      q: Q,
-      tariff,
-      // Discharge charge applies to the share of water discharged, spread over total demand.
-      dischargeCharge: local.dischargeCharge * (dischargePct / 100),
-      rate: local.rate,
-      years: local.years,
-      electricity: settings.electricity[elec],
-      plant: candidate ? { distanceKm, liftM, reuseReady: candidate.p.supply.reuseReady, availableM3PerDay: candidate.p.supply.availableReclaimed } : null,
-      effluentK: EFFLUENT[effluent].k,
-      cut,
-      events,
-      s: settings,
+    const r = evaluateCompany({
+      q: Q, tariff: local.tariff, tariffShockPct: Number(tariffShock), dischargeCharge: local.dischargeCharge, dischargePct,
+      rate: local.rate, years: local.years, electricity: settings.electricity[elec], effluent,
+      plant: candidate ? { straightKm: candidate.d, reuseReady: candidate.p.supply.reuseReady, availableM3PerDay: candidate.p.supply.availableReclaimed } : null,
+      roadKm: road.data?.km ?? null, heightM: elev.data ? elev.data.b - elev.data.a : null,
+      cut, events, settings,
     });
-    return { ...r, tariff, distanceKm, liftM, days2023, cut };
+    return { ...r, days2023, cut };
   }, [Q, local, tariffShock, elec, settings, candidate, elev.data, road.data, phase, replay, events, effluent, dischargePct]);
 
   const { A, B, C } = calc;
