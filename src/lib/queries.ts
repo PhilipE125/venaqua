@@ -5,12 +5,12 @@ import { useCallback, useMemo } from "react";
 import { findClusters } from "./clusters";
 import { knownUserSource } from "./knownUsers";
 import { mergeCompanies } from "./merge";
-import { defaultEffluent, EFFLUENT, evaluateOptions, mid, supplyCostPerM3 } from "./costs";
-import { GROWTH, historicFrequencies, projectFuture } from "./projection";
+import { EFFLUENT, evaluateOptions, mid, supplyCostPerM3 } from "./costs";
+import { historicFrequencies } from "./projection";
 import { muniKey } from "./sectors";
 import { effectiveSupply, haversineKm, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
-import { currentPhase, fetchDrought, type DroughtEvent } from "./sources/drought";
+import { fetchDrought, type DroughtEvent } from "./sources/drought";
 import { enrichPlants, fetchEea, nationalPlant, type Country } from "./sources/eea";
 import { fetchIed } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
@@ -24,7 +24,7 @@ import { fetchPratHistory, fetchPratYearly, fetchReservoirHistory, fetchReservoi
 import { searchTenders } from "./sources/ted.functions";
 import { fetchWwtps } from "./sources/wwtp";
 import { useApp, type Region, type Settings } from "./state";
-import { evaluateCompany } from "./companyEval";
+import { flipRowFor, sortFlipRows, type FlipRow } from "./flipRows";
 import type { Company, Plant, SupplySite } from "./types";
 
 const H = 60 * 60 * 1000;
@@ -255,16 +255,9 @@ export function useSupplyPlant(company?: Company) {
   return useSourcing(company).selected;
 }
 
-export interface FlipRow {
-  company: Company;
-  option: "B" | "C"; // the reuse route that flips first (or is cheaper per m³ if neither flips)
-  plant: string | null;
-  perM3: number; // mid €/m³ of that option, including mains water it does not replace
-  statusQuo: number; // €/m³ today: supply + discharge
-  flipYear: number | null; // first year its cumulative cost beats status quo, mid tariff growth
-  own: number; // mid €/m³ of on-site reuse (C)
-  connect: number | null; // mid €/m³ of the plant connection (B), when a plant is in reach
-}
+// The row shape and the ranking rule live in flipRows.ts (pure, tested): the year the
+// module list shows is when an own on-site plant pays back, not the connect year.
+export type { FlipRow };
 
 /**
  * Every company in view, run through the same model as the drawer with defaults: sector demand
@@ -289,36 +282,24 @@ export function useFlipTable() {
       const chosen = scenarioValues[sourcePlantKey(co.id)] as string | undefined;
       const cand = (chosen ? rankSupplyPlants(plants, co, q, settings, 5).find((x) => x.p.id === chosen) : undefined) ?? pickSupplyPlant(plants, co, q, settings);
       const events = drought.data?.byMuni.get(muniKey(co.municipi));
-      const r = evaluateCompany({
+      let freq = freqs.get(events);
+      if (!freq) freqs.set(events, (freq = historicFrequencies(events)));
+      const row = flipRowFor({
+        company: co,
         q,
         tariff: t.supply,
         dischargeCharge: t.discharge,
-        rate: settings.rate,
-        years: settings.years,
-        electricity: settings.electricity.base,
-        effluent: defaultEffluent(co.sector),
-        plant: cand ? { straightKm: cand.d, reuseReady: cand.p.supply.reuseReady, availableM3PerDay: cand.p.supply.availableReclaimed } : null,
-        cut: settings.droughtCut[currentPhase(events)?.phase ?? "normal"],
+        plant: cand
+          ? { name: cand.p.name, straightKm: cand.d, reuseReady: cand.p.supply.reuseReady, availableM3PerDay: cand.p.supply.availableReclaimed }
+          : null,
         events,
+        freq,
         settings,
       });
-      let freq = freqs.get(events);
-      if (!freq) freqs.set(events, (freq = historicFrequencies(events)));
-      const f = projectFuture(r.future, GROWTH.mid, freq);
-      const useB = !!r.B && (f.payB != null ? f.payC == null || f.payB <= f.payC : f.payC == null && mid(r.B.perM3) < mid(r.C.perM3));
-      out.push({
-        company: co,
-        option: useB ? "B" : "C",
-        plant: useB ? (cand?.p.name ?? null) : null,
-        perM3: mid(useB ? r.B!.perM3 : r.C.perM3),
-        statusQuo: mid(r.A.perM3),
-        flipYear: useB ? f.payB : f.payC,
-        own: mid(r.C.perM3),
-        connect: r.B ? mid(r.B.perM3) : null,
-      });
+      if (row) out.push(row);
     }
-    // Soonest flip first; ties and non-flippers by how close reuse is to the status quo per m³.
-    return out.sort((a, b) => (a.flipYear ?? 9999) - (b.flipYear ?? 9999) || a.perM3 - a.statusQuo - (b.perM3 - b.statusQuo));
+    // Soonest own-plant payback first; ties and non-flippers by how close reuse is to the status quo.
+    return sortFlipRows(out);
   }, [c.data, w.data, drought.data, settings, demandOverride, region, scenarioValues]);
   return { rows, isLoading: c.isLoading || w.isLoading, isError: c.isError || w.isError };
 }
