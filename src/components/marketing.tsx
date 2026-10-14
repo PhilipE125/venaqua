@@ -89,3 +89,10 @@ export function StatusBadge({ status, className }: { status: ModuleStatus; class
     </TooltipProvider>
   );
 }
+
+/** Small inline "Source · year" note shown next to a fact. */
+export function SourceCaption({ id }: { id: FactId }) {
+  const f = FACTS[id];
+  const year = "year" in f ? f.year : undefined;
+  return <p className="mt-2 text-[11px] text-muted-foreground/80">Source: {f.source}{year ? ` · ${year}` : ""}</p>;
+}

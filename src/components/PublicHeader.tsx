@@ -61,8 +61,8 @@ export function PublicHeader() {
     },
     about: {
       title: "About Venaqua",
-      body: `${VISION.mission} ${VISION.description} Starting in Spain, with a vision to expand across Europe.`,
-      actions: <Button asChild size="sm"><a href="/#why" onClick={close}>Why Venaqua</a></Button>,
+      body: `${VISION.mission} ${VISION.description}`,
+      actions: <Button asChild size="sm"><Link to="/about" onClick={close}>About us</Link></Button>,
     },
   };
 

@@ -95,17 +95,18 @@ export const MODULES: Module[] = [
 export type Fact = { id: string; value: string; label: string; source: string; year?: string; url?: string; estimate?: boolean };
 
 export const FACTS = {
-  reuseShare: { id: "reuseShare", value: "14.5%", label: "Share of treated wastewater reused in Spain (907 of 6,271 hm³)", source: "INE", year: "2024" },
+  reuseShare: { id: "reuseShare", value: "14.5%", label: "Treated wastewater reused in Spain", source: "INE", year: "2024" },
   industryShare: { id: "industryShare", value: "4.4%", label: "Share of reused water that goes to industry", source: "INE", year: "2024" },
+  tertiary: { id: "tertiary", value: "~25%", label: "Spanish plants above 2,000 p.e. with tertiary treatment", source: "MITECO", year: "2022" },
   madridRelease: { id: "madridRelease", value: "91.5 hm³", label: "Reclaimed water Madrid's Canal de Isabel II released to rivers", source: "Canal de Isabel II", year: "2023" },
-  reclaimedCost: { id: "reclaimedCost", value: "€0.10–0.19/m³", label: "Typical cost to produce reclaimed water", source: "Sector benchmarks" },
+  reclaimedCost: { id: "reclaimedCost", value: "€0.10–0.19/m³", label: "Cost to produce reclaimed water", source: "Sector benchmarks" },
   desalCost: { id: "desalCost", value: "€0.5–1.0/m³", label: "Typical cost of desalinated water", source: "Sector benchmarks" },
-  bcnTariff: { id: "bcnTariff", value: "€1.73–2.59/m³", label: "Barcelona-area industrial water tariff range", source: "Tariff schedules", year: "2024" },
+  bcnTariff: { id: "bcnTariff", value: "€1.73–2.59/m³", label: "Industrial mains water tariff, Barcelona area", source: "Tariff schedules", year: "2024" },
   pipelineCost: { id: "pipelineCost", value: "€0.35–0.85M per km", label: "Indicative reclaimed-water pipeline cost", source: "Literature benchmarks" },
   tarragona: { id: "tarragona", value: "17 km, ~6 hm³/yr since 2012", label: "Tarragona: treated wastewater to the chemical cluster; ~€42M, 85% EU Cohesion Fund", source: "ACA / AITASA" },
-  uwwtd2039: { id: "uwwtd2039", value: "2039", label: "Deadline for extra nitrogen and phosphorus removal at plants ≥150,000 p.e.", source: "Directive (EU) 2024/3019", url: "https://eur-lex.europa.eu/eli/dir/2024/3019/oj" },
+  uwwtd2039: { id: "uwwtd2039", value: "2039", label: "Deadline for extra treatment at plants ≥150,000 p.e.", source: "Directive (EU) 2024/3019", url: "https://eur-lex.europa.eu/eli/dir/2024/3019/oj" },
   authorisation: { id: "authorisation", value: "12 months", label: "Decision period for a reuse authorisation; silence means refusal", source: "Real Decreto 1085/2024" },
-  energyAvoided: { id: "energyAvoided", value: "~2–3 GWh", label: "Electricity avoided per hm³ when reclaimed water replaces desalination", source: "Venaqua estimate", estimate: true },
+  energyAvoided: { id: "energyAvoided", value: "~2–3 GWh", label: "Electricity saved per hm³ of reuse that replaces desalination", source: "Venaqua estimate", estimate: true },
 } satisfies Record<string, Fact>;
 
 export type FactId = keyof typeof FACTS;
@@ -113,7 +114,7 @@ export type FactId = keyof typeof FACTS;
 export const FAQ_PRICING = [
   { q: "Is the map really free?", a: "Yes. The Free Explorer map needs no account and no card. You can search plants, industrial users and water-stress layers across Spain and open compact previews. Paid plans add full economics, saved projects, team workspaces and briefs. You can stay on the free map as long as you like." },
   { q: "Why is there no online checkout?", a: "Paid plans are annual and depend on your market, team size and data needs. Every plan starts with a short conversation so we can scope it properly and show the workspace on your own sites. Implementation and private-data setup are scoped separately and agreed in writing before work starts." },
-  { q: "Does Venaqua take a cut of the projects?", a: "No. Venaqua charges only for software and data. We take no success fees, no referral fees and no paid placement from utilities, suppliers or contractors. That keeps the rankings and economics neutral, so you can share them with partners, boards and lenders without a conflict of interest." },
+  { q: "Does Venaqua take a cut of the projects?", a: "No. Venaqua charges only for software and data. We take no success fees or commissions, sell no exclusive leads and accept no paid ranking. That keeps the rankings and economics neutral, so you can share them with partners, boards and lenders without a conflict of interest." },
   { q: "Is a brief an engineering study?", a: "No. Briefs and Deal Files are indicative screening documents. They show supply, demand, route and cost ranges with sources and open questions. They help you decide whether an engineering study is worth commissioning. They do not replace engineering design, legal advice or permitting review." },
 ];
 
@@ -124,15 +125,18 @@ export const FAQ_PLATFORM = [
 ];
 
 export const NEUTRALITY = [
-  { title: "No success fees", text: "We are paid for software and data, never a share of a project." },
-  { title: "No referral fees", text: "We take nothing from suppliers, contractors or utilities for introductions." },
-  { title: "No paid placement", text: "Nobody can pay to rank higher on the map or in an analysis." },
+  { title: "No success fees", text: "No success fees or commissions — we earn the same whether a project goes ahead or who wins it." },
+  { title: "Same data for everyone", text: "Same data for every subscriber at a tier — no exclusive leads, no paid ranking." },
+  { title: "Consent first", text: "Private needs are shared only with the owner's consent." },
 ];
 
 export const VISION = {
-  mission: "We're building a platform to optimize wastewater reuse.",
-  headline: "Optimize wastewater reuse.",
-  description: "Venaqua connects treated wastewater supply with industrial demand, helping teams find reuse opportunities, compare costs and risks, and develop the projects worth building.",
+  mission: "Optimise wastewater reuse — so treated water replaces freshwater instead of being discharged.",
+  headline: "Optimise wastewater reuse.",
+  subheadline: "So treated water replaces freshwater instead of being discharged.",
+  description: "Venaqua shows where treated wastewater could be reused, who could use it, what the pipe and treatment upgrade would cost, and how to fund it — then tracks each project from first signal to delivery.",
+  pitch: "Spain reuses only 14.5% of its treated wastewater. Venaqua finds the reuse projects worth building — and makes them bankable.",
+  impact: "We measure verified m³ of freshwater replaced by reused water — counted only when it is additional, permitted and backed by meter data.",
   tagline: "Every industrial m³ — mapped, priced and proven.",
   questions: [
     { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", status: "live" as ModuleStatus, note: "Live today" },
@@ -140,3 +144,14 @@ export const VISION = {
     { pillar: "proof" as Pillar, label: "Proof", question: "What can it prove it saved, to auditors and banks?", status: "coming" as ModuleStatus, note: "Verified Water Ledger, coming" },
   ],
 };
+
+export type AudienceIcon = "operators" | "owners" | "industry" | "investors";
+export const AUDIENCES: { icon: AudienceIcon; title: string; text: string; access: string }[] = [
+  { icon: "operators", title: "Water operators, EPC firms and equipment suppliers", text: "See reuse projects before they're tendered.", access: "Paid plans" },
+  { icon: "owners", title: "Plant owners: municipal water companies, consortia, regional agencies", text: "Plan the upgrades that make reuse possible.", access: "Free · paid workspace optional" },
+  { icon: "industry", title: "Industrial sites and parks", text: "Find out if reclaimed water can replace what you buy today.", access: "Free" },
+  { icon: "investors", title: "Investors and lenders", text: "Get a neutral, costed case for each project.", access: "Paid per case" },
+];
+
+/** Label for any sample / demo record shown on the site. */
+export const SAMPLE_LABEL = "Sample — illustrative";
