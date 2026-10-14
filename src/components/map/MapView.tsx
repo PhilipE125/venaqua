@@ -540,7 +540,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
           onClick={(info, ev) => {
             // Double-click only zooms: defer the selection and cancel it if a second click follows.
             if (clickTimer.current) { clearTimeout(clickTimer.current); clickTimer.current = null; return; }
-            if ((ev as { srcEvent?: MouseEvent })?.srcEvent?.detail >= 2 || Date.now() - lastDbl.current < 500) return;
+            if (((ev as { srcEvent?: MouseEvent })?.srcEvent?.detail ?? 0) >= 2 || Date.now() - lastDbl.current < 500) return;
             clickTimer.current = setTimeout(() => { clickTimer.current = null; if (Date.now() - lastDbl.current > 500) handleClick(info); }, 260);
           }}
         />
