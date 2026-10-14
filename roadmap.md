@@ -46,3 +46,8 @@
 - [x] Replace purchase-price outlook with restriction-cost scenarios and editable commercial exposure assumptions
 - [x] Compare with sourced 2023/2024 Catalan industrial restrictions in Spain, without inventing observed business losses
 - [x] Nine tests pass; browser-verified editable totals, graph, scenario toggles, validation, historical cases and close; build OK
+
+## Landing vision and Spain framing
+- [x] Frame the landing backdrop on Spain without changing the saved Explorer view
+- [x] Clarify wastewater reuse optimization in the headline, subtitle and About us
+- [x] Browser-verified Spain backdrop, About us and Explorer-to-home return; no page errors

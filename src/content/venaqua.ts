@@ -130,7 +130,9 @@ export const NEUTRALITY = [
 ];
 
 export const VISION = {
-  mission: "Venaqua is building the neutral system of record for industrial water.",
+  mission: "We're building a platform to optimize wastewater reuse.",
+  headline: "Optimize wastewater reuse.",
+  description: "Venaqua connects treated wastewater supply with industrial demand, helping teams find reuse opportunities, compare costs and risks, and develop the projects worth building.",
   tagline: "Every industrial m³ — mapped, priced and proven.",
   questions: [
     { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", status: "live" as ModuleStatus, note: "Live today" },

@@ -30,10 +30,10 @@ const MapView = lazy(() => import("@/components/map/MapView"));
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Venaqua · Industrial water reuse opportunities" },
-      { name: "description", content: "Venaqua is building the neutral system of record for industrial water: where a site's water can come from, what it will cost and risk, and what it saved." },
-      { property: "og:title", content: "Venaqua · Industrial water reuse opportunities" },
-      { property: "og:description", content: "Explore supply and buyers, compare water options and turn promising opportunities into validated projects." },
+      { title: "Venaqua · Optimize wastewater reuse" },
+      { name: "description", content: `${VISION.mission} ${VISION.description}` },
+      { property: "og:title", content: "Venaqua · Optimize wastewater reuse" },
+      { property: "og:description", content: VISION.description },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -43,13 +43,13 @@ export const Route = createFileRoute("/")({
 
 function MapBackdrop() {
   return (
-    <div className="landing-map pointer-events-none absolute inset-0" aria-hidden="true">
+    <div className="landing-map pointer-events-none absolute inset-x-0 top-0 h-[680px] sm:h-[760px]" aria-hidden="true">
       <ClientOnly fallback={<div className="h-full w-full bg-muted" />}>
         <Suspense fallback={<div className="h-full w-full animate-pulse bg-muted" />}>
-          <MapView />
+          <MapView presentation="landing" />
         </Suspense>
       </ClientOnly>
-      <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/55 to-background/90" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/30 to-background/90" />
     </div>
   );
 }
@@ -108,12 +108,12 @@ function Landing() {
 
       <main className="relative z-10 flex flex-1 flex-col">
         <section className="mx-auto flex w-full max-w-4xl flex-col items-center px-5 pb-16 pt-20 text-center sm:pt-28">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">The neutral system of record for industrial water</p>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-            Every industrial m³, mapped, priced and proven
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Venaqua · Industrial water reuse</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
+            {VISION.headline}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Find where a site's water can come from, what it will cost and risk by 2035, and what it can prove it saved. Starting with water reuse in Spain.
+            {VISION.mission} {VISION.description}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">
