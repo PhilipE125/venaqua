@@ -39,7 +39,6 @@ const STATUS_STYLE: Record<Plan["status"], string> = {
 
 function PlanCta({ plan }: { plan: Plan }) {
   const { setContact } = useWorkspace();
-  if (plan.id === "free") return <Button asChild variant="outline" size="sm" className="w-full"><Link to="/explore">{plan.cta}</Link></Button>;
   const id = plan.id;
   return <Button size="sm" className="w-full" variant={plan.cta === "Start pilot" ? "default" : "outline"} onClick={() => setContact(id)}>{plan.cta}</Button>;
 }
@@ -56,7 +55,7 @@ function Pricing() {
 
         <section className="mx-auto w-full max-w-6xl px-5 pb-12">
           <div className="overflow-x-auto rounded-lg border bg-card">
-            <table className="w-full min-w-[860px] table-fixed text-sm">
+            <table className="w-full min-w-[560px] table-fixed text-sm">
               <thead>
                 <tr className="border-b align-top">
                   {PLANS.map((p) => (
@@ -87,6 +86,10 @@ function Pricing() {
                 <tr>{PLANS.map((p) => <td key={p.id} className="p-4 pt-0"><PlanCta plan={p} /></td>)}</tr>
               </tbody>
             </table>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm">
+            <span className="text-muted-foreground">{PRICING_STORY.free}</span>
+            <Button asChild variant="outline" size="sm"><Link to="/explore">Open the free map</Link></Button>
           </div>
           <p className="mt-4 text-center text-sm font-medium">{PRICING_STORY.small}</p>
           <p className="mt-1 text-center text-xs text-muted-foreground">EUR, excluding VAT.</p>

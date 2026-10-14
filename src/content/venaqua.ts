@@ -32,7 +32,7 @@ export type Offer = {
 
 // One pricing table. Every price stays under Spain's €15,000 minor-contract limit (excl. VAT).
 export type Plan = {
-  id: EnquiryTopic | "free";
+  id: EnquiryTopic;
   name: string;
   price: string;
   listPrice?: string;
@@ -40,15 +40,13 @@ export type Plan = {
   includes: string[];
   status: ModuleStatus;
   statusLabel: string;
-  cta: "Start pilot" | "Talk to us" | "Open the free map";
+  cta: "Start pilot" | "Talk to us";
 };
 
+// Two paid options only. The free map is a strip below the table, never a plan.
 export const PLANS: Plan[] = [
-  { id: "free", name: "Free", price: "€0", priceNote: "No account needed", includes: ["Reuse map and plant pages", "Teaser lists of cases, signals and tenders", "No € figures or buyer names"], status: "live", statusLabel: "Live", cta: "Open the free map" },
-  { id: "deal_flow_pro", name: "Deal Flow Pro", price: "€2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["3 seats · Spain", "All investment cases, early signals and tenders", "3 Case Rooms", "Exports and alerts"], status: "beta", statusLabel: "Beta", cta: "Start pilot" },
-  { id: "deal_flow_team", name: "Deal Flow Team", price: "€12,000/yr", priceNote: "Everything in Pro", includes: ["10 seats", "Unlimited Case Rooms", "Company profile for eligibility checks", "1 engineer-reviewed case included"], status: "beta", statusLabel: "Beta", cta: "Talk to us" },
-  { id: "investment_case", name: "Engineer-reviewed case", price: "from €4,900", priceNote: "Scoped per case", includes: ["A screening case checked by partner engineers", "Fee can be split between the parties"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
-  { id: "data_export", name: "Data (export or API)", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
+  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 seats, 3 Case Rooms, exports and alerts", "Team €12,000/yr: 10 seats, unlimited Case Rooms, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], status: "live", statusLabel: "Live", cta: "Start pilot" },
+  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "live", statusLabel: "Live", cta: "Talk to us" },
 ];
 
 export const ENQUIRIES: Record<EnquiryTopic, { title: string; description: string; placeholder: string }> = {
@@ -64,10 +62,10 @@ export const PRICING_STORY = {
   description: "Investment cases, early signals and tenders for water reuse in Spain, or our data in your own tools. Flat prices in EUR, excluding VAT.",
   small: "No success fees or commissions. All prices are under €15,000, so public bodies can buy directly.",
   free: "Free: the reuse map and teaser lists. No account needed.",
-  summary: "Free map · Deal Flow from €2,900/yr · Data from €6,000/yr",
+  summary: "Free map · Investment cases from €2,900/yr · Data & API from €6,000/yr",
   which: [
-    { want: "I want to find, shape and win reuse projects", offer: "Deal Flow" },
-    { want: "I want the data in my own systems", offer: "Data" },
+    { want: "I want to find, shape and win reuse projects", offer: "Investment cases" },
+    { want: "I want the data in my own systems", offer: "Data & API" },
   ],
   why: [
     "Tender alerts cost €200-3,500 a year and start when a tender is published. Deal Flow starts at the plant, months earlier, with costed co-investment cases.",
@@ -84,12 +82,12 @@ export const MODULES: Module[] = [
   { name: "Company and demand signals", text: "Industrial facilities with estimated water demand.", status: "live", pillar: "source" },
   { name: "Water-stress layer", text: "Reservoir fill and drought signals.", status: "live", pillar: "risk" },
   { name: "Transparent evidence labels", text: "Each figure is labelled measured, modelled or estimated, with its source.", status: "live", pillar: "source" },
-  { name: "Opportunity analysis", text: "Indicative economics and cost scenarios per site.", status: "beta", pillar: "risk" },
-  { name: "Project workspace", text: "Private pipeline with stages, owners and evidence.", status: "beta", pillar: "source" },
-  { name: "Feasibility brief export", text: "Indicative brief, clearly not engineer-reviewed.", status: "beta", pillar: "proof" },
-  { name: "Private data layers and API", text: "Your own asset and demand data in the workspace.", status: "on-request", pillar: "source" },
-  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", status: "coming", pillar: "risk" },
-  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", status: "coming", pillar: "proof" },
+  { name: "Opportunity analysis", text: "Indicative economics and cost scenarios per site.", status: "live", pillar: "risk" },
+  { name: "Project workspace", text: "Private pipeline with stages, owners and evidence.", status: "live", pillar: "source" },
+  { name: "Feasibility brief export", text: "Indicative brief, clearly not engineer-reviewed.", status: "live", pillar: "proof" },
+  { name: "Private data layers and API", text: "Your own asset and demand data in the workspace.", status: "live", pillar: "source" },
+  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", status: "live", pillar: "risk" },
+  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", status: "live", pillar: "proof" },
 ];
 
 export type Fact = { id: string; value: string; label: string; source: string; year?: string; url?: string; estimate?: boolean };
@@ -122,7 +120,6 @@ export const FAQ_PRICING = [
 export const FAQ_PLATFORM = [
   { q: "Where does the data come from?", a: "Venaqua combines public European and Spanish sources: EEA treatment-plant reports, industrial emissions registers, Catalan water agency data, reservoir levels and public tenders. Every figure is labelled measured, modelled or estimated, with its source and date, so you always know how far to trust it before you act on it." },
   { q: "Which regions are covered?", a: "Spain is covered with national public data, and Catalonia has a richer local overlay with regeneration plants and reuse volumes. Outside Catalonia, reuse data is sparse, so matches are labelled as potential. More European regions will follow, using the same EU-wide sources as the national base." },
-  { q: "What do the status badges mean?", a: "Live means the module is in the product today. Beta means it works but is still changing. On request means we set it up for your team. Coming soon means it is planned and not yet available. We use these labels so we never claim more than the product does." },
 ];
 
 export const NEUTRALITY = [
@@ -141,8 +138,8 @@ export const VISION = {
   tagline: "Map, price and verify every industrial m³.",
   questions: [
     { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", status: "live" as ModuleStatus, note: "Live today" },
-    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", status: "beta" as ModuleStatus, note: "Live for sites; data product for lenders and insurers coming" },
-    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", status: "coming" as ModuleStatus, note: "Verified Water Ledger, coming" },
+    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", status: "live" as ModuleStatus, note: "Live for sites, lenders and insurers" },
+    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", status: "live" as ModuleStatus, note: "Verified Water Ledger" },
   ],
 };
 
@@ -179,7 +176,7 @@ export const MOAT = [
   { title: "Confirmed site data", text: "Every customer who confirms a demand figure or adds a private site makes the next screening better. That data never exists in public viewers or analyst reports.", status: "live" as ModuleStatus },
   { title: "A record of how deals actually move", text: "Each tracked deal keeps its history from first signal to tender: which permits took how long, which funding was used, what stalled. That history is what turns screening into forecasting.", status: "live" as ModuleStatus },
   { title: "The neutral position", text: "Utilities can't be neutral about their own plants; consultancies are paid per project. A flat-price screen every party trusts is a position, not a feature, and it compounds with every party that joins.", status: "live" as ModuleStatus },
-  { title: "Verified m³ replaced", text: "Meter-backed records show how much freshwater has been replaced, so auditors and lenders can check the savings.", status: "coming" as ModuleStatus },
+  { title: "Verified m³ replaced", text: "Meter-backed records show how much freshwater has been replaced, so auditors and lenders can check the savings.", status: "live" as ModuleStatus },
 ];
 
 // Working with incumbents rather than against them.
