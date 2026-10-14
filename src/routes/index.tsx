@@ -21,7 +21,8 @@ import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
 import dealData from "@/data/dealflow-deals.json";
-import { AUDIENCES, FACTS, MODULES, NEUTRALITY, VISION, type AudienceIcon, type FactId } from "@/content/venaqua";
+import { AMBITION, AUDIENCES, FACTS, LANDSCAPE_POSITION, MODULES, MOAT, NEUTRALITY, PARTNERS, VISION, type AudienceIcon, type FactId } from "@/content/venaqua";
+import { MODULES as DECK_MODULES } from "@/components/ModuleBar";
 import { FactValue, SourceCaption, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
 
 const HOME_FACTS: FactId[] = ["reuseShare", "industryShare", "tertiary", "uwwtd2039", "reclaimedCost", "bcnTariff", "energyAvoided"];
@@ -139,6 +140,25 @@ function Landing() {
           </div>
         </section>
 
+
+        <section id="modules" className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-5xl px-5 py-16">
+            <p className="label-caps text-primary">Our platform</p>
+            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">One map. Five modules to a reuse project.</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">We model when the math flips: every site ranked by cost per m³ against the alternative, with the year reuse becomes cheaper.</p>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {DECK_MODULES.map((m) => (
+                <Link key={m.mode} to="/explore" search={{ module: m.mode }} className="group rounded-xl border bg-card p-5 transition-colors hover:border-primary/60">
+                  <span className="tnum grid h-7 w-7 place-items-center rounded-full bg-flip text-sm font-semibold text-flip-foreground">{m.n}</span>
+                  <h3 className="mt-3 font-semibold">{m.title}</h3>
+                  <p className="mt-1 text-sm leading-snug text-muted-foreground">{m.sub}</p>
+                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary">Open on the map<ArrowRight className="h-3 w-3" /></span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="why" className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-5xl px-5 py-16">
             <p className="label-caps text-primary">Why Venaqua</p>
@@ -171,6 +191,31 @@ function Landing() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{w.text}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+
+        <section id="fit" className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-5xl px-5 py-16">
+            <p className="label-caps text-primary">{LANDSCAPE_POSITION.eyebrow}</p>
+            <h2 className="mt-2 max-w-3xl text-2xl font-semibold tracking-tight sm:text-3xl">{LANDSCAPE_POSITION.title}</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{LANDSCAPE_POSITION.intro}</p>
+            <div className="mt-8 overflow-x-auto rounded-xl border bg-card">
+              <table className="w-full min-w-[720px] text-sm">
+                <thead><tr className="border-b">{["", ...LANDSCAPE_POSITION.columns].map((c, i) => <th key={i} scope="col" className={`px-4 py-3 text-left text-xs font-medium ${i === LANDSCAPE_POSITION.columns.length ? "text-flip" : "text-muted-foreground"}`}>{c}</th>)}</tr></thead>
+                <tbody>{LANDSCAPE_POSITION.rows.map((r) => (
+                  <tr key={r.q} className="border-b last:border-0">
+                    <th scope="row" className="px-4 py-3 text-left font-medium">{r.q}</th>
+                    {r.v.map((v, i) => <td key={i} className={`px-4 py-3 ${i === r.v.length - 1 ? "font-medium" : "text-muted-foreground"}`}>{v}</td>)}
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">{LANDSCAPE_POSITION.note}</p>
+            <div className="mt-10">
+              <h3 className="text-lg font-semibold">{PARTNERS.title}</h3>
+              <div className="mt-4 grid gap-5 md:grid-cols-3">{PARTNERS.points.map((p) => <div key={p.who} className="rounded-xl border bg-card p-6"><p className="label-caps text-primary">{p.who}</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.text}</p></div>)}</div>
             </div>
           </div>
         </section>
@@ -239,13 +284,25 @@ function Landing() {
 
         <section className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
           <div className="mx-auto w-full max-w-5xl px-5 py-16">
-            <p className="label-caps text-primary">Beyond public data</p>
-            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">The map is the start. The record we build each week is the product.</h2>
-            <div className="mt-8 grid gap-5 md:grid-cols-3">
-              <div className="rounded-xl border bg-card p-6"><h3 className="font-semibold">A tracked deal pipeline</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{(dealData as { deals: unknown[] }).deals.length} reuse deals in Spain, sourced, scored and updated weekly — each with its history from first signal to tender.</p></div>
-              <div className="rounded-xl border bg-card p-6"><h3 className="font-semibold">Customer-confirmed data</h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Teams add private supply and demand sites and confirm estimates, so the evidence improves where it matters. Shared only with the owner's consent.</p></div>
-              <div className="rounded-xl border bg-card p-6"><h3 className="font-semibold">Verified savings <span className="ml-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">Coming soon</span></h3><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Meter-backed records of freshwater replaced, that auditors and lenders can check.</p></div>
+            <p className="label-caps text-primary">What gets harder to copy every week</p>
+            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">Public data is the start. What customers confirm, and how deals move, is the product.</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">{(dealData as { deals: unknown[] }).deals.length} reuse deals in Spain are tracked and updated weekly today.</p>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2">
+              {MOAT.map((m) => (
+                <div key={m.title} className="rounded-xl border bg-card p-6"><div className="flex items-center justify-between gap-2"><h3 className="font-semibold">{m.title}</h3><StatusBadge status={m.status} /></div><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{m.text}</p></div>
+              ))}
             </div>
+          </div>
+        </section>
+
+
+        <section id="ambition" className="border-t border-border/60 bg-foreground text-background">
+          <div className="mx-auto w-full max-w-5xl px-5 py-20">
+            <p className="label-caps text-flip">{AMBITION.eyebrow}</p>
+            <h2 className="mt-3 max-w-3xl text-3xl font-semibold tracking-tight sm:text-5xl">{AMBITION.title}</h2>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed opacity-80">{AMBITION.text}</p>
+            <ol className="mt-10 grid gap-5 md:grid-cols-3">{AMBITION.steps.map((st) => <li key={st.when} className="border-t border-background/30 pt-4"><p className="label-caps text-flip">{st.when}</p><p className="mt-2 text-sm leading-relaxed">{st.what}</p></li>)}</ol>
+            <p className="mt-8 text-xs opacity-60">{AMBITION.label}</p>
           </div>
         </section>
 
