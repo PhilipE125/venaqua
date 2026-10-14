@@ -19,7 +19,7 @@ export const SECTORS: { id: SectorId; label: string; color: [number, number, num
   { id: "metals", label: "Metals", color: [90, 100, 120] },
   { id: "minerals", label: "Minerals & ceramics", color: [150, 120, 100] },
   { id: "plastics", label: "Plastics", color: [220, 170, 40] },
-  { id: "energy", label: "Energy", color: [200, 60, 50] },
+  { id: "energy", label: "Energy", color: [120, 70, 160] },
   { id: "agriculture", label: "Agriculture", color: [90, 150, 70] },
   { id: "services", label: "Services", color: [120, 150, 190] },
   { id: "other", label: "Other", color: [160, 160, 160] },
