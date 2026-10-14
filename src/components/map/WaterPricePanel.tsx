@@ -50,7 +50,7 @@ export function WaterPricePanel({ horizon }: { horizon: number }) {
   const event = valid ? droughtEventCost(inputs, 0.25) : null;
   const investmentValid = investmentFields.every(f => investment[f.key].trim() !== "" && Number.isFinite(Number(investment[f.key])) && Number(investment[f.key]) >= 0 && Number(investment[f.key]) <= f.max);
   const scenario = DROUGHT_COST_SCENARIOS.find(s => s.id === scenarioId) ?? DROUGHT_COST_SCENARIOS[1];
-  const project = { additionalProtectedShare: Number(investment.reusePercent) / 100, capitalCost: Number(investment.capital), annualOperatingCost: Number(investment.operating), eventsPerYear: Number(investment.frequency), years: 10 };
+  const project = { additionalProtectedShare: Number(investment.reusePercent) / 100, capitalCost: Number(investment.capital), annualOperatingCost: Number(investment.operating), eventsPerYear: Number(investment.frequency), years: 10, annualWaterSales: Number(investment.waterSales), annualEnergySales: Number(investment.energySales) };
   const comparison = valid && investmentValid ? reuseInvestmentCase(inputs, scenario.cut, restrictionDaysAt(inputs.restrictionDays, scenario.durationGrowth, ahead), project) : null;
   const comparisonRows = comparison ? [{ name: "Without additional reuse", cost: comparison.baseline.total }, { name: "With additional reuse", cost: comparison.withReuse.total }] : [];
 
