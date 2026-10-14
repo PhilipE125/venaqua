@@ -23,7 +23,7 @@ export function ResultsPanel() {
 
   const list = useMemo(() => {
     if (!rows) return null;
-    // Module 1 = buyers a plant connection serves; 3 = own facility vs connection; others use the overall ranking.
+    // q1 = buyers a plant connection serves; q3 = own facility vs connection; others use the overall ranking.
     if (mode === "q1") return rows.filter(r => r.option === "B");
     return rows;
   }, [rows, mode]);
