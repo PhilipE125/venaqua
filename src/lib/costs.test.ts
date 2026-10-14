@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { crf, droughtLoss, opportunityCost, optionA, optionB, optionC, pumpingKWhPerM3, supplyCostPerM3, type CostInputs } from "./costs";
 import { eeaJoinKey } from "./sources/eea";
-import { sectorFromIedActivity } from "./sectors";
+import { sectorFromCcae, sectorFromIedActivity } from "./sectors";
 import { phaseDaysInYear, phaseFromCode } from "./sources/drought";
 
 const base: CostInputs = { demandM3PerYear: 100_000, tariff: 2, dischargeCharge: 1, rate: 0.06, years: 20, electricity: [0.15, 0.15] };
@@ -61,6 +61,7 @@ describe("opportunity cost and drought", () => {
     expect(d.emergency).toBe(183);
     expect(phaseFromCode("00007")).toBe("exceptional");
     expect(phaseFromCode("00009")).toBe("emergency");
+    expect(phaseFromCode("00120")).toBe("exceptional");
   });
 });
 
@@ -78,7 +79,9 @@ describe("IED activity → sector", () => {
     expect(sectorFromIedActivity("3(c)(i)")).toBe("minerals");
     expect(sectorFromIedActivity("4(a)(ii)")).toBe("chemicals");
     expect(sectorFromIedActivity("6(a)")).toBe("paper");
-    expect(sectorFromIedActivity("7(a)(i)")).toBe("agriculture");
+    expect(sectorFromIedActivity("7(a)(i)")).toBeNull();
+    expect(sectorFromIedActivity("")).toBeNull();
+    expect(sectorFromIedActivity("9(a)")).toBe("textiles");
     expect(sectorFromIedActivity("8(b)(ii)")).toBe("food");
   });
   it("excludes waste and wastewater activities", () => {
@@ -96,5 +99,15 @@ describe("supplyCostPerM3", () => {
   });
   it("cannot supply from a plant with nothing available", () => {
     expect(supplyCostPerM3({ distanceKm: 1, reuseReady: true, availableM3PerDay: 0 }, 1000, s)).toBe(Infinity);
+  });
+});
+
+describe("sectorFromCcae", () => {
+  it("matches keywords at word starts only", () => {
+    expect(sectorFromCcae("Extracció de caolí")).not.toBe("food");
+    expect(sectorFromCcae("Explotació de cavalls")).not.toBe("food");
+    expect(sectorFromCcae("Elaboració de cava")).toBe("food");
+    expect(sectorFromCcae("Fabricació de matèries plàstiques")).toBe("plastics");
+    expect(sectorFromCcae("Reparació de vehicles de motor")).toBe("services");
   });
 });

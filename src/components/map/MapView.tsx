@@ -226,7 +226,9 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
     m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [0, -70], duration: 900 });
   }, [selection, companyById, siteById, isLanding]);
 
-  const stressYear = HORIZONS.find((h) => h.key === horizon)?.year;
+  // The stress scenario and drought-price panel are built for Spain (Catalan data): hidden in DE/FR.
+  const spain = region === "es" || region === "cat";
+  const stressYear = spain ? HORIZONS.find((h) => h.key === horizon)?.year : undefined;
   const stressAhead = HORIZONS.find((h) => h.key === horizon)?.ahead ?? 0;
   const stressUrl = useMemo(() => (stressYear && typeof document !== "undefined" ? stressImage(stressYear, (v) => stressColor(v, 255).slice(0, 3).map(Math.round) as [number, number, number]) : null), [stressYear]);
   const pipesVisible = showPipes && zoomLvl >= PIPE_MIN_ZOOM;
@@ -589,6 +591,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         </div>
       )}
       <HoverTip bind={setHover} />
+      {spain && (
       <div className="panel future-controls absolute right-3 top-3 z-20 w-60 max-w-[calc(100%-24px)] rounded-md p-3 text-xs shadow-md">
         <div className="flex items-center justify-between gap-2">
           <p className="label-caps">Water stress</p>
@@ -623,6 +626,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         <p className="mt-2 text-[10px] leading-snug text-muted-foreground">Illustrative layout and stress scenario, not real routes. Select a company to see its pipe route along real roads.</p>
         <WaterPricePanel horizon={stressAhead} />
       </div>
+      )}
     </div>
   );
 }

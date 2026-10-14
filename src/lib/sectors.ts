@@ -30,18 +30,19 @@ export const sectorById = Object.fromEntries(SECTORS.map((s) => [s.id, s])) as R
   (typeof SECTORS)[number]
 >;
 
-// Keyword lookup over the Catalan CCAE description (lowercased, accents stripped).
+// Keyword lookup over the Catalan CCAE description (lowercased, accents stripped). Keywords match
+// at the start of a word ("oli" must not match "caolí"); a trailing space means a whole word.
 const RULES: [SectorId, string[]][] = [
-  ["food", ["aliment", "carn", "lact", "formatg", "begud", "vi ", "vins", "cervesa", "conserv", "escorxador", "oli", "fruit", "peix", "pa ", "fleca", "sucre", "cava", "embotit", "aigues minerals", "elaboracio de productes"]],
+  ["food", ["aliment", "carn", "lact", "formatg", "begud", "vi ", "vins", "cervesa", "conserv", "escorxador", "oli", "fruit", "peix", "pa ", "fleca", "sucre", "cava ", "embotit", "aigues minerals", "elaboracio de productes"]],
   ["chemicals", ["quimic", "farmac", "pintur", "detergent", "adob", "cosmet", "gas", "petroli"]],
   ["paper", ["paper", "cartro", "arts grafiques", "impressio"]],
   ["textiles", ["textil", "tint", "acabament", "teixit", "fil", "confeccio", "pell", "adob de pells", "cuir"]],
-  ["metals", ["metall", "sider", "fos", "galvan", "tractament i revestiment", "maquinaria", "vehicles", "automob"]],
-  ["minerals", ["ceramic", "ciment", "vidre", "rajol", "formigo", "pedra", "minerals no metal"]],
-  ["plastics", ["plastic", "cautxu", "goma"]],
+  ["metals", ["metall", "sider", "fos", "galvan", "tractament i revestiment", "maquinaria", "fabricacio de vehicles", "automob"]],
+  ["minerals", ["ceramic", "ciment", "vidre", "rajol", "formigo", "pedra", "minerals no metal", "maons", "teules"]],
+  ["plastics", ["plastic", "plastiq", "cautxu", "goma"]],
   ["energy", ["energia", "electric", "vapor", "termica", "residus", "depuracio", "aigua"]],
-  ["agriculture", ["agric", "ramad", "porc", "bestiar", "aviram", "cultiu", "granja", "explotacio"]],
-  ["services", ["restaur", "hotel", "camping", "allotjament", "comerc", "serveis", "neteja", "rentat", "bugaderia", "educacio", "sanitat", "hospital", "oficin", "habitatge", "esport", "estacio de servei"]],
+  ["agriculture", ["agric", "ramad", "porc", "bestiar", "aviram", "cultiu", "conreu", "granja", "explotacio"]],
+  ["services", ["restaur", "hotel", "camping", "allotjament", "comerc", "serveis", "neteja", "rentat", "bugaderia", "educacio", "sanitat", "hospital", "oficin", "habitatge", "esport", "estacio de servei", "reparacio de vehicles", "venda de vehicles", "carburant"]],
 ];
 
 export function normalize(s: string) {
@@ -62,24 +63,27 @@ export function muniKey(s: string) {
 }
 
 export function sectorFromCcae(ccae: string): SectorId {
-  const t = normalize(ccae) + " ";
-  for (const [id, kws] of RULES) if (kws.some((k) => t.includes(k))) return id;
+  const t = " " + normalize(ccae).replace(/[^a-z0-9]+/g, " ") + " ";
+  for (const [id, kws] of RULES) if (kws.some((k) => t.includes(" " + k))) return id;
   return "other";
 }
 
 /**
- * EEA IED / E-PRTR Annex I activity code → sector. Returns null for activities to exclude
- * (5(*) waste and wastewater, e.g. 5(f) urban WWTPs and 5(d) landfills).
+ * EEA IED / E-PRTR Annex I activity code → sector. Returns null for activities to exclude:
+ * 5(*) waste and wastewater (urban WWTPs, landfills); 7(a) intensive pig and poultry farms
+ * (over half of Spanish IED sites; animals need drinking-quality water, and a farm uses roughly
+ * 10-30 m³/day, so they are not industrial reuse buyers); and facilities with no activity code
+ * (mostly waste and poultry sites when joined to the installation list).
  */
 export function sectorFromIedActivity(code: string): SectorId | null {
   const c = (code ?? "").trim().toLowerCase();
-  if (c.startsWith("5(")) return null;
+  if (!c || c.startsWith("5(") || c.startsWith("7(a)")) return null;
+  if (c.startsWith("9(a)") || c.startsWith("9(b)")) return "textiles";
   if (c.startsWith("1(")) return "energy";
   if (c.startsWith("2(")) return "metals";
   if (c.startsWith("3(")) return "minerals";
   if (c.startsWith("4(")) return "chemicals";
   if (c.startsWith("6(a)") || c.startsWith("6(b)")) return "paper";
-  if (c.startsWith("7(a)")) return "agriculture";
   if (c.startsWith("7(")) return "food";
   if (c.startsWith("8(")) return "food";
   if (c.startsWith("6(")) return "other";

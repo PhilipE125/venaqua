@@ -437,7 +437,8 @@ function RegionDetail() {
   const { select, maxKm, settings } = useApp();
   const { matches, siteById, companyById } = useMatches();
   const drought = useDrought();
-  const { stress, fill } = useStress();
+  const { stress, fill, lowWater, known } = useStress();
+  const { region } = useApp();
   const clusters = useClusters();
   const w = useWwtps();
   const links = useMemo(() => {
@@ -461,8 +462,17 @@ function RegionDetail() {
       >
         {clusters.length
           ? `${clusters.length} groups of companies could share one pipe from a plant within ${maxKm} km. The best one serves ${clusters[0]!.companyIds.length} companies near ${siteById.get(clusters[0]!.plantId)?.name ?? "a plant"}.`
-          : "Looking for groups of companies that could share one pipe…"}
-        <span className="text-muted-foreground"> Reservoirs are {fill != null ? `${fmt1.format(fill)}% full` : "loading"}.</span>
+          : w.data
+            ? `No group of three or more companies shares a direction from one plant within ${maxKm} km.`
+            : "Looking for groups of companies that could share one pipe…"}
+        <span className="text-muted-foreground">
+          {" "}
+          {region === "de"
+            ? lowWater != null ? `${fmt.format(lowWater * 100)}% of federal river gauges are at low water.` : "River gauges are loading."
+            : region === "fr"
+              ? known ? `Drought restrictions put national water stress at ${fmt.format(stress * 100)}% (VigiEau).` : "Drought restrictions are loading."
+              : fill != null ? `Catalan internal-basin reservoirs are ${fmt1.format(fill)}% full.` : "Reservoirs are loading."}
+        </span>
       </Answer>
 
       <Section title="Shared pipe clusters" note={<span className="flex items-center gap-1">our estimate <SourceInfo id="costs" /></span>}>

@@ -80,7 +80,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
   const [replay, setReplay] = useScenarioState(`${company.id}:replay`, false);
   const [effluent, setEffluent] = useScenarioState<keyof typeof EFFLUENT>(`${company.id}:effluent`, company.sector === "food" || company.sector === "chemicals" ? "heavy" : "medium");
   const [dischargePct, setDischargePct] = useScenarioState(`${company.id}:dischargePct`, 80);
-  const [local, setLocal] = useScenarioState(`${company.id}:local`, { tariff: settings.tariff, dischargeCharge: settings.dischargeCharge, rate: settings.rate, years: settings.years });
+  const [local, setLocal] = useScenarioState(`${company.id}:local`, { tariff: settings.tariffs[region].supply, dischargeCharge: settings.tariffs[region].discharge, rate: settings.rate, years: settings.years });
 
   const sectorQ = (settings.sectorDemand[company.sector] ?? 0) * 365;
   const userQ = demandOverride[company.id];
@@ -324,7 +324,7 @@ export function WaterOptions({ company, focus = "all", view = "economics", onSum
             Reset demand to sector estimate ({fmt.format(sectorQ)} m³/yr)
           </button>
         )}
-        <p className="mt-2 text-[11px] text-muted-foreground">Defaults are assumptions: tariff is the INE Spain average; other ranges are in settings.</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">Defaults are assumptions: tariffs are national or regional household averages (supply and sewerage, sources in settings); other ranges are in settings.</p>
       </div></Details>
       {focus !== "q5" && (
         <Details label="Show future exposure to 2050">

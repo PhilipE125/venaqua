@@ -59,7 +59,11 @@ export function findClusters(
   const out: Cluster[] = [];
   for (const p of plants) {
     if (!(p.available > 0)) continue;
+    // Cheap box test first: whole countries mean thousands of plants × companies.
+    const dLat = opts.maxKm / 111;
+    const dLon = dLat / Math.max(0.2, Math.cos((p.lat * Math.PI) / 180));
     const near = companies
+      .filter((c) => Math.abs(c.lat - p.lat) <= dLat && Math.abs(c.lon - p.lon) <= dLon)
       .map((c) => ({ c, d: haversineKm(p, c), b: bearingDeg(p, c) }))
       .filter((x) => x.d <= opts.maxKm && x.c.demand > 0)
       .sort((a, b) => a.b - b.b);

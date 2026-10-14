@@ -114,6 +114,9 @@ export function useWwtps() {
   return {
     ...w,
     isLoading: region === "es" ? w.isLoading && e.isLoading : outsideSpain(region) ? e.isLoading : w.isLoading,
+    // Outside Spain the map shows EEA plants only, so their failure is the layer's failure.
+    isError: outsideSpain(region) ? e.isError : w.isError,
+    error: outsideSpain(region) ? e.error : w.error,
     data,
     join,
     eeaLoading: e.isLoading,
@@ -147,7 +150,9 @@ export function useCompanies() {
     () => (merged && i.data ? { merged: merged.merged, iedExcluded: merged.excluded, iedFetched: i.data.fetched } : null),
     [merged, i.data],
   );
-  return { ...a, isLoading: a.isLoading && i.isLoading, data, ied: i, mergeStats };
+  return outsideSpain(region)
+    ? { ...a, isLoading: i.isLoading, isError: i.isError, error: i.error, dataUpdatedAt: i.dataUpdatedAt, data, ied: i, mergeStats }
+    : { ...a, isLoading: a.isLoading && i.isLoading, data, ied: i, mergeStats };
 }
 
 /** Catalan reservoirs, or in Germany the federal river gauges (same shape, fill mapped from low/normal/high water). */
@@ -286,7 +291,7 @@ export function useMatches(): Derived {
     const siteById = new Map(sites.map((s) => [s.id, s]));
     const companyById = new Map(companies.map((x) => [x.id, x]));
     const matches = scorePairs(
-      sites.map((s) => ({ id: s.id, lat: s.lat, lon: s.lon, supply: effectiveSupply(s.capacity, s.kind === "regen") })),
+      sites.map((s) => ({ id: s.id, lat: s.lat, lon: s.lon, supply: effectiveSupply(s) })),
       companies.map((x) => ({ id: x.id, lat: x.lat, lon: x.lon, demand: settings.sectorDemand[x.sector] ?? 0 })),
       { maxKm, stress },
     );
@@ -319,7 +324,6 @@ export function useClusters() {
       .filter((p) => p.supply && p.supply.availableReclaimed > 0)
       .map((p) => ({ id: p.id, lat: p.lat, lon: p.lon, available: p.supply!.availableReclaimed }));
     const companies = c.data.features
-      .filter((x) => x.lat > 40 && x.lat < 43.2 && x.lon > 0 && x.lon < 3.5)
       .map((x) => ({ id: x.id, lat: x.lat, lon: x.lon, demand: settings.sectorDemand[x.sector] ?? 0 }));
     return findClusters(plants, companies, { maxKm, pipeCostPerKm: settings.pipeCostPerKm, rate: settings.rate, years: settings.years });
   });

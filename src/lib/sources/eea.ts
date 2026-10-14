@@ -67,6 +67,10 @@ export async function fetchEea(country: Country): Promise<{ plants: Map<string, 
     for (const f of j.features) {
       const p = f.properties;
       const t = p["uwwWasteWaterTreated"];
+      const lat = f.geometry?.coordinates[1] ?? 0, lon = f.geometry?.coordinates[0] ?? 0;
+      // Metropolitan France only (incl. Corsica): the overseas departments sit off the map.
+      if (country === "FR" && (lat < 41 || lon < -5.5 || lon > 10)) continue;
+      const reusePct = parseReusePercent(p["uwwWasteWaterReuse"]);
       plants.set(String(p["uwwCode"]), {
         code: String(p["uwwCode"]),
         name: String(p["uwwName"] ?? ""),
@@ -75,12 +79,13 @@ export async function fetchEea(country: Country): Promise<{ plants: Map<string, 
         uv: p["uwwUV"] === 1,
         filtration: p["uwwSandFiltration"] === 1 || p["uwwMicroFiltration"] === 1,
         ozonation: p["uwwOzonation"] === 1,
-        lat: f.geometry?.coordinates[1] ?? 0,
-        lon: f.geometry?.coordinates[0] ?? 0,
+        lat,
+        lon,
         nuts: String(p["uwwNUTS"] ?? ""),
         nRemoval: p["uwwNRemoval"] === 1,
         pRemoval: p["uwwPRemoval"] === 1,
-        reusePct: parseReusePercent(p["uwwWasteWaterReuse"]),
+        // France fills the reuse field with 0 for every plant, a placeholder rather than a report.
+        reusePct: country === "FR" && reusePct === 0 ? null : reusePct,
       });
     }
     fetched += j.features.length;
@@ -94,14 +99,19 @@ export function parseReusePercent(value: unknown): number | null {
   return Number.isFinite(n) && n >= 0 && n <= 100 ? n : null;
 }
 
+export const NATIONAL_M3_PER_PE_DAY = 0.13;
+
 export function nationalPlant(e: EeaPlant): Plant | null {
   if (!e.lat || !Number.isFinite(e.lon)) return null;
   const treated = e.treatedM3PerYear;
-  const flow = treated != null ? treated / 365 : e.capacity * 0.2;
+  // No reported volume: 0.13 m³ per population equivalent per day, the median of reported plants
+  // (ES 0.115, DE 0.163, FR 0.105 in 2022).
+  const flow = treated != null ? treated / 365 : e.capacity * NATIONAL_M3_PER_PE_DAY;
+  const suspect = treated != null && e.capacity > 0 && flow / e.capacity > 1 ? "More than 1 m³ per population equivalent per day" : null;
   const reused = flow * ((e.reusePct ?? 0) / 100);
   const tertiary = !!e.nRemoval && !!e.pRemoval;
   const advanced = tertiary && (e.uv || e.filtration || e.ozonation);
-  return { id: `eea-${e.code}`, kind: "wwtp", name: e.name, lat: e.lat, lon: e.lon ?? 0, municipi: e.name, comarca: "", operator: "", manager: "", treatment: advanced ? "Advanced treatment" : tertiary ? "Nitrogen and phosphorus removal" : "Secondary treatment", level: tertiary ? "tertiary" : "secondary", capacity: flow, pe: e.capacity, receiving: "", year: "2022", steps: [tertiary ? "N + P removal" : "Secondary", ...(e.filtration ? ["Filtration"] : []), ...(e.uv ? ["UV"] : []), ...(e.ozonation ? ["Ozonation"] : [])], codiAglomeracio: "", nuts: e.nuts ?? "", national: true, reuseReported: e.reusePct ?? null, supply: { designFlow: e.capacity * 0.2, actualFlow: flow, actualQuality: treated != null ? "measured" : "assumption", utilisation: null, alreadyReused: reused, availableReclaimed: Math.max(0, flow - reused), suspect: null, eeaCode: e.code, reuseReady: advanced, eeaFiltration: e.filtration, eeaUV: e.uv } };
+  return { id: `eea-${e.code}`, kind: "wwtp", name: e.name, lat: e.lat, lon: e.lon ?? 0, municipi: e.name, comarca: "", operator: "", manager: "", treatment: advanced ? "Advanced treatment" : tertiary ? "Nitrogen and phosphorus removal" : "Secondary treatment", level: tertiary ? "tertiary" : "secondary", capacity: flow, pe: e.capacity, receiving: "", year: "2022", steps: [tertiary ? "N + P removal" : "Secondary", ...(e.filtration ? ["Filtration"] : []), ...(e.uv ? ["UV"] : []), ...(e.ozonation ? ["Ozonation"] : [])], codiAglomeracio: "", nuts: e.nuts ?? "", national: true, reuseReported: e.reusePct ?? null, supply: { designFlow: e.capacity * NATIONAL_M3_PER_PE_DAY, actualFlow: flow, actualQuality: treated != null ? "measured" : "assumption", utilisation: null, alreadyReused: reused, availableReclaimed: suspect ? 0 : Math.max(0, flow - reused), suspect, eeaCode: e.code, reuseReady: advanced, eeaFiltration: e.filtration, eeaUV: e.uv } };
 }
 
 export const FALLBACK_UTILISATION = 0.6;
@@ -134,14 +144,26 @@ export function computeSupply(p: Plant, eea: EeaPlant | undefined, regen: RegenP
 }
 
 export function enrichPlants(plants: Plant[], eea: Map<string, EeaPlant> | undefined, regens: RegenPlant[]) {
+  // A municipality can have several reuse plants (Vila-seca has 3) and several treatment plants:
+  // sum the reuse plants and attach them to the largest treatment plant only, so the reused
+  // volume is subtracted once.
   const regenByMuni = new Map<string, RegenPlant>();
-  for (const g of regens) regenByMuni.set(normalize(g.municipi), g);
+  for (const g of regens) {
+    const k = normalize(g.municipi);
+    const prev = regenByMuni.get(k);
+    regenByMuni.set(k, prev ? { ...prev, reusedVolume: prev.reusedVolume + g.reusedVolume } : g);
+  }
+  const largest = new Map<string, Plant>();
+  for (const p of plants) {
+    const k = normalize(p.municipi);
+    if (regenByMuni.has(k) && (largest.get(k)?.capacity ?? -1) < p.capacity) largest.set(k, p);
+  }
   let matched = 0;
   const out = plants.map((p) => {
     const key = eeaJoinKey(p.codiAglomeracio);
     const e = key ? eea?.get(key) : undefined;
     if (e?.treatedM3PerYear) matched++;
-    return { ...p, supply: computeSupply(p, e, regenByMuni.get(normalize(p.municipi))) };
+    return { ...p, supply: computeSupply(p, e, largest.get(normalize(p.municipi)) === p ? regenByMuni.get(normalize(p.municipi)) : undefined) };
   });
   return { plants: out, matched, total: plants.length, regenByMuni };
 }

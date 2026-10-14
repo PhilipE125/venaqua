@@ -23,8 +23,9 @@ describe("rawScore", () => {
 
 describe("effectiveSupply", () => {
   it("doubles reuse-ready capacity", () => {
-    expect(effectiveSupply(100, true)).toBe(200);
-    expect(effectiveSupply(100, false)).toBe(100);
+    expect(effectiveSupply({ kind: "wwtp", capacity: 100, supply: { availableReclaimed: 40 } })).toBe(40);
+    expect(effectiveSupply({ kind: "wwtp", capacity: 100 })).toBe(100);
+    expect(effectiveSupply({ kind: "regen", capacity: 100 })).toBe(100);
   });
 });
 
