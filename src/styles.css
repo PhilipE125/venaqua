@@ -206,3 +206,4 @@
 .landing-map .map-legend,
 .landing-map .panel { display: none !important; }
 .landing-map .maplibregl-ctrl { display: none !important; }
+.landing-map .future-controls{display:none}

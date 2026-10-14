@@ -3,6 +3,8 @@ import { ArrowRight, Building2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
+import { ADDONS, FAQ_PRICING, NEUTRALITY, PLANS, type Plan } from "@/content/venaqua";
+import { StatusBadge } from "@/components/marketing";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -17,94 +19,6 @@ export const Route = createFileRoute("/pricing")({
   }),
   component: Pricing,
 });
-
-type Plan = {
-  name: string;
-  price: string;
-  for: string;
-  features: string[];
-  cta: string;
-  href?: "/explore";
-  topic?: string;
-  popular?: boolean;
-};
-
-const PLANS: Plan[] = [
-  {
-    name: "Free Explorer",
-    price: "Free",
-    for: "Anyone exploring water-reuse opportunities",
-    features: [
-      "Public map",
-      "Basic filters",
-      "Compact public opportunity previews",
-      "Water-stress and source visibility",
-    ],
-    cta: "Explore the map",
-    href: "/explore",
-  },
-  {
-    name: "Market Access",
-    price: "From €12,000/year",
-    for: "Advisors and developers screening opportunities in one market",
-    features: [
-      "Advanced Reuse Searches",
-      "Saved searches",
-      "Full Opportunity Cards",
-      "Up to 10 active opportunities",
-      "Standard analysis briefs",
-      "Basic team workspace",
-    ],
-    cta: "Book a demo",
-    topic: "Booking a demo — Market Access",
-  },
-  {
-    name: "Development Portfolio",
-    price: "€30,000–45,000/year",
-    popular: true,
-    for: "Engineering teams, operators and industrial associations managing a development pipeline",
-    features: [
-      "Everything in Market Access",
-      "Existing Projects workspace expanded into Reuse Pipeline",
-      "Up to 25 active opportunities",
-      "Project stages, owners, tasks and evidence logs",
-      "Tender, permit, drought and data-change alerts",
-      "Comparable-project intelligence",
-      "Professional decision briefs",
-    ],
-    cta: "Talk to the team",
-    topic: "Talk to the team — Development Portfolio",
-  },
-  {
-    name: "Asset Intelligence",
-    price: "€60,000–100,000/year",
-    for: "Operators and planning teams managing private asset and demand data",
-    features: [
-      "Everything in Development Portfolio",
-      "Portfolio dashboard",
-      "Private data layers",
-      "Custom scoring",
-      "Controlled project rooms",
-      "API/export options",
-    ],
-    cta: "Design your workspace",
-    topic: "Design your workspace — Asset Intelligence",
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    for: "Multi-region operators, agencies and infrastructure teams",
-    features: [
-      "Multi-region access",
-      "Integrations",
-      "SSO",
-      "Security/governance",
-      "Custom data products",
-    ],
-    cta: "Contact Venaqua",
-    topic: "Enterprise enquiry",
-  },
-];
 
 function PlanCard({ plan }: { plan: Plan }) {
   const { setContact } = useWorkspace();
@@ -170,6 +84,8 @@ function Pricing() {
             </div>
           </div>
         </section>
+
+        <AddonsAndFaq />
       </main>
       <footer className="border-t border-border/60 px-5 py-6 text-center text-xs text-muted-foreground">
         <div className="flex flex-wrap items-center justify-center gap-4">
@@ -180,5 +96,51 @@ function Pricing() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function AddonsAndFaq() {
+  const { setContact } = useWorkspace();
+  return (
+    <>
+      <section className="mx-auto w-full max-w-6xl px-5 pb-12">
+        <h2 className="text-xl font-semibold tracking-tight">Add-ons</h2>
+        <div className="mt-4 grid gap-5 md:grid-cols-2">
+          {ADDONS.map((a) => (
+            <div key={a.name} className="flex flex-col rounded-xl border bg-card p-6">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="font-semibold">{a.name}</h3>
+                <StatusBadge status={a.status} />
+              </div>
+              <p className="mt-1 text-sm font-medium">{a.price}</p>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{a.text}</p>
+              <Button variant="outline" className="mt-4 self-start" onClick={() => setContact(a.topic)}>Ask about {a.name}</Button>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="mx-auto w-full max-w-6xl px-5 pb-12">
+        <h2 className="text-xl font-semibold tracking-tight">Neutral by design</h2>
+        <div className="mt-4 grid gap-5 md:grid-cols-3">
+          {NEUTRALITY.map((n) => (
+            <div key={n.title} className="rounded-xl border bg-card p-5">
+              <h3 className="font-semibold">{n.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{n.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="mx-auto w-full max-w-3xl px-5 pb-16">
+        <h2 className="text-xl font-semibold tracking-tight">Questions</h2>
+        <div className="mt-4 divide-y rounded-xl border bg-card">
+          {FAQ_PRICING.map((f) => (
+            <details key={f.q} className="group p-5">
+              <summary className="cursor-pointer font-medium">{f.q}</summary>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }

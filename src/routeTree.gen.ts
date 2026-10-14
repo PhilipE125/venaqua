@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as PlatformRouteImport } from './routes/platform'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -29,6 +30,11 @@ const AnalysisRoute = AnalysisRouteImport.update({
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
   '/explore': typeof ExploreRoute
+  '/platform': typeof PlatformRoute
   '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
   '/explore': typeof ExploreRoute
+  '/platform': typeof PlatformRoute
   '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/analysis': typeof AnalysisRoute
   '/explore': typeof ExploreRoute
+  '/platform': typeof PlatformRoute
   '/pricing': typeof PricingRoute
   '/projects': typeof ProjectsRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analysis'
     | '/explore'
+    | '/platform'
     | '/pricing'
     | '/projects'
     | '/reset-password'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analysis'
     | '/explore'
+    | '/platform'
     | '/pricing'
     | '/projects'
     | '/reset-password'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analysis'
     | '/explore'
+    | '/platform'
     | '/pricing'
     | '/projects'
     | '/reset-password'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalysisRoute: typeof AnalysisRoute
   ExploreRoute: typeof ExploreRoute
+  PlatformRoute: typeof PlatformRoute
   PricingRoute: typeof PricingRoute
   ProjectsRoute: typeof ProjectsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalysisRoute: AnalysisRoute,
   ExploreRoute: ExploreRoute,
+  PlatformRoute: PlatformRoute,
   PricingRoute: PricingRoute,
   ProjectsRoute: ProjectsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
