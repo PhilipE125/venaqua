@@ -12,7 +12,7 @@ import { normalize } from "@/lib/sectors";
 import { sectorById } from "@/lib/sectors";
 import { useApp } from "@/lib/state";
 import type { Company, Plant, RegenPlant, Reservoir, ReuseProject } from "@/lib/types";
-import { LEVEL_COLORS, REGEN_COLOR, fillColor } from "./colors";
+import { LEVEL_COLORS, REGEN_COLOR, fillColor, rgb } from "./colors";
 import droughtData from "@/data/drought-comarques.json";
 import { predictPipes, type PipeSeg } from "@/lib/pipes";
 
@@ -60,7 +60,7 @@ function ringIcon(g: RegenPlant, annual: number): string {
 const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect x="2" y="2" width="12" height="12" fill="#1a1a1a" stroke="#ffffff" stroke-width="2"/></svg>')}`;
 // Opening view per region: whole country first, then sub-areas.
 const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 10.4, latitude: 51.2, zoom: 5.6 } } as const;
-// Circles shrink when zoomed out to a whole country, so dense areas (Ruhr, Madrid) stay readable.
+// Circles shrink when zoomed out to a whole country, so dense urban areas stay readable.
 // radiusScale is a GPU uniform: changing it does not rebuild any per-point attributes.
 const zoomScale = (zoom: number) => Math.round(Math.min(1, Math.max(0.35, 2 ** ((zoom - 8) / 2))) * 20) / 20;
 
