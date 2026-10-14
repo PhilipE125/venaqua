@@ -32,7 +32,7 @@ export type Offer = {
 
 // One pricing table. Every price stays under Spain's €15,000 minor-contract limit (excl. VAT).
 export type Plan = {
-  id: EnquiryTopic | "free";
+  id: EnquiryTopic;
   name: string;
   price: string;
   listPrice?: string;
@@ -40,15 +40,13 @@ export type Plan = {
   includes: string[];
   status: ModuleStatus;
   statusLabel: string;
-  cta: "Start pilot" | "Talk to us" | "Open the free map";
+  cta: "Start pilot" | "Talk to us";
 };
 
+// Two paid options only. The free map is a strip below the table, never a plan.
 export const PLANS: Plan[] = [
-  { id: "free", name: "Free", price: "€0", priceNote: "No account needed", includes: ["Reuse map and plant pages", "Teaser lists of cases, signals and tenders", "No € figures or buyer names"], status: "live", statusLabel: "Live", cta: "Open the free map" },
-  { id: "deal_flow_pro", name: "Deal Flow Pro", price: "€2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["3 seats · Spain", "All investment cases, early signals and tenders", "3 Case Rooms", "Exports and alerts"], status: "beta", statusLabel: "Beta", cta: "Start pilot" },
-  { id: "deal_flow_team", name: "Deal Flow Team", price: "€12,000/yr", priceNote: "Everything in Pro", includes: ["10 seats", "Unlimited Case Rooms", "Company profile for eligibility checks", "1 engineer-reviewed case included"], status: "beta", statusLabel: "Beta", cta: "Talk to us" },
-  { id: "investment_case", name: "Engineer-reviewed case", price: "from €4,900", priceNote: "Scoped per case", includes: ["A screening case checked by partner engineers", "Fee can be split between the parties"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
-  { id: "data_export", name: "Data (export or API)", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
+  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 seats, 3 Case Rooms, exports and alerts", "Team €12,000/yr: 10 seats, unlimited Case Rooms, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], status: "beta", statusLabel: "Beta", cta: "Start pilot" },
+  { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "on-request", statusLabel: "On request", cta: "Talk to us" },
 ];
 
 export const ENQUIRIES: Record<EnquiryTopic, { title: string; description: string; placeholder: string }> = {
