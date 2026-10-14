@@ -2,7 +2,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { setWorkerUrl, type StyleSpecification } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { MapboxOverlay, type MapboxOverlayProps } from "@deck.gl/mapbox";
-import { IconLayer, PathLayer, PolygonLayer, ScatterplotLayer } from "@deck.gl/layers";
+import { BitmapLayer, IconLayer, PathLayer, PolygonLayer, ScatterplotLayer } from "@deck.gl/layers";
 import { PathStyleExtension } from "@deck.gl/extensions";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Map, { NavigationControl, useControl, type MapRef } from "react-map-gl/maplibre";
@@ -15,6 +15,7 @@ import type { Company, Plant, RegenPlant, Reservoir, ReuseProject } from "@/lib/
 import { LEVEL_COLORS, REGEN_COLOR, fillColor, rgb } from "./colors";
 import droughtData from "@/data/drought-comarques.json";
 import { predictPipes, type PipeSeg } from "@/lib/pipes";
+import { STRESS_BOUNDS, stressImage } from "@/lib/stressGrid";
 
 setWorkerUrl(workerUrl);
 
@@ -62,6 +63,7 @@ const SQUARE = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmln
 const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longitude: 1.75, latitude: 41.7, zoom: 7.4 }, de: { longitude: 10.4, latitude: 51.2, zoom: 5.6 } } as const;
 // Circles shrink when zoomed out to a whole country, so dense urban areas stay readable.
 // radiusScale is a GPU uniform: changing it does not rebuild any per-point attributes.
+const PIPE_MIN_ZOOM = 9.5;
 const zoomScale = (zoom: number) => Math.round(Math.min(1, Math.max(0.35, 2 ** ((zoom - 8) / 2))) * 20) / 20;
 
 // Indicative future water-stress scenario per comarca (not an official forecast).
@@ -124,6 +126,7 @@ export default function MapView() {
   const { matches, siteById, companyById } = useMatches();
   const setHover = useRef<(h: Hover) => void>(() => {});
   const [scale, setScale] = useState(() => zoomScale((camera ?? VIEWS[region]).zoom));
+  const [zoomLvl, setZoomLvl] = useState(() => Math.floor((camera ?? VIEWS[region]).zoom * 2) / 2);
   const basemap = useBasemapStyle(dark);
   // Fly to the region when it changes; on first mount keep a saved camera (e.g. coming back from /analysis).
   const firstRun = useRef(true);
@@ -202,21 +205,25 @@ export default function MapView() {
   }, [selection, companyById, siteById]);
 
   const stressYear = HORIZONS.find((h) => h.key === horizon)?.year;
+  const stressUrl = useMemo(() => (stressYear && typeof document !== "undefined" ? stressImage(stressYear, (v) => stressColor(v, 255).slice(0, 3).map(Math.round) as [number, number, number]) : null), [stressYear]);
+  const pipesVisible = showPipes && zoomLvl >= PIPE_MIN_ZOOM;
   const deckLayers = [
+    !!stressUrl &&
+      new BitmapLayer({ id: "future-stress-raster", image: stressUrl, bounds: STRESS_BOUNDS, opacity: 0.62 }),
     stressYear &&
       new PolygonLayer<(typeof STRESS)[number]>({
         id: "future-stress",
         data: STRESS,
         getPolygon: (d) => d.polygon,
-        getFillColor: (d) => stressColor(d.risk[stressYear] ?? 0, 150),
-        getLineColor: (d) => stressColor(d.risk[stressYear] ?? 0, 230),
-        lineWidthMinPixels: 0.6,
+        getFillColor: [0, 0, 0, 0],
+        getLineColor: (d) => stressColor(d.risk[stressYear] ?? 0, 90),
+        lineWidthMinPixels: 0.4,
         stroked: true,
         pickable: true,
         updateTriggers: { getFillColor: [stressYear], getLineColor: [stressYear] },
         transitions: { getFillColor: 500 },
       }),
-    showPipes &&
+    pipesVisible &&
       new PathLayer<PipeSeg>({
         id: "pipes-glow",
         data: pipes,
@@ -227,7 +234,7 @@ export default function MapView() {
         jointRounded: true,
         capRounded: true,
       }),
-    showPipes &&
+    pipesVisible &&
       new PathLayer<PipeSeg>({
         id: "pipes",
         data: pipes,
@@ -370,7 +377,7 @@ export default function MapView() {
       <Map
         ref={mapRef}
         onMoveEnd={e => setCamera(e.viewState)}
-        onZoom={e => setScale(zoomScale(e.viewState.zoom))}
+        onZoom={e => { setScale(zoomScale(e.viewState.zoom)); setZoomLvl(Math.floor(e.viewState.zoom * 2) / 2); }}
         initialViewState={camera ?? VIEWS[region]}
         mapStyle={
           basemap ??
@@ -501,7 +508,8 @@ export default function MapView() {
           <span className="font-medium">Predicted pipe network</span>
           <input type="checkbox" className="accent-[var(--primary)]" checked={showPipes} onChange={(e) => setShowPipes(e.target.checked)} />
         </label>
-        {showPipes && (
+        {showPipes && !pipesVisible && <p className="mt-1.5 text-[10px] text-muted-foreground">Zoom in closer to see pipe routes.</p>}
+        {pipesVisible && (
           <div className="mt-1.5 space-y-1 text-[10px] text-muted-foreground">
             <p className="flex items-center gap-2"><span className="inline-block h-[3px] w-5 rounded" style={{ background: "rgb(2,132,199)" }} />Rural trunk / branch (priority)</p>
             <p className="flex items-center gap-2"><span className="inline-block h-[2px] w-5 rounded" style={{ background: "rgba(11,110,138,0.55)" }} />Urban</p>
