@@ -13,6 +13,8 @@ import { sectorById } from "@/lib/sectors";
 import { useApp } from "@/lib/state";
 import type { Company, Plant, RegenPlant, Reservoir, ReuseProject } from "@/lib/types";
 import { LEVEL_COLORS, REGEN_COLOR, fillColor } from "./colors";
+import droughtData from "@/data/drought-comarques.json";
+import { predictPipes, type PipeSeg } from "@/lib/pipes";
 
 setWorkerUrl(workerUrl);
 
@@ -61,6 +63,29 @@ const VIEWS = { es: { longitude: -3.7, latitude: 40.2, zoom: 5.5 }, cat: { longi
 // Circles shrink when zoomed out to a whole country, so dense areas (Ruhr, Madrid) stay readable.
 // radiusScale is a GPU uniform: changing it does not rebuild any per-point attributes.
 const zoomScale = (zoom: number) => Math.round(Math.min(1, Math.max(0.35, 2 ** ((zoom - 8) / 2))) * 20) / 20;
+
+// Indicative future water-stress scenario per comarca (not an official forecast).
+const HORIZONS = [
+  { key: "2y", label: "2 yrs", year: "2028" },
+  { key: "5y", label: "5 yrs", year: "2031" },
+  { key: "10y", label: "10 yrs", year: "2036" },
+  { key: "15y", label: "15 yrs", year: "2041" },
+] as const;
+const STRESS = (droughtData as { name: string; risk: Record<string, number>; polygons: [number, number][][] }[]).flatMap((f) =>
+  f.polygons.map((polygon) => ({ name: f.name, risk: f.risk, polygon, kind: "stress" })),
+);
+const RAMP: [number, [number, number, number]][] = [[40, [254, 240, 180]], [60, [253, 174, 97]], [75, [240, 59, 32]], [90, [128, 0, 38]]];
+function stressColor(v: number, a: number): [number, number, number, number] {
+  for (let i = 1; i < RAMP.length; i++) {
+    const [v1, c1] = RAMP[i];
+    const [v0, c0] = RAMP[i - 1];
+    if (v <= v1) {
+      const t = Math.max(0, (v - v0) / (v1 - v0));
+      return [c0[0] + (c1[0] - c0[0]) * t, c0[1] + (c1[1] - c0[1]) * t, c0[2] + (c1[2] - c0[2]) * t, a];
+    }
+  }
+  return [...RAMP[RAMP.length - 1][1], a];
+}
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
 export default function MapView() {
@@ -131,6 +156,14 @@ export default function MapView() {
     return (r.data?.features ?? []).filter((g) => !ringed.has(g.id));
   }, [r.data, rings]);
   const clusterData = useMemo(() => clusters.slice(0, 40), [clusters]);
+  const [horizon, setHorizon] = useState<string | null>(null);
+  const [showPipes, setShowPipes] = useState(false);
+  // Predicted pipes are sketched for Catalonia only to keep the whole-Spain view fast.
+  const pipes = useMemo(() => {
+    if (!showPipes) return [];
+    const inCat = (p: { lon: number; lat: number }) => p.lon > 0.15 && p.lon < 3.35 && p.lat > 40.5 && p.lat < 42.9;
+    return predictPipes((w.data?.features ?? []).filter(inCat), (c.data?.features ?? []).filter(inCat));
+  }, [showPipes, w.data, c.data]);
 
   // Fly to whatever is selected, from the map, a list or search.
   useEffect(() => {
@@ -144,7 +177,46 @@ export default function MapView() {
     m.flyTo({ center: [f.lon, f.lat], zoom: Math.max(z, 10), offset: [0, -70], duration: 900 });
   }, [selection, companyById, siteById]);
 
+  const stressYear = HORIZONS.find((h) => h.key === horizon)?.year;
   const deckLayers = [
+    stressYear &&
+      new PolygonLayer<(typeof STRESS)[number]>({
+        id: "future-stress",
+        data: STRESS,
+        getPolygon: (d) => d.polygon,
+        getFillColor: (d) => stressColor(d.risk[stressYear], 150),
+        getLineColor: (d) => stressColor(d.risk[stressYear], 230),
+        lineWidthMinPixels: 0.6,
+        stroked: true,
+        pickable: true,
+        updateTriggers: { getFillColor: [stressYear], getLineColor: [stressYear] },
+        transitions: { getFillColor: 500 },
+      }),
+    showPipes &&
+      new PathLayer<PipeSeg>({
+        id: "pipes-glow",
+        data: pipes,
+        getPath: (d) => d.path,
+        getColor: (d) => (d.rural ? [56, 189, 248, 70] : [11, 110, 138, 30]),
+        getWidth: (d) => (d.kind === "trunk" ? 9 : 5) * (d.rural ? 1 : 0.6),
+        widthUnits: "pixels",
+        jointRounded: true,
+        capRounded: true,
+      }),
+    showPipes &&
+      new PathLayer<PipeSeg>({
+        id: "pipes",
+        data: pipes,
+        getPath: (d) => d.path,
+        getColor: (d) => (d.rural ? [2, 132, 199, 235] : [11, 110, 138, 140]),
+        getWidth: (d) => (d.kind === "trunk" ? 3 : 1.4) * (d.rural ? 1 : 0.7),
+        widthUnits: "pixels",
+        jointRounded: true,
+        capRounded: true,
+        getDashArray: (d: PipeSeg) => (d.kind === "trunk" ? [0, 0] : [3, 2]),
+        dashJustified: true,
+        extensions: [new PathStyleExtension({ dash: true })],
+      } as ConstructorParameters<typeof PathLayer<PipeSeg>>[0]),
     layers.clusters &&
       new PolygonLayer({
         id: "clusters",
