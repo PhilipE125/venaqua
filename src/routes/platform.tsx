@@ -3,7 +3,7 @@ import { ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { FACTS, FAQ_PLATFORM, MODULES, NEUTRALITY, VISION, type FactId } from "@/content/venaqua";
-import { FactValue, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
+import { FactValue, SourceCaption, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
 
 export const Route = createFileRoute("/platform")({
   head: () => ({
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/platform")({
 });
 
 const PLATFORM_FACTS: FactId[] = [
-  "reuseShare", "industryShare", "madridRelease", "reclaimedCost", "desalCost", "bcnTariff",
+  "reuseShare", "industryShare", "tertiary", "madridRelease", "reclaimedCost", "desalCost", "bcnTariff",
   "pipelineCost", "tarragona", "uwwtd2039", "authorisation", "energyAvoided",
 ];
 
@@ -71,6 +71,7 @@ function Platform() {
                   <div key={id} className="rounded-xl border bg-card p-5">
                     <FactValue id={id} className="text-xl font-semibold tabular-nums tracking-tight" />
                     <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{FACTS[id].label}</p>
+                    <SourceCaption id={id} />
                   </div>
                 ))}
               </div>

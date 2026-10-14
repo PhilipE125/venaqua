@@ -20,10 +20,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
-import { FACTS, MODULES, VISION, type FactId } from "@/content/venaqua";
-import { FactValue, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
+import { AUDIENCES, FACTS, MODULES, NEUTRALITY, VISION, type AudienceIcon, type FactId } from "@/content/venaqua";
+import { FactValue, SourceCaption, SourcesList, SourcesProvider, StatusBadge } from "@/components/marketing";
 
-const HOME_FACTS: FactId[] = ["reuseShare", "industryShare", "bcnTariff"];
+const HOME_FACTS: FactId[] = ["reuseShare", "industryShare", "tertiary", "uwwtd2039", "reclaimedCost", "bcnTariff", "energyAvoided"];
 
 const MapView = lazy(() => import("@/components/map/MapView"));
 
@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Venaqua · Optimize wastewater reuse" },
-      { name: "description", content: `${VISION.mission} ${VISION.description}` },
+      { name: "description", content: VISION.mission },
       { property: "og:title", content: "Venaqua · Optimize wastewater reuse" },
       { property: "og:description", content: VISION.description },
       { property: "og:type", content: "website" },
@@ -90,12 +90,7 @@ const STEPS = [
   },
 ];
 
-const TEAMS = [
-  { icon: Droplets, title: "Water operators", text: "Show the reuse potential of your assets and the buyers it could serve." },
-  { icon: Wrench, title: "Engineering advisors", text: "Screen and qualify opportunities faster before committing engineering hours." },
-  { icon: Factory, title: "Industrial clusters", text: "Find reclaimable water near your members' sites and compare it to their tariffs." },
-  { icon: Landmark, title: "Public planning teams", text: "See where reuse demand, drought stress and treatment capacity overlap." },
-];
+const AUDIENCE_ICONS: Record<AudienceIcon, typeof Droplets> = { operators: Wrench, owners: Droplets, industry: Factory, investors: Landmark };
 
 
 function Landing() {
@@ -111,10 +106,12 @@ function Landing() {
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Venaqua · Industrial water reuse</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
             {VISION.headline}
+            <span className="mt-2 block text-2xl font-normal text-muted-foreground sm:text-3xl">{VISION.subheadline}</span>
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            {VISION.mission} {VISION.description}
+            {VISION.description}
           </p>
+          <p className="mt-4 max-w-2xl text-sm font-medium leading-relaxed">{VISION.pitch}</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Button asChild size="lg">
               <Link to="/explore">Explore the free map<ArrowRight /></Link>
@@ -141,7 +138,7 @@ function Landing() {
             <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
               Water reuse projects often stall before engineering begins.
             </h2>
-            <div className="mt-6 grid gap-5 sm:grid-cols-3">
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {HOME_FACTS.map((id) => <HomeFact key={id} id={id} />)}
             </div>
             <div className="mt-8 grid gap-5 md:grid-cols-3">
@@ -179,13 +176,17 @@ function Landing() {
             <p className="label-caps text-primary">For teams</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Built for the teams that develop reuse</h2>
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {TEAMS.map((t) => (
-                <div key={t.title} className="rounded-xl border bg-card p-6">
-                  <t.icon className="h-5 w-5 text-primary" />
-                  <h3 className="mt-3 font-semibold">{t.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.text}</p>
-                </div>
-              ))}
+              {AUDIENCES.map((t) => {
+                const Icon = AUDIENCE_ICONS[t.icon];
+                return (
+                  <div key={t.title} className="flex flex-col rounded-xl border bg-card p-6">
+                    <Icon className="h-5 w-5 text-primary" />
+                    <h3 className="mt-3 font-semibold leading-snug">{t.title}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{t.text}</p>
+                    <p className="mt-3 label-caps text-muted-foreground">{t.access}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -210,6 +211,21 @@ function Landing() {
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="border-t border-border/60 bg-background/80 backdrop-blur-sm">
+          <div className="mx-auto w-full max-w-5xl px-5 py-16">
+            <p className="label-caps text-primary">Neutral by design</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Three rules we never break</h2>
+            <div className="mt-8 grid gap-5 md:grid-cols-3">
+              {NEUTRALITY.map((n) => (
+                <div key={n.title} className="rounded-xl border bg-card p-6">
+                  <h3 className="font-semibold">{n.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{n.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -239,7 +255,7 @@ function Landing() {
               </Button>
             </div>
             <p className="mt-4 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Users className="h-3.5 w-3.5" /> Water operators, engineering advisors, industrial clusters and public planning teams.
+              <Users className="h-3.5 w-3.5" /> Water operators, plant owners, industrial sites and investors.
             </p>
           </div>
         </section>
@@ -263,6 +279,7 @@ function HomeFact({ id }: { id: FactId }) {
     <div className="rounded-xl border bg-card p-5">
       <FactValue id={id} className="text-2xl font-semibold tabular-nums tracking-tight" />
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{FACTS[id].label}</p>
+      <SourceCaption id={id} />
     </div>
   );
 }
