@@ -48,10 +48,11 @@ const scoreClass = (s: number) => (s >= 80 ? "bg-primary text-primary-foreground
 const daysTo = (d: string | null) => (d ? Math.ceil((new Date(d).getTime() - Date.now()) / 86_400_000) : null);
 
 function toFilters(s: Search): DealFilters {
-  return {
+  const strip = (o: Record<string, unknown>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as DealFilters;
+  return strip({
     q: s.q, region: s.region?.split(","), kind: s.kind?.split(",") as Kind[] | undefined, stage: s.stage?.split(",") as Stage[] | undefined,
     min_score: s.min_score, actionable: s.actionable !== "0", deadline_within_days: s.deadline, verified_only: s.verified === "1",
-  };
+  });
 }
 
 function csv(rows: Deal[]) {
