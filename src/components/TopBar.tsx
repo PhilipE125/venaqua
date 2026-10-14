@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Download, Droplets, FolderOpen, MessageCircle, Moon, MoreHorizontal, Search, Settings2, Sun } from "lucide-react";
+import { Download, Droplets, FolderOpen, MessageCircle, Moon, MoreHorizontal, Search, Settings2, Sun, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useApp } from "@/lib/state";
@@ -33,9 +33,23 @@ export function TopBar() {
           <DropdownMenuItem onSelect={() => setContact("")}><MessageCircle />Talk to the team</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {!user && <FreePill onSignup={() => setAuthOpen(true)} />}
       {!user && <><Button variant="ghost" size="sm" onClick={() => setAuthOpen(true)}>Sign in</Button><Button size="sm" onClick={() => setAuthOpen(true)}><span className="hidden sm:inline">Get started — full version</span><span className="sm:hidden">Get started</span></Button></>}
     </div>
     <ExportDialog open={exportOpen} onOpenChange={setExportOpen} />
     <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
   </header>;
+}
+
+const BANNER_KEY = "venaqua:free-banner-dismissed";
+// Small header pill; once dismissed it stays dismissed.
+function FreePill({ onSignup }: { onSignup: () => void }) {
+  const [dismissed, setDismissed] = useState(true);
+  useEffect(() => { try { setDismissed(localStorage.getItem(BANNER_KEY) === "1"); } catch { setDismissed(false); } }, []);
+  if (dismissed) return null;
+  const close = () => { try { localStorage.setItem(BANNER_KEY, "1"); } catch { /* storage unavailable */ } setDismissed(true); };
+  return <span className="hidden items-center gap-1 rounded-full border py-0.5 pl-2.5 pr-1 text-[11px] lg:flex">
+    <button className="text-muted-foreground hover:text-foreground" onClick={onSignup}>Free map · save projects with an account</button>
+    <button aria-label="Dismiss" className="rounded-full p-0.5 text-muted-foreground hover:text-foreground" onClick={close}><X className="h-3 w-3" /></button>
+  </span>;
 }
