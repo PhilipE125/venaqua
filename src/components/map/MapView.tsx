@@ -18,8 +18,6 @@ import droughtData from "@/data/drought-comarques.json";
 import { predictPipes, type PipeSeg } from "@/lib/pipes";
 import { STRESS_BOUNDS, STRESS_HORIZONS, stressAt, stressImage } from "@/lib/stressGrid";
 import { Button } from "@/components/ui/button";
-import { WaterPricePanel } from "./WaterPricePanel";
-import { SourceInfo } from "@/components/SourceInfo";
 import { useWorkspace } from "@/lib/workspace";
 
 setWorkerUrl(workerUrl);
@@ -99,9 +97,13 @@ function useBasemapStyle(dark: boolean) {
       .then((r) => r.json())
       .then((s) => {
         if (!alive) return;
-        for (const l of s.layers ?? []) {
-          if (l.id === "water") l.paint = { ...l.paint, "fill-color": dark ? "#1d3f5e" : "#a9d6f2" };
-          if (l.id === "waterway") l.paint = { ...l.paint, "line-color": dark ? "#2a5a86" : "#7dbde8" };
+        // Quiet basemap: soft water, no park/land-use fills, only major place labels.
+        const drop = /^(park|landuse|landcover|aeroway|building)|place_(village|hamlet|suburb|other|neighbourhood|quarter)|poi/i;
+        s.layers = (s.layers ?? []).filter((l: { id: string }) => !drop.test(l.id));
+        for (const l of s.layers) {
+          if (l.id === "water") l.paint = { ...l.paint, "fill-color": dark ? "#1c2c3a" : "#d6e6f0" };
+          if (l.id === "waterway") l.paint = { ...l.paint, "line-color": dark ? "#24394d" : "#bcd6e6" };
+          if (/^place_(town|city)/.test(l.id) && l.minzoom == null) l.minzoom = /town/.test(l.id) ? 8 : 5;
         }
         setStyle(s);
       })
@@ -115,7 +117,9 @@ function useBasemapStyle(dark: boolean) {
 
 export default function MapView({ presentation = "explorer" }: { presentation?: "explorer" | "landing" } = {}) {
   const isLanding = presentation === "landing";
-  const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus } = useApp();
+  const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus, horizon, showPipes, setPanelOpen } = useApp();
+  const [legendOpen, setLegendOpen] = useState(false);
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { privateSites: allPrivate } = useWorkspace();
   const privateSites = isLanding ? [] : allPrivate;
   const pr = useProjects();
@@ -208,8 +212,11 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
     return (r.data?.features ?? []).filter((g) => !ringed.has(g.id));
   }, [r.data, rings]);
   const clusterData = useMemo(() => clusters.slice(0, 40), [clusters]);
-  const [horizon, setHorizon] = useState<string | null>(null);
-  const [showPipes, setShowPipes] = useState(false);
+  // Big plants drawn first so small ones stay visible on top.
+  const plantData = useMemo(() => [...(w.data?.features ?? [])].sort((a, b) => plantRadius(b) - plantRadius(a)), [w.data]);
+  const zoomedIn = zoomLvl >= 8;
+  const sectorColours = zoomedIn || sector !== "all";
+  const companyOpacity = isLanding ? 0 : Math.max(0, Math.min(1, zoomLvl - 6));
   // Predicted pipes are sketched across the whole of Spain from the national plant and company data.
   const pipes = useMemo(() => {
     if (!showPipes) return [];
@@ -234,7 +241,9 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
   const stressYear = spain ? HORIZONS.find((h) => h.key === horizon)?.year : undefined;
   const stressAhead = HORIZONS.find((h) => h.key === horizon)?.ahead ?? 0;
   const stressUrl = useMemo(() => (stressYear && typeof document !== "undefined" ? stressImage(stressYear, (v) => stressColor(v, 255).slice(0, 3).map(Math.round) as [number, number, number]) : null), [stressYear]);
-  const pipesVisible = showPipes && zoomLvl >= PIPE_MIN_ZOOM;
+  const pipesVisible = spain && showPipes && zoomLvl >= PIPE_MIN_ZOOM;
+  // While a site is selected, fold the map controls away so the card has room.
+  useEffect(() => { if (selection && !isLanding) setPanelOpen(false); }, [selection, isLanding]); // eslint-disable-line react-hooks/exhaustive-deps
   const deckLayers = [
     !!stressUrl &&
       new BitmapLayer({ id: "future-stress-raster", image: stressUrl, bounds: STRESS_BOUNDS, opacity: 0.62 }),
@@ -325,9 +334,10 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         dashJustified: true,
         extensions: [new PathStyleExtension({ dash: true })],
       } as ConstructorParameters<typeof PathLayer>[0]),
-    layers.companies &&
+    layers.companies && (companyOpacity > 0 || !!selectedSite) &&
       new ScatterplotLayer<Company>({
         id: "companies",
+        opacity: selectedSite ? 1 : companyOpacity,
         data: companyData,
         getPosition: (d) => [d.lon, d.lat],
         getRadius: (d) => (arcCompanyIds.has(d.id) || selection?.id === d.id ? 4.5 : 2.8),
@@ -337,6 +347,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         lineWidthMinPixels: 1,
         getLineColor: (d) => {
           const dim = selectedSite && !arcCompanyIds.has(d.id);
+          if (!sectorColours && !arcCompanyIds.has(d.id)) return (dark ? [180, 180, 180, 160] : [90, 90, 90, 160]) as [number, number, number, number];
           return [...sectorById[d.sector].color, dim ? 60 : 230] as [number, number, number, number];
         },
         getFillColor: (d) => {
@@ -347,7 +358,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
           return [255, 255, 255, dim ? 20 : 90];
         },
         pickable: true,
-        updateTriggers: { getRadius: [arcCompanyIds, selection], getFillColor: [arcCompanyIds, selectedSite, confirmed, dark], getLineColor: [arcCompanyIds, selectedSite] },
+        updateTriggers: { getRadius: [arcCompanyIds, selection], getFillColor: [arcCompanyIds, selectedSite, confirmed, dark], getLineColor: [arcCompanyIds, selectedSite, sectorColours, dark] },
       }),
     layers.reservoirs &&
       rivers.length > 0 &&
@@ -400,19 +411,20 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
     layers.wwtp &&
       new ScatterplotLayer<Plant>({
         id: "wwtp",
-        data: w.data?.features ?? [],
+        data: plantData,
         getPosition: (d) => [d.lon, d.lat],
         getRadius: plantRadius,
         radiusUnits: "pixels",
         radiusScale: scale,
-        radiusMaxPixels: 26,
+        radiusMaxPixels: zoomedIn ? 22 : 12,
+        opacity: zoomedIn ? 1 : 0.7,
         // Solid fill = measured actual flow (EEA); hollow = assumption.
         getFillColor: (d) => [...LEVEL_COLORS[d.level], d.supply?.actualQuality === "measured" ? (selection?.id === d.id ? 255 : 180) : 40] as [number, number, number, number],
         stroked: true,
         getLineColor: (d) => (selection?.id === d.id ? [0, 0, 0] : d.supply?.actualQuality === "measured" ? [255, 255, 255] : LEVEL_COLORS[d.level]),
         lineWidthMinPixels: 1,
         pickable: true,
-        updateTriggers: { getFillColor: [selection], getLineColor: [selection], getRadius: [w.data] },
+        updateTriggers: { getFillColor: [selection], getLineColor: [selection], getRadius: [plantData] },
       }),
     layers.regen &&
       new IconLayer<(typeof rings)[number]>({
@@ -464,12 +476,25 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
       }),
   ].filter(Boolean);
 
+  const handleClick = (info: { object?: unknown }) => {
+    const raw = info.object as { id: string; kind: string; g?: RegenPlant; plant?: Plant; buyer?: string } | undefined;
+            setPopup(null);
+            if (raw?.buyer) return setPopup(raw as unknown as ReuseProject);
+            const cc = info.object as { plantId?: string; companyIds?: string[] } | undefined;
+            if (cc?.plantId && cc.companyIds) return select({ kind: "wwtp", id: cc.plantId });
+            const o = raw?.plant ? raw.plant : raw;
+            if (!o) return select(null);
+            if (o.kind === "wwtp" || o.kind === "regen" || o.kind === "company")
+              select({ kind: o.kind, id: o.id });
+            };
+
   return (
     <div className="relative h-full w-full">
       <Map
         ref={mapRef}
         onMoveEnd={e => { if (!isLanding) setCamera(e.viewState); }}
         onLoad={() => { if (isLanding) mapRef.current?.fitBounds([[-9.5, 35.8], [4.6, 43.9]], { padding: 32, duration: 0 }); }}
+        onDblClick={() => { if (clickTimer.current) clearTimeout(clickTimer.current); clickTimer.current = null; }}
         onZoom={e => { setScale(zoomScale(e.viewState.zoom)); setZoomLvl(Math.floor(e.viewState.zoom * 2) / 2); }}
         initialViewState={isLanding ? { ...VIEWS.es, zoom: 4.7 } : camera ?? VIEWS[region]}
         mapStyle={
@@ -481,7 +506,7 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         style={{ width: "100%", height: "100%" }}
         attributionControl={{ compact: true }}
       >
-        <NavigationControl position="bottom-right" showCompass={false} />
+        <NavigationControl position="top-right" showCompass={false} />
         <DeckOverlay
           interleaved={false}
           layers={deckLayers}
@@ -511,90 +536,15 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
             const extra = o.kind === "reservoir" ? ` · ${o.note ?? `${o.fill}% full`}` : "";
             setHover.current({ x: info.x, y: info.y, text: `${label ? label + " · " : ""}${o.name}${extra}` });
           }}
-          onClick={(info) => {
-            const raw = info.object as { id: string; kind: string; g?: RegenPlant; plant?: Plant; buyer?: string } | undefined;
-            setPopup(null);
-            if (raw?.buyer) return setPopup(raw as unknown as ReuseProject);
-            const cc = info.object as { plantId?: string; companyIds?: string[] } | undefined;
-            if (cc?.plantId && cc.companyIds) return select({ kind: "wwtp", id: cc.plantId });
-            const o = raw?.plant ? raw.plant : raw;
-            if (!o) return select(null);
-            if (o.kind === "wwtp" || o.kind === "regen" || o.kind === "company")
-              select({ kind: o.kind, id: o.id });
+          onClick={(info, ev) => {
+            // Double-click only zooms: defer the selection and cancel it if a second click follows.
+            if (clickTimer.current) { clearTimeout(clickTimer.current); clickTimer.current = null; return; }
+            if ((ev as { srcEvent?: MouseEvent })?.srcEvent?.detail === 2) return;
+            clickTimer.current = setTimeout(() => { clickTimer.current = null; handleClick(info); }, 230);
           }}
         />
       </Map>
-      <div className={`panel map-legend z-10 max-w-[300px] space-y-1 rounded-md px-3 py-2 text-[10px] text-muted-foreground ${selection ? "with-selection" : ""}`}>
-        {layers.wwtp && (
-          <p className="flex items-center gap-2">
-            <span className="flex shrink-0 items-center gap-1">
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.primary) }} />
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.secondary) }} />
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: rgb(LEVEL_COLORS.tertiary) }} />
-            </span>
-            Treatment plant — colour = treatment level, size = water treated, hollow = our estimate.
-          </p>
-        )}
-        {layers.regen && (
-          <p className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full border-2" style={{ borderColor: rgb(REGEN_COLOR) }} />
-            Reuse-ready plant — ring = recycled water in use (dark = industry), gap = unused.
-          </p>
-        )}
-        {layers.companies && (
-          <p className="flex items-center gap-2">
-            <span className="flex shrink-0 items-center gap-1">
-              <span className="inline-block h-2 w-2 rounded-full border border-muted-foreground/60" />
-              <span className="inline-block h-2 w-2 rounded-full bg-muted-foreground/70" />
-              <span className="inline-block h-2 w-2 rounded-full bg-foreground" />
-            </span>
-            Company — hollow = potential buyer, grey = water-intensive, solid = confirmed user; border colour = sector.
-          </p>
-        )}
-        {layers.clusters && (
-          <p className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-sm border" style={{ borderColor: "rgba(11,110,138,0.8)", background: "rgba(11,110,138,0.15)" }} />
-            Companies that could share one pipe.
-          </p>
-        )}
-        {layers.projects && (
-          <p className="flex items-center gap-2">
-            <span className="inline-block h-2 w-2 shrink-0 bg-foreground" />
-            Signed reclaimed-water contract.
-          </p>
-        )}
-        {layers.reservoirs && region === "de" && (
-          <p className="flex items-center gap-2">
-            <span className="flex shrink-0 items-center gap-1">
-              {Object.values(RIVER_COLORS).map((c) => <span key={c.join()} className="inline-block h-1 w-3 rounded-full" style={{ background: rgb(c) }} />)}
-            </span>
-            River — colour = level at the nearest federal gauge: orange low, blue normal, navy high water.
-          </p>
-        )}
-        {layers.reservoirs && region !== "de" && (res.data?.features.length ?? 0) > 0 && (
-          <p className="flex items-center gap-2">
-            <span className="flex shrink-0 items-center gap-1">
-              <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(15)) }} />
-              <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(45)) }} />
-              <span className="inline-block h-2 w-2 rounded-full" style={{ background: rgb(fillColor(80)) }} />
-            </span>
-            Water store — low, medium or high fill.
-          </p>
-        )}
-        {roadData.length > 0 && (
-          <p className="flex items-center gap-2">
-            <span className="inline-block h-1 w-5 shrink-0 rounded-full" style={{ background: rgb(LEVEL_COLORS.tertiary) }} />
-            Pipe route along roads to the supplying plant ({fmt1.format(road.data!.km)} km).
-          </p>
-        )}
-        {selectedSite && (
-          <p className="flex items-center gap-2">
-            <span className="inline-block h-0 w-5 shrink-0 border-t-2 border-dashed" style={{ borderColor: rgb(LEVEL_COLORS.tertiary) }} />
-            Possible link from the selected plant.
-          </p>
-        )}
-      </div>
-      {popup && (
+           {popup && (
         <div className="panel absolute left-3 top-3 z-20 w-80 rounded-md p-3 text-xs shadow-md">
           <div className="flex items-start justify-between gap-2">
             <p className="label-caps">Reuse project</p>
@@ -607,42 +557,6 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         </div>
       )}
       <HoverTip bind={setHover} />
-      {spain && (
-      <div className="panel future-controls absolute right-3 top-3 z-20 w-60 max-w-[calc(100%-24px)] rounded-md p-3 text-xs shadow-md">
-        <div className="flex items-center justify-between gap-2">
-          <p className="label-caps">Water stress</p>
-          <SourceInfo id="stressScenario" />
-        </div>
-        <div className="mt-2 grid grid-cols-5 gap-1">
-          {HORIZONS.map((h) => (
-            <Button key={h.key} size="sm" variant={horizon === h.key ? "default" : "secondary"} aria-pressed={horizon === h.key} onClick={() => setHorizon(h.key)} className="h-7 min-w-0 px-0 text-[10px] tnum">{h.label}</Button>
-          ))}
-        </div>
-        {stressYear && (
-          <div className="mt-2">
-            <div className="stress-ramp h-2 rounded-full" />
-            <div className="mt-0.5 flex justify-between text-[10px] text-muted-foreground"><span>Low</span><span>{stressYear}</span><span>Severe</span></div>
-            <div className="mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground">
-              <span>{horizon === "now" ? "Present-day illustration · not live readings" : "Illustrative future scenario"}</span>
-              <Button variant="ghost" size="sm" onClick={() => setHorizon(null)} className="h-6 px-1 text-[10px]">Hide</Button>
-            </div>
-          </div>
-        )}
-        <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 border-t pt-2">
-          <span className="font-medium">Illustrative pipe layout</span>
-          <input type="checkbox" className="accent-[var(--primary)]" checked={showPipes} onChange={(e) => setShowPipes(e.target.checked)} />
-        </label>
-        {showPipes && !pipesVisible && <p className="mt-1.5 text-[10px] text-muted-foreground">Zoom in closer to see pipe routes.</p>}
-        {pipesVisible && (
-          <div className="mt-1.5 space-y-1 text-[10px] text-muted-foreground">
-            <p className="flex items-center gap-2"><span className="inline-block h-[3px] w-5 rounded" style={{ background: "rgb(2,132,199)" }} />Rural trunk / branch (priority)</p>
-            <p className="flex items-center gap-2"><span className="inline-block h-[2px] w-5 rounded" style={{ background: "rgba(11,110,138,0.55)" }} />Urban</p>
-          </div>
-        )}
-        <p className="mt-2 text-[10px] leading-snug text-muted-foreground">Illustrative layout and stress scenario, not real routes. Select a company to see its pipe route along real roads.</p>
-        <WaterPricePanel horizon={stressAhead} />
-      </div>
-      )}
     </div>
   );
 }
