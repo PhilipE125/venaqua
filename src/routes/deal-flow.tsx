@@ -34,7 +34,7 @@ export const Route = createFileRoute("/deal-flow")({
     meta: [
       { title: "Venaqua · Deal Flow: reuse investment cases in Spain" },
       { name: "description", content: "Filter sourced, scored wastewater-reuse tenders, programmes and projects across Spain, with value, volume, deadlines and sources." },
-      { property: "og:title", content: "Venaqua Reuse Pipeline" },
+      { property: "og:title", content: "Venaqua Deal Flow" },
       { property: "og:description", content: "Investment cases, early signals and tenders for water reuse in Spain." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -25,7 +25,7 @@ export function TopBar() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" aria-label="More options"><MoreHorizontal /></Button></DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuItem onSelect={() => navigate({ to: "/deal-flow" })}><Download className="rotate-180" />Reuse Pipeline</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => navigate({ to: "/deal-flow" })}><Download className="rotate-180" />Deal Flow</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => navigate({ to: "/projects" })}><FolderOpen />Projects{count > 0 && <span className="tnum ml-auto text-xs text-primary">{count}</span>}</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => (user ? setExportOpen(true) : setAuthOpen(true))}><Download />Export data</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setSettingsOpen(true)}><Settings2 />Settings</DropdownMenuItem>
