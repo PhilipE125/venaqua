@@ -10,7 +10,7 @@ export const createApiKey = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ name: z.string().trim().min(1).max(100) }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: row } = await context.supabase.from("workspace_plans").select("plan").maybeSingle();
-    if (!hasApiAccess((row?.plan as PlanId) ?? "market_access")) throw new Error("API access is part of the Data & API plan.");
+    if (!hasApiAccess((row?.plan as PlanId) ?? "market_access")) throw new Error("API access is part of the Data API plan.");
     const bytes = crypto.getRandomValues(new Uint8Array(24));
     const key = "vq_" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

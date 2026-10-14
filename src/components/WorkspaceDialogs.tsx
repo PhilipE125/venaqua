@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useWorkspace } from "@/lib/workspace";
 import { enquirySchema } from "@/lib/project-model";
-import { PLANS } from "@/content/venaqua";
+import { ENQUIRIES, type EnquiryTopic } from "@/content/venaqua";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -18,7 +18,7 @@ export function WorkspaceDialogs() {
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
   const [emailDraft, setEmailDraft] = useState("");
-  const productEnquiry = PLANS.find(plan => plan.topic === contact)?.enquiry;
+  const productEnquiry = contact && contact in ENQUIRIES ? ENQUIRIES[contact as EnquiryTopic] : undefined;
   return <>
     <Dialog open={authOpen} onOpenChange={b => { setAuthOpen(b); setMessage(""); }}><DialogContent className="max-w-sm"><DialogHeader><DialogTitle>{signup ? "Create your project account" : "Your project workspace"}</DialogTitle><DialogDescription>Keep your shortlist, assumptions and next actions private.</DialogDescription></DialogHeader>
       <Button variant="outline" disabled={busy} onClick={async () => { setBusy(true); const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin }); if (r.error) setMessage(r.error.message); else if (!r.redirected) setAuthOpen(false); setBusy(false); }}>Continue with Google</Button>

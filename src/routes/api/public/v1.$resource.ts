@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/public/v1/$resource")({
         const { data: k } = await supabaseAdmin.from("api_keys").select("id,user_id,revoked_at").eq("key_hash", await sha256Hex(key)).maybeSingle();
         if (!k || k.revoked_at) return json({ error: "Missing or invalid API key" }, 401);
         const { data: plan } = await supabaseAdmin.from("workspace_plans").select("plan").eq("user_id", k.user_id).maybeSingle();
-        if (!hasApiAccess((plan?.plan as PlanId) ?? "market_access")) return json({ error: "API access requires the Data & API plan" }, 403);
+        if (!hasApiAccess((plan?.plan as PlanId) ?? "market_access")) return json({ error: "API access requires the Data API plan" }, 403);
         await supabaseAdmin.from("api_keys").update({ last_used_at: new Date().toISOString() }).eq("id", k.id);
 
         switch (params.resource) {
