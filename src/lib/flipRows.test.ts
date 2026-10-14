@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { defaultEffluent } from "./costs";
 import { evaluateCompany } from "./companyEval";
 import { flipRowFor, sortFlipRows, type FlipRow } from "./flipRows";
 import { GROWTH, historicFrequencies, projectFuture } from "./projection";
@@ -36,7 +37,7 @@ describe("flipRowFor", () => {
         rate: DEFAULT_SETTINGS.rate,
         years: DEFAULT_SETTINGS.years,
         electricity: DEFAULT_SETTINGS.electricity.base,
-        effluent: "medium",
+        effluent: defaultEffluent(company.sector),
         plant: { straightKm: plant.straightKm, reuseReady: plant.reuseReady, availableM3PerDay: plant.availableM3PerDay },
         cut: 0,
         events: undefined,
