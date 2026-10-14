@@ -1,4 +1,4 @@
-import { ArrowRight, BookmarkPlus, ChevronDown, Download, MessageCircle, X } from "lucide-react";
+import { ArrowRight, BookmarkPlus, ChevronDown, Download, Lock, MessageCircle, X } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { buyerStatus, STATUS_LABEL } from "@/lib/knownUsers";
 import { haversineKm } from "@/lib/score";
 import { GRAVITE_LABEL } from "@/lib/sources/vigieau";
-import { eurK, fmt, fmt1, fmt2, useClusters, useCompanies, useDrought, useMatches, useMeteo, usePrat, useRegen, useRestriction, useStress, useTenders, useWwtps } from "@/lib/queries";
+import { eurK, fmt, fmt1, fmt2, useClusters, useCompanies, useDrought, useFlipTable, useMatches, useMeteo, usePrat, useRegen, useRestriction, useStress, useTenders, useWwtps } from "@/lib/queries";
 import { mid } from "@/lib/costs";
 import { currentPhase } from "@/lib/sources/drought";
 import { muniKey, normalize, sectorById } from "@/lib/sectors";
