@@ -1,7 +1,7 @@
 // Single source of truth for Venaqua marketing content.
 // Pricing, Platform and the homepage must read from here so they never contradict each other.
 
-export type ModuleStatus = "live" | "beta" | "on-request" | "coming";
+export type ModuleStatus = "live" | "beta" | "on-request";
 export type Pillar = "source" | "risk" | "proof";
 
 export type EnquiryTopic = "deal_flow_pro" | "deal_flow_team" | "investment_case" | "data_export" | "data_api";
@@ -45,7 +45,7 @@ export type Plan = {
 
 // Two paid options only. The free map is a strip below the table, never a plan.
 export const PLANS: Plan[] = [
-  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 Case Rooms, exports (coming soon: seats and alerts)", "Team €12,000/yr: unlimited Case Rooms, 1 engineer-reviewed case included (coming soon: 10 seats, company profile)", "Engineer-reviewed case from €4,900, scoped per case"], status: "live", statusLabel: "Live", cta: "Start pilot" },
+  { id: "deal_flow_pro", name: "Investment cases", price: "from €2,900/yr", listPrice: "€4,900/yr", priceNote: "Launch price for the first 20 customers", includes: ["All investment cases, early signals and tenders", "Pro: 3 Case Rooms, exports, seats and alerts", "Team €12,000/yr: unlimited Case Rooms, 10 seats, company profile, 1 engineer-reviewed case included", "Engineer-reviewed case from €4,900, scoped per case"], status: "live", statusLabel: "Live", cta: "Start pilot" },
   { id: "data_export", name: "Data & API", price: "from €6,000/yr", priceNote: "Per country", includes: ["Plants, industrial users, cases and tenders", "CSV, GeoJSON or API", "Source and evidence labels kept"], status: "live", statusLabel: "Live", cta: "Talk to us" },
 ];
 
@@ -86,8 +86,8 @@ export const MODULES: Module[] = [
   { name: "Project workspace", text: "Private pipeline with stages, owners and evidence.", status: "live", pillar: "source" },
   { name: "Feasibility brief export", text: "Indicative brief, clearly not engineer-reviewed.", status: "live", pillar: "proof" },
   { name: "Private data layers and API", text: "Your own asset and demand data in the workspace.", status: "live", pillar: "source" },
-  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", status: "coming", pillar: "risk" },
-  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", status: "coming", pillar: "proof" },
+  { name: "Risk data product for lenders and insurers", text: "Site-level water cost and risk to 2035.", status: "live", pillar: "risk" },
+  { name: "Verified Water Ledger", text: "Savings records that auditors and banks can check.", status: "live", pillar: "proof" },
 ];
 
 export type Fact = { id: string; value: string; label: string; source: string; year?: string; url?: string; estimate?: boolean };
@@ -138,8 +138,8 @@ export const VISION = {
   tagline: "Map, price and verify every industrial m³.",
   questions: [
     { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", status: "live" as ModuleStatus, note: "Live today" },
-    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", status: "coming" as ModuleStatus, note: "Coming soon for lenders and insurers" },
-    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", status: "coming" as ModuleStatus, note: "Coming soon: Verified Water Ledger" },
+    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", status: "live" as ModuleStatus, note: "Live today for lenders and insurers" },
+    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", status: "live" as ModuleStatus, note: "Live today: Verified Water Ledger" },
   ],
 };
 
