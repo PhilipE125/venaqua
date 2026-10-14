@@ -82,5 +82,5 @@
 - [ ] Optional D: river flow near the site (not built)
 
 - [ ] Live river layers: Catalonia ACA flow (hprm-xuw7) and France Hub'Eau ONDE on the map (brief: river-data upload)
-- [ ] Restore the full right-hand plant panel (supply volume and plant statistics) when a treatment plant is clicked
+- [x] Restore the full right-hand plant panel (supply volume and plant statistics) when a treatment plant is clicked
 - [ ] Make river and water flows clearly visible on the map in every region, as a follow-up to the river layers
