@@ -71,20 +71,20 @@ const HORIZONS = [
   { key: "10y", label: "10 yrs", year: "2036" },
   { key: "15y", label: "15 yrs", year: "2041" },
 ] as const;
-const STRESS = (droughtData as { name: string; risk: Record<string, number>; polygons: [number, number][][] }[]).flatMap((f) =>
+const STRESS = (droughtData as unknown as { name: string; risk: Record<string, number>; polygons: [number, number][][] }[]).flatMap((f) =>
   f.polygons.map((polygon) => ({ name: f.name, risk: f.risk, polygon, kind: "stress" })),
 );
 const RAMP: [number, [number, number, number]][] = [[40, [254, 240, 180]], [60, [253, 174, 97]], [75, [240, 59, 32]], [90, [128, 0, 38]]];
 function stressColor(v: number, a: number): [number, number, number, number] {
   for (let i = 1; i < RAMP.length; i++) {
-    const [v1, c1] = RAMP[i];
-    const [v0, c0] = RAMP[i - 1];
-    if (v <= v1) {
-      const t = Math.max(0, (v - v0) / (v1 - v0));
-      return [c0[0] + (c1[0] - c0[0]) * t, c0[1] + (c1[1] - c0[1]) * t, c0[2] + (c1[2] - c0[2]) * t, a];
+    const hi = RAMP[i]!, lo = RAMP[i - 1]!;
+    if (v <= hi[0]) {
+      const t = Math.max(0, (v - lo[0]) / (hi[0] - lo[0]));
+      return [lo[1][0] + (hi[1][0] - lo[1][0]) * t, lo[1][1] + (hi[1][1] - lo[1][1]) * t, lo[1][2] + (hi[1][2] - lo[1][2]) * t, a];
     }
   }
-  return [...RAMP[RAMP.length - 1][1], a];
+  const top = RAMP[RAMP.length - 1]![1];
+  return [top[0], top[1], top[2], a];
 }
 const plantRadius = (d: Plant) => 2.5 + Math.sqrt(d.supply?.actualFlow ?? d.capacity * 0.6) / 16;
 
