@@ -34,7 +34,6 @@ const STATUS_STYLE: Record<Plan["status"], string> = {
   live: "bg-primary/10 text-primary",
   beta: "bg-secondary text-secondary-foreground",
   "on-request": "bg-muted text-foreground",
-  coming: "bg-muted text-muted-foreground",
 };
 
 function PlanCta({ plan }: { plan: Plan }) {
