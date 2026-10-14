@@ -132,9 +132,9 @@ export const VISION = {
   impact: "We measure how many m³ of freshwater are replaced by reused water. We count only additional, permitted reuse backed by meter data.",
   tagline: "Map, price and verify every industrial m³.",
   questions: [
-    { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", note: "Live today" },
-    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", note: "Live today for lenders and insurers" },
-    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", note: "Live today: Verified Water Ledger" },
+    { pillar: "source" as Pillar, label: "Source", question: "Where does this site's water come from, and what are the alternatives?", note: "Plants, demand and pipeline routes per site" },
+    { pillar: "risk" as Pillar, label: "Risk", question: "What could water cost by 2035, and what risks should you plan for?", note: "Site-level water cost and risk to 2035" },
+    { pillar: "proof" as Pillar, label: "Proof", question: "How can you prove water savings to auditors and banks?", note: "Meter-backed savings records" },
   ],
 };
 
@@ -190,7 +190,7 @@ export const AMBITION = {
   title: "The neutral market layer for Europe’s reused water.",
   text: "Today: Spain, with Catalonia as the pilot. Every layer is built on EU-wide sources, so the same screen can open in any European region as water stress spreads north. Our aim is to make finding, pricing, permitting and verifying reused water as established as trading electricity. Venaqua would give every party a shared basis for those decisions.",
   steps: [
-    { when: "Now", what: "Spain screened site by site; Catalonia pilot with live drought data" },
+    { when: "Now", what: "Spain screened site by site; Catalonia pilot with current drought data" },
     { when: "Next", what: "Portugal, Italy and southern France, using the same EU sources and model" },
     { when: "Then", what: "Verified m³ replaced, accepted by lenders, insurers and auditors" },
   ],
