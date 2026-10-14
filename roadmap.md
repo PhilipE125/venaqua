@@ -63,3 +63,9 @@
 - [x] Site card answers first (route, €/m³ vs alternative, flip year) with locked exports; full analysis page regroup still open
 - [x] Landing: five-module section linking into the map, positioning table, harder-to-copy, partners, ambition; pricing export names still open
 - [x] Stress strip as one compact expandable chip
+
+# Reuse Pipeline (deal flow)
+- [x] /deal-flow: Tenders & Signals with URL filters, table, board, deal detail, CSV; nav, map menu and pricing links; demo-unlocked
+- [ ] Investment Cases tab (needs investment_cases.json + cases.ts — not uploaded)
+- [ ] Deals on the explore map, near-plant deals on analysis, homepage top-3 deals
+- [ ] Block 4 database + plan gating; Block 5 AI review queue
