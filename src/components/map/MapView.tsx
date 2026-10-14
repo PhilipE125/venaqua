@@ -20,6 +20,7 @@ import { STRESS_BOUNDS, STRESS_HORIZONS, stressAt, stressImage } from "@/lib/str
 import { Button } from "@/components/ui/button";
 import { WaterPricePanel } from "./WaterPricePanel";
 import { SourceInfo } from "@/components/SourceInfo";
+import { useWorkspace } from "@/lib/workspace";
 
 setWorkerUrl(workerUrl);
 
@@ -115,6 +116,8 @@ function useBasemapStyle(dark: boolean) {
 export default function MapView({ presentation = "explorer" }: { presentation?: "explorer" | "landing" } = {}) {
   const isLanding = presentation === "landing";
   const { layers, selection, select, dark, sector, confirmed, region, camera, setCamera, cameraFocus, setCameraFocus } = useApp();
+  const { privateSites: allPrivate } = useWorkspace();
+  const privateSites = isLanding ? [] : allPrivate;
   const pr = useProjects();
   const [popup, setPopup] = useState<ReuseProject | null>(null);
   const clusters = useClusters();
