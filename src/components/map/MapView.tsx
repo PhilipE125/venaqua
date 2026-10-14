@@ -362,6 +362,8 @@ export default function MapView() {
           layers={deckLayers}
           getCursor={({ isHovering }) => (isHovering ? "pointer" : "grab")}
           onHover={(info) => {
+            const st = info.object as { kind?: string; name?: string; risk?: Record<string, number> } | undefined;
+            if (st?.kind === "stress" && st.risk && stressYear) return setHover.current({ x: info.x, y: info.y, text: `${st.name} · stress index ${Math.round(st.risk[stressYear])} in ${stressYear}` });
             const raw = info.object as { name?: string; kind?: string; fill?: number; note?: string; g?: RegenPlant; buyer?: string; object?: string } | undefined;
             const cl = info.object as { companyIds?: string[]; delivered?: number } | undefined;
             const o = cl?.companyIds ? { name: `Shared pipe: ${cl.companyIds.length} companies, ${Math.round(cl.delivered ?? 0)} m³/day` } : raw?.g ? raw.g : raw?.buyer ? { name: `Reuse project: ${raw.buyer}` } : raw;
@@ -404,6 +406,32 @@ export default function MapView() {
         </div>
       )}
       <HoverTip bind={setHover} />
+      <div className="panel future-controls absolute right-3 top-3 z-20 w-60 rounded-xl p-3 text-xs shadow-md">
+        <p className="label-caps">Future water stress</p>
+        <div className="mt-2 grid grid-cols-5 gap-1">
+          <button onClick={() => setHorizon(null)} className={`rounded-md px-1 py-1 ${!horizon ? "bg-foreground text-background" : "bg-muted hover:bg-accent"}`}>Now</button>
+          {HORIZONS.map((h) => (
+            <button key={h.key} onClick={() => setHorizon(h.key)} className={`rounded-md px-1 py-1 tnum ${horizon === h.key ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-accent"}`}>{h.label}</button>
+          ))}
+        </div>
+        {stressYear && (
+          <div className="mt-2">
+            <div className="h-2 rounded-full" style={{ background: "linear-gradient(90deg, rgb(254,240,180), rgb(253,174,97), rgb(240,59,32), rgb(128,0,38))" }} />
+            <div className="mt-0.5 flex justify-between text-[10px] text-muted-foreground"><span>Low</span><span>{stressYear}</span><span>Severe</span></div>
+          </div>
+        )}
+        <label className="mt-3 flex cursor-pointer items-center justify-between gap-2 border-t pt-2">
+          <span className="font-medium">Predicted pipe network</span>
+          <input type="checkbox" className="accent-[var(--primary)]" checked={showPipes} onChange={(e) => setShowPipes(e.target.checked)} />
+        </label>
+        {showPipes && (
+          <div className="mt-1.5 space-y-1 text-[10px] text-muted-foreground">
+            <p className="flex items-center gap-2"><span className="inline-block h-[3px] w-5 rounded" style={{ background: "rgb(2,132,199)" }} />Rural trunk / branch (priority)</p>
+            <p className="flex items-center gap-2"><span className="inline-block h-[2px] w-5 rounded" style={{ background: "rgba(11,110,138,0.55)" }} />Urban</p>
+          </div>
+        )}
+        <p className="mt-2 text-[10px] leading-snug text-muted-foreground">Indicative scenario and inferred routes — not an official forecast or as-built map.</p>
+      </div>
     </div>
   );
 }
