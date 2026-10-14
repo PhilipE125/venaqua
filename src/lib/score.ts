@@ -16,10 +16,14 @@ export function haversineKm(a: LatLon, b: LatLon): number {
   return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
-/** score = min(supply, demand) * (1 + stress) / (1 + distance_km) */
-export function rawScore(p: { supply: number; demand: number; stress: number; distanceKm: number }) {
+/** Exponent weights for custom scoring; all 1 reproduces the default formula. */
+export interface ScoreWeights { volume: number; stress: number; distance: number }
+export const DEFAULT_WEIGHTS: ScoreWeights = { volume: 1, stress: 1, distance: 1 };
+
+/** score = min(supply, demand)^wv * (1 + stress)^ws / (1 + distance_km)^wd */
+export function rawScore(p: { supply: number; demand: number; stress: number; distanceKm: number }, w: ScoreWeights = DEFAULT_WEIGHTS) {
   const stress = Math.max(0, Math.min(1, p.stress));
-  return (Math.min(p.supply, p.demand) * (1 + stress)) / (1 + Math.max(0, p.distanceKm));
+  return (Math.min(p.supply, p.demand) ** w.volume * (1 + stress) ** w.stress) / (1 + Math.max(0, p.distanceKm)) ** w.distance;
 }
 
 export interface ScoreSite extends LatLon {
@@ -46,7 +50,7 @@ export function effectiveSupply(capacity: number, reuseReady: boolean) {
 export function scorePairs(
   sites: ScoreSite[],
   companies: ScoreCompany[],
-  opts: { maxKm: number; stress: number },
+  opts: { maxKm: number; stress: number; weights?: ScoreWeights },
 ): Match[] {
   const out: Match[] = [];
   const dLat = opts.maxKm / 111;
@@ -66,7 +70,7 @@ export function scorePairs(
       if (Math.abs(c.lon - s.lon) > dLon) continue;
       const d = haversineKm(s, c);
       if (d > opts.maxKm) continue;
-      const raw = rawScore({ supply: s.supply, demand: c.demand, stress: opts.stress, distanceKm: d });
+      const raw = rawScore({ supply: s.supply, demand: c.demand, stress: opts.stress, distanceKm: d }, opts.weights);
       out.push({ siteId: s.id, companyId: c.id, distanceKm: d, matched: Math.min(s.supply, c.demand), raw, score: 0 });
     }
   }
