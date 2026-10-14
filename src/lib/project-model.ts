@@ -35,8 +35,7 @@ Assumptions: €${a.lossPerM3} lost contribution per unmet m³, ${a.backupShare 
 }
 
 function evidenceSection(evidence: EvidenceEntry[]) {
-  if (!evidence.length) return "EVIDENCE LOG
-No evidence logged yet.";
+  if (!evidence.length) return "EVIDENCE LOG\nNo evidence logged yet.";
   return `EVIDENCE LOG
 ${evidence.map(e => `- [${e.kind}] ${e.text}${e.source ? ` (source: ${e.source})` : ""} · ${new Date(e.date).toLocaleDateString("en-GB")}`).join("\n")}`;
 }
