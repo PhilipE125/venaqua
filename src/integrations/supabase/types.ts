@@ -14,6 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_hash: string
+          last_used_at: string | null
+          name: string
+          prefix: string
+          revoked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_hash: string
+          last_used_at?: string | null
+          name: string
+          prefix: string
+          revoked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_hash?: string
+          last_used_at?: string | null
+          name?: string
+          prefix?: string
+          revoked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      private_sites: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          lat: number
+          lon: number
+          name: string
+          notes: string
+          user_id: string
+          volume_m3_day: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          lat: number
+          lon: number
+          name: string
+          notes?: string
+          user_id?: string
+          volume_m3_day?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          lat?: number
+          lon?: number
+          name?: string
+          notes?: string
+          user_id?: string
+          volume_m3_day?: number
+        }
+        Relationships: []
+      }
+      project_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string | null
+          read: boolean
+          text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          read?: boolean
+          text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string | null
+          read?: boolean
+          text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       project_enquiries: {
         Row: {
           created_at: string
@@ -101,6 +197,48 @@ export type Database = {
         }
         Relationships: []
       }
+      scoring_preferences: {
+        Row: {
+          distance_weight: number
+          stress_weight: number
+          updated_at: string
+          user_id: string
+          volume_weight: number
+        }
+        Insert: {
+          distance_weight?: number
+          stress_weight?: number
+          updated_at?: string
+          user_id?: string
+          volume_weight?: number
+        }
+        Update: {
+          distance_weight?: number
+          stress_weight?: number
+          updated_at?: string
+          user_id?: string
+          volume_weight?: number
+        }
+        Relationships: []
+      }
+      workspace_plans: {
+        Row: {
+          plan: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          plan?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          plan?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       workspaces: {
         Row: {
           created_at: string
@@ -142,7 +280,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      project_limit: { Args: { _user_id: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
