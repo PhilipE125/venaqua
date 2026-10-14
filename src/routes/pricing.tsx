@@ -3,7 +3,7 @@ import { ArrowRight, Building2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicHeader } from "@/components/PublicHeader";
 import { useWorkspace } from "@/lib/workspace";
-import { FAQ_PRICING, NEUTRALITY, PLANS, type Plan } from "@/content/venaqua";
+import { FAQ_PRICING, NEUTRALITY, PLANS, PRICING_STORY, type Plan } from "@/content/venaqua";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -22,16 +22,18 @@ export const Route = createFileRoute("/pricing")({
 function PlanCard({ plan }: { plan: Plan }) {
   const { setContact } = useWorkspace();
   return (
-    <div className={`flex flex-col rounded-xl border bg-card p-6 ${plan.popular ? "border-primary/60 shadow-sm" : ""}`}>
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="font-semibold">{plan.name}</h3>
+    <article aria-label={plan.name} className={`flex min-w-0 flex-col rounded-lg border bg-card p-6 ${plan.popular ? "border-primary/60 shadow-sm" : ""}`}>
+      <p className="mb-3 text-xs font-medium text-muted-foreground lg:hidden">{plan.family}</p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">{plan.name}</h2>
         {plan.popular && (
-          <span className="label-caps rounded-full bg-primary/10 px-2.5 py-1 text-primary">Most popular · Best win-win</span>
+          <span className="whitespace-nowrap rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">Most popular</span>
         )}
       </div>
-      <p className="mt-2 text-xl font-semibold tracking-tight tabular-nums">{plan.price}</p>
+      <p className="mt-3 font-medium leading-snug">{plan.outcome}</p>
+      <p className="mt-4 text-xl font-semibold tabular-nums">{plan.price}</p>
       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{plan.for}</p>
-      <ul className="mt-4 flex flex-1 flex-col gap-2">
+      <ul className="mt-5 flex flex-col gap-3 border-t pt-5">
         {plan.features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm">
             <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
@@ -39,7 +41,15 @@ function PlanCard({ plan }: { plan: Plan }) {
           </li>
         ))}
       </ul>
-      <div className="mt-6">
+      {plan.tiers && <dl className="mt-5 space-y-4 border-t pt-4">
+        {plan.tiers.map((tier) => <div key={tier.name}>
+          <dt className="text-sm font-semibold">{tier.name}</dt>
+          <dd className="mt-1 text-sm tabular-nums">{tier.price}</dd>
+          <dd className="mt-1 text-xs leading-relaxed text-muted-foreground">{tier.text}</dd>
+        </div>)}
+      </dl>}
+      <p className="mb-6 mt-5 text-xs leading-relaxed text-muted-foreground">{plan.note}</p>
+      <div className="mt-auto">
         {plan.href ? (
           <Button asChild variant={plan.popular ? "default" : "outline"} className="w-full">
             <Link to={plan.href}>{plan.cta}<ArrowRight /></Link>
@@ -54,7 +64,7 @@ function PlanCard({ plan }: { plan: Plan }) {
           </Button>
         )}
       </div>
-    </div>
+    </article>
   );
 }
 
@@ -64,19 +74,24 @@ function Pricing() {
       <PublicHeader />
       <main className="flex-1">
         <section className="mx-auto w-full max-w-5xl px-5 pb-10 pt-16 text-center sm:pt-20">
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">Pricing</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Pay for deal flow or for data.
+          <p className="text-xs font-medium uppercase text-primary">Pricing</p>
+          <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">
+            {PRICING_STORY.title}
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            Three ways to work with Venaqua: an ongoing deal-flow subscription, a single Deal File, or our data through an API. Every option starts with a conversation.
+            {PRICING_STORY.description}
           </p>
         </section>
 
         <section className="mx-auto w-full max-w-6xl px-5 pb-16">
-          <div className="grid gap-5 md:grid-cols-3">
+          <div className="mb-4 hidden grid-cols-3 gap-5 lg:grid">
+            <p className="col-span-2 border-b pb-3 text-sm font-semibold">Reuse projects <span className="ml-2 font-normal text-muted-foreground">One case or an ongoing portfolio</span></p>
+            <p className="border-b pb-3 text-sm font-semibold">Data access <span className="ml-2 font-normal text-muted-foreground">Your own tools</span></p>
+          </div>
+          <div className="grid gap-5 lg:grid-cols-3">
             {PLANS.map((p) => <PlanCard key={p.name} plan={p} />)}
           </div>
+          <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{PRICING_STORY.pipelineNote}</p>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Just looking? The <Link to="/explore" className="font-medium text-primary underline">free map</Link> is always open — browse plants, companies and water stress without an account.
           </p>
