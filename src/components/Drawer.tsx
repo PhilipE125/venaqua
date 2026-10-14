@@ -26,6 +26,7 @@ import type { BuyerStatus, Company, Plant, RegenPlant, ReuseByUse, SupplySite } 
 import { Sankey, type Flow } from "./Sankey";
 import { QualityBadge, SourceInfo } from "./SourceInfo";
 import { WaterOptions } from "./WaterOptions";
+import { SourcingPanel } from "./SourcingPanel";
 
 function Row({ k, v, info }: { k: string; v: React.ReactNode; info?: React.ReactNode }) {
   return (
@@ -598,15 +599,17 @@ export function Drawer() {
   const site = selection.kind === "wwtp" || selection.kind === "regen" ? siteById.get(selection.id) : undefined;
   const name = company?.name ?? site?.name ?? (selection.kind === "region" ? "Catalonia reuse opportunities" : selection.kind === "comarca" ? `Comarca: ${selection.id}` : null);
   if (!name) return null;
-  const demand = company ? (demandOverride[company.id] ?? settings.sectorDemand[company.sector] * 365) / 365 : 0;
+  if (company) return <aside className="opportunity-drawer panel flex flex-col overflow-hidden rounded-lg bg-card" aria-label="Water sourcing">
+    <div className="flex items-start justify-between gap-3 border-b px-5 pt-4 pb-3"><div className="min-w-0"><p className="label-caps">Water sourcing</p><h2 className="mt-1 text-base font-semibold break-words">{company.name}</h2><p className="mt-0.5 text-xs text-muted-foreground">{company.municipi} · {sectorById[company.sector].label}</p></div><Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close panel"><X /></Button></div>
+    <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4"><SourcingPanel key={company.id} company={company} /></div>
+  </aside>;
   const supply = site ? (site.kind === "wwtp" ? site.supply?.availableReclaimed ?? 0 : Math.max(0, site.capacity - site.reusedVolume / 365)) : 0;
-  const count = matches.filter(m => company ? m.companyId === company.id : m.siteId === site?.id).length;
+  const count = matches.filter(m => m.siteId === site?.id).length;
   return <aside className="compact-preview rounded-lg border bg-card p-5 shadow-map-panel" aria-label="Opportunity preview">
-    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="label-caps">{company ? "Company" : site ? "Water treatment plant" : "Regional opportunity"}</p><h2 className="mt-1 text-base font-semibold break-words">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{company?.municipi ?? site?.municipi ?? "Catalonia"}</p>{region === "fr" && (company ?? site) && <RestrictionBadge at={(company ?? site)!} />}</div><Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close preview"><X /></Button></div>
-    <p className="mt-3 text-sm">{company || site ? count ? `${count} potential ${company ? "suppliers" : "buyers"} within ${maxKm} km. Validate supply and demand before investing.` : "Needs validation: no ranked link within the current filters." : "Compare potential links and shared-pipe opportunities."}</p>
-    {(company || site) && <p className="tnum mt-3 text-xl font-semibold">{fmt.format(company ? demand : supply)} <span className="text-xs font-normal text-muted-foreground">m³/day · {company ? "indicative demand" : "potential supply"}</span></p>}
-    <p className="mt-2 text-xs text-muted-foreground">{site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow · spare supply needs confirmation" : company && demandOverride[company.id] != null ? "Your demand figure · needs confirmation" : "Estimated · needs confirmation"}</p>
-    {company && <CompanyAnswer id={company.id} />}
+    <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="label-caps">{site ? "Water treatment plant" : "Regional opportunity"}</p><h2 className="mt-1 text-base font-semibold break-words">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{site?.municipi ?? "Catalonia"}</p>{region === "fr" && site && <RestrictionBadge at={site} />}</div><Button size="icon" variant="ghost" className="h-7 w-7 shrink-0" onClick={() => select(null)} aria-label="Close preview"><X /></Button></div>
+    <p className="mt-3 text-sm">{site ? count ? `${count} potential buyers within ${maxKm} km. Validate supply and demand before investing.` : "Needs validation: no ranked link within the current filters." : "Compare potential links and shared-pipe opportunities."}</p>
+    {site && <p className="tnum mt-3 text-xl font-semibold">{fmt.format(supply)} <span className="text-xs font-normal text-muted-foreground">m³/day · potential supply</span></p>}
+    <p className="mt-2 text-xs text-muted-foreground">{site?.kind === "wwtp" && site.supply?.actualQuality === "measured" ? "Measured flow · spare supply needs confirmation" : "Estimated · needs confirmation"}</p>
     <Button asChild className="mt-4 w-full"><Link to="/analysis" search={{ kind: selection.kind, id: selection.id }} resetScroll={false}>Open analysis<ArrowRight /></Link></Button>
   </aside>;
 }

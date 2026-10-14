@@ -53,6 +53,7 @@ export interface GridInputs {
   polishing: Range; // €/m3, zero range if plant is reuse-ready
   reclaimedPrice: Range;
   availableM3PerDay: number;
+  grantShare?: number | undefined; // share of capex covered by grants (0 = none)
 }
 
 /** kWh per m3 to lift water liftM metres: ρgh / 3.6e6 / η = 0.002725 × h / η */
@@ -61,7 +62,7 @@ export const pumpingKWhPerM3 = (liftM: number, eff: number) => (0.002725 * Math.
 export function optionB(i: CostInputs, g: GridInputs) {
   const q = i.demandM3PerYear;
   const deliverable = Math.min(q, Math.max(0, g.availableM3PerDay) * 365);
-  const capex = scale(g.pipeCostPerKm, g.distanceKm);
+  const capex = scale(g.pipeCostPerKm, g.distanceKm * (1 - grant(g.grantShare)));
   const kwh = pumpingKWhPerM3(g.liftM, g.pumpEfficiency);
   const unit = add(add(g.reclaimedPrice, g.polishing), scale(i.electricity, kwh));
   const k = crf(i.rate, i.years);
@@ -78,6 +79,19 @@ export interface OnsiteInputs {
   recoveryRate: Range; // share of demand recycled
   capexPerM3Day: Range; // € per m3/day of capacity
   opex: Range; // €/m3 recycled
+  scaleExponent?: number | undefined; // economies of scale; 1 = flat cost per m3/day
+  grantShare?: number | undefined;
+}
+
+const grant = (g: number | undefined) => Math.max(0, Math.min(0.5, g ?? 0));
+
+/**
+ * Capex multiplier for on-site plant size: (capacity / 1000)^(b - 1), clamped to 0.5-5 so
+ * very small or very large sites stay within the range the cited cost studies cover.
+ */
+export function onsiteScale(capacityM3Day: number, b = 1) {
+  if (b === 1) return 1;
+  return Math.max(0.5, Math.min(5, (Math.max(capacityM3Day, 1e-3) / 1000) ** (b - 1)));
 }
 
 export function optionC(i: CostInputs, o: OnsiteInputs) {
@@ -88,7 +102,7 @@ export function optionC(i: CostInputs, o: OnsiteInputs) {
       [0, 1].map((c) => {
         const rec = o.recoveryRate[a]!;
         const recycled = q * rec;
-        const capex = o.capexPerM3Day[b]! * (recycled / 365);
+        const capex = o.capexPerM3Day[b]! * onsiteScale(recycled / 365, o.scaleExponent) * (recycled / 365) * (1 - grant(o.grantShare));
         const annual = capex * crf(i.rate, i.years) + recycled * o.opex[c]! + (q - recycled) * (i.tariff + i.dischargeCharge);
         return { capex, annual, opex: recycled * o.opex[c]! + (q - recycled) * (i.tariff + i.dischargeCharge) };
       }),
@@ -164,6 +178,8 @@ export interface EvaluateInputs {
     onsiteOpex: Range;
     droughtCut: Record<Phase, number>;
     valuePerM3Lost: number;
+    onsiteScaleExponent?: number;
+    capexGrantShare?: number;
   };
 }
 
@@ -181,9 +197,10 @@ export function evaluateOptions(i: EvaluateInputs) {
         polishing: i.plant.reuseReady ? [0, 0] : s.polishing,
         reclaimedPrice: s.reclaimedPrice,
         availableM3PerDay: i.plant.availableM3PerDay,
+        grantShare: s.capexGrantShare,
       })
     : null;
-  const C = optionC(inputs, { recoveryRate: s.recoveryRate, capexPerM3Day: scale(s.onsiteCapex, i.effluentK), opex: scale(s.onsiteOpex, i.effluentK) });
+  const C = optionC(inputs, { recoveryRate: s.recoveryRate, capexPerM3Day: scale(s.onsiteCapex, i.effluentK), opex: scale(s.onsiteOpex, i.effluentK), scaleExponent: s.onsiteScaleExponent, grantShare: s.capexGrantShare });
   const lossA = droughtLoss(q, i.cut, s.valuePerM3Lost);
   const lossB = B ? droughtLoss(q, i.cut, s.valuePerM3Lost, B.coverage) : lossA;
   const lossC = droughtLoss(q, i.cut, s.valuePerM3Lost, mid(s.recoveryRate));

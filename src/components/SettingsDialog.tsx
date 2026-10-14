@@ -70,7 +70,15 @@ export function SettingsDialog({ children, open: ctlOpen, onOpenChange }: { chil
           <RangeField label="Recovery rate" value={draft.recoveryRate} onChange={(i, v) => setR("recoveryRate", i, v)} />
           <RangeField label="Capex € per m³/day" value={draft.onsiteCapex} step={100} onChange={(i, v) => setR("onsiteCapex", i, v)} />
           <RangeField label="Opex €/m³" value={draft.onsiteOpex} onChange={(i, v) => setR("onsiteOpex", i, v)} />
+          <Field label="Scale exponent (assumption)" value={draft.onsiteScaleExponent} onChange={(v) => setDraft({ ...draft, onsiteScaleExponent: Math.min(1, Math.max(0.4, n(v))) })} />
         </div>
+        <p className="text-[11px] text-muted-foreground">Assumption: capex per m³/day is scaled by (capacity / 1,000)^(exponent − 1), so small sites cost more per m³. 1 means a flat cost. Both Iglesias et al. 2017 and Hilbig et al. 2020 (below) report higher unit costs for smaller plants.</p>
+
+        <p className="label-caps mt-2">Incentives</p>
+        <div className="grid grid-cols-4 gap-3">
+          <Field label="Capex grants (0-0.5)" value={draft.capexGrantShare} onChange={(v) => setDraft({ ...draft, capexGrantShare: Math.min(0.5, n(v)) })} />
+        </div>
+        <p className="text-[11px] text-muted-foreground">Capex grants (for example PERTE or EU funds): enter the share you expect. It reduces the capex of options B and C. Default 0, so no number changes.</p>
 
         <p className="label-caps mt-2">Industrial supply cut by drought phase (placeholders to validate)</p>
         <div className="grid grid-cols-5 gap-3">

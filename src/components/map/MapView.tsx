@@ -7,7 +7,8 @@ import { PathStyleExtension } from "@deck.gl/extensions";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Map, { NavigationControl, useControl, type MapRef } from "react-map-gl/maplibre";
-import { eur, fmt1, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useRoadRoute, useSupplyPlant, useWwtps } from "@/lib/queries";
+import { eur, fmt1, useClusters, useCompanies, useMatches, useProjects, useRegen, useReservoirs, useRoadRoute, useSourcing, useWwtps } from "@/lib/queries";
+import { useScenarioState } from "@/lib/state";
 import { buyerStatus, KNOWN_USERS } from "@/lib/knownUsers";
 import { normalize } from "@/lib/sectors";
 import { sectorById } from "@/lib/sectors";
@@ -164,9 +165,30 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
 
   // Selected company: the plant that would supply it and the road route a pipe would follow.
   const selectedCompany = selection?.kind === "company" ? companyById.get(selection.id) : undefined;
-  const supply = useSupplyPlant(selectedCompany);
+  const sourcing = useSourcing(selectedCompany);
+  const supply = sourcing.selected;
   const road = useRoadRoute(supply?.p, selectedCompany);
   const roadData = useMemo(() => (road.data ? [road.data] : []), [road.data]);
+  // Sourcing mode: the company, its candidate plants, the route and shared-pipe neighbours stay
+  // at full strength; everything else dims to about 30%.
+  const [hoverCluster] = useScenarioState("sourcing:hoverCluster", false);
+  const focusIds = useMemo(() => {
+    if (!selectedCompany) return null;
+    const ids = new Set<string>([selectedCompany.id, ...sourcing.candidates.map((c) => c.p.id)]);
+    const cl = clusters.find((c) => c.companyIds.includes(selectedCompany.id));
+    cl?.companyIds.forEach((id) => ids.add(id));
+    return ids;
+  }, [selectedCompany, sourcing.candidates, clusters]);
+  const neighbourIds = useMemo(() => new Set(selectedCompany ? clusters.find((c) => c.companyIds.includes(selectedCompany.id))?.companyIds ?? [] : []), [selectedCompany, clusters]);
+  const dimA = (id: string, a: number) => (focusIds && !focusIds.has(id) ? Math.round(a * 0.3) : a);
+  // Fit the plant, the route and the company once the route is known.
+  useEffect(() => {
+    if (!selectedCompany || !supply) return;
+    const pts: [number, number][] = road.data?.path ?? [[supply.p.lon, supply.p.lat], [selectedCompany.lon, selectedCompany.lat]];
+    const lons = pts.map((p) => p[0]);
+    const lats = pts.map((p) => p[1]);
+    mapRef.current?.fitBounds([[Math.min(...lons), Math.min(...lats)], [Math.max(...lons), Math.max(...lats)]], { padding: { top: 60, bottom: 60, left: 60, right: 500 }, duration: 700, maxZoom: 14 });
+  }, [selectedCompany?.id, supply?.p.id, road.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedSite =
     selection && selection.kind !== "company" ? siteById.get(selection.id) : undefined;
@@ -338,28 +360,28 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
     layers.companies && (companyOpacity > 0 || !!selectedSite) &&
       new ScatterplotLayer<Company>({
         id: "companies",
-        opacity: selectedSite ? 1 : companyOpacity,
+        opacity: selectedSite || focusIds ? 1 : companyOpacity,
         data: companyData,
         getPosition: (d) => [d.lon, d.lat],
-        getRadius: (d) => (arcCompanyIds.has(d.id) || selection?.id === d.id ? 4.5 : 2.8),
+        getRadius: (d) => (arcCompanyIds.has(d.id) || selection?.id === d.id ? 4.5 : hoverCluster && neighbourIds.has(d.id) ? 5.5 : 2.8),
         radiusUnits: "pixels",
         radiusScale: Math.max(0.7, scale),
         stroked: true,
         lineWidthMinPixels: 1,
         getLineColor: (d) => {
           const dim = selectedSite && !arcCompanyIds.has(d.id);
-          if (!sectorColours && !arcCompanyIds.has(d.id)) return (dark ? [180, 180, 180, 160] : [90, 90, 90, 160]) as [number, number, number, number];
-          return [...sectorById[d.sector].color, dim ? 60 : 230] as [number, number, number, number];
+          if (!sectorColours && !arcCompanyIds.has(d.id)) return (dark ? [180, 180, 180, dimA(d.id, 160)] : [90, 90, 90, dimA(d.id, 160)]) as [number, number, number, number];
+          return [...sectorById[d.sector].color, dim ? 60 : dimA(d.id, 230)] as [number, number, number, number];
         },
         getFillColor: (d) => {
           const st = buyerStatus(d, confirmed);
           const dim = selectedSite && !arcCompanyIds.has(d.id);
-          if (st === "confirmed") return (dark ? [240, 240, 240, 255] : [15, 15, 15, 255]) as [number, number, number, number];
-          if (st === "water-intensive") return [140, 140, 140, dim ? 50 : 200];
-          return [255, 255, 255, dim ? 20 : 90];
+          if (st === "confirmed") return (dark ? [240, 240, 240, dimA(d.id, 255)] : [15, 15, 15, dimA(d.id, 255)]) as [number, number, number, number];
+          if (st === "water-intensive") return [140, 140, 140, dim ? 50 : dimA(d.id, 200)];
+          return [255, 255, 255, dim ? 20 : dimA(d.id, 90)];
         },
         pickable: true,
-        updateTriggers: { getRadius: [arcCompanyIds, selection], getFillColor: [arcCompanyIds, selectedSite, confirmed, dark], getLineColor: [arcCompanyIds, selectedSite, sectorColours, dark] },
+        updateTriggers: { getRadius: [arcCompanyIds, selection, hoverCluster, neighbourIds], getFillColor: [arcCompanyIds, selectedSite, confirmed, dark, focusIds], getLineColor: [arcCompanyIds, selectedSite, sectorColours, dark, focusIds] },
       }),
     layers.reservoirs &&
       rivers.length > 0 &&
@@ -420,12 +442,12 @@ export default function MapView({ presentation = "explorer" }: { presentation?: 
         radiusMaxPixels: zoomedIn ? 22 : 12,
         opacity: zoomedIn ? 1 : 0.7,
         // Solid fill = measured actual flow (EEA); hollow = assumption.
-        getFillColor: (d) => [...LEVEL_COLORS[d.level], d.supply?.actualQuality === "measured" ? (selection?.id === d.id ? 255 : 180) : 40] as [number, number, number, number],
+        getFillColor: (d) => [...LEVEL_COLORS[d.level], dimA(d.id, d.supply?.actualQuality === "measured" ? (selection?.id === d.id || supply?.p.id === d.id ? 255 : 180) : 40)] as [number, number, number, number],
         stroked: true,
-        getLineColor: (d) => (selection?.id === d.id ? [0, 0, 0] : d.supply?.actualQuality === "measured" ? [255, 255, 255] : LEVEL_COLORS[d.level]),
+        getLineColor: (d) => (selection?.id === d.id || supply?.p.id === d.id ? [0, 0, 0, 255] : [...(d.supply?.actualQuality === "measured" ? [255, 255, 255] : LEVEL_COLORS[d.level]), dimA(d.id, 255)]) as [number, number, number, number],
         lineWidthMinPixels: 1,
         pickable: true,
-        updateTriggers: { getFillColor: [selection], getLineColor: [selection], getRadius: [plantData] },
+        updateTriggers: { getFillColor: [selection, focusIds, supply?.p.id], getLineColor: [selection, focusIds, supply?.p.id], getRadius: [plantData] },
       }),
     layers.regen &&
       new IconLayer<(typeof rings)[number]>({

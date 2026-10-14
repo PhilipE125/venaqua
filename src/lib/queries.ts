@@ -6,7 +6,7 @@ import { findClusters } from "./clusters";
 import { knownUserSource } from "./knownUsers";
 import { mergeCompanies } from "./merge";
 import { defaultEffluent, EFFLUENT, evaluateOptions, mid, supplyCostPerM3 } from "./costs";
-import { GROWTH, phaseFrequencies, projectFuture } from "./projection";
+import { GROWTH, historicFrequencies, projectFuture } from "./projection";
 import { muniKey } from "./sectors";
 import { effectiveSupply, haversineKm, scorePairs, type Match } from "./score";
 import { fetchCompanies } from "./sources/companies";
@@ -16,10 +16,10 @@ import { fetchIed } from "./sources/ied.functions";
 import { fetchMeteo } from "./sources/meteo";
 import { fetchProjects } from "./sources/projects";
 import { fetchGauges, lowWaterShare } from "./sources/pegel";
-import { fetchRegen } from "./sources/regen";
+import { fetchRegen, fetchRegenHistory } from "./sources/regen";
 import { fetchRoadRoute } from "./sources/route";
 import { departmentStress, fetchDepartments, fetchRestriction } from "./sources/vigieau";
-import { fetchPratHistory, fetchReservoirHistory, fetchReservoirs } from "./sources/reservoirs";
+import { fetchPratHistory, fetchPratYearly, fetchReservoirHistory, fetchReservoirHistoryMonthly, fetchReservoirs } from "./sources/reservoirs";
 import { searchTenders } from "./sources/ted.functions";
 import { fetchWwtps } from "./sources/wwtp";
 import { useApp, type Region, type Settings } from "./state";
@@ -165,6 +165,9 @@ export function useReservoirs() {
 export const useReservoirHistory = () =>
   catalanOnly(useQuery({ queryKey: ["reservoirs-90d"], queryFn: fetchReservoirHistory, ...opts }), useApp().region);
 export const usePrat = () => catalanOnly(useQuery({ queryKey: ["prat-30d"], queryFn: fetchPratHistory, ...opts }), useApp().region);
+export const useReservoirMonthly = () => catalanOnly(useQuery({ queryKey: ["reservoirs-monthly"], queryFn: fetchReservoirHistoryMonthly, ...opts, staleTime: 24 * H }), useApp().region);
+export const usePratYearly = () => catalanOnly(useQuery({ queryKey: ["prat-yearly"], queryFn: fetchPratYearly, ...opts, staleTime: 24 * H }), useApp().region);
+export const useRegenHistory = () => catalanOnly(useQuery({ queryKey: ["regen-history"], queryFn: fetchRegenHistory, ...opts, staleTime: 24 * H }), useApp().region);
 export const useDrought = () => catalanOnly(useQuery({ queryKey: ["drought"], queryFn: fetchDrought, ...opts }), useApp().region);
 export function useProjects() {
   const { region } = useApp();
@@ -200,26 +203,43 @@ export const SUPPLY_SEARCH_KM = 30;
 
 type SupplyPlant = Plant & { supply: NonNullable<Plant["supply"]> };
 
-/** The plant that would supply a company: the cheapest per m³ (pipe + polishing) within reach. */
-export function pickSupplyPlant(plants: Plant[], company: Company, q: number, settings: Settings) {
-  let best: { p: SupplyPlant; d: number; cost: number } | null = null;
+export type SupplyCandidate = { p: SupplyPlant; d: number; cost: number };
+
+/** Plants within reach that have spare water, cheapest per m³ (pipe + polishing) first. */
+export function rankSupplyPlants(plants: Plant[], company: Company, q: number, settings: Settings, n: number): SupplyCandidate[] {
+  const out: SupplyCandidate[] = [];
   for (const p of plants) {
     if (!p.supply || p.supply.availableReclaimed <= 0 || Math.abs(p.lat - company.lat) > 0.3) continue; // 0.3° lat ≈ 33 km
     const d = haversineKm(p, company);
     if (d > SUPPLY_SEARCH_KM) continue;
     const cost = supplyCostPerM3({ distanceKm: d, reuseReady: p.supply.reuseReady, availableM3PerDay: p.supply.availableReclaimed }, q, settings);
-    if (!best || cost < best.cost) best = { p: p as SupplyPlant, d, cost };
+    out.push({ p: p as SupplyPlant, d, cost });
   }
-  return best;
+  return out.sort((a, b) => a.cost - b.cost).slice(0, n);
 }
 
-export function useSupplyPlant(company?: Company) {
+/** The plant that would supply a company: the cheapest per m³ (pipe + polishing) within reach. */
+export function pickSupplyPlant(plants: Plant[], company: Company, q: number, settings: Settings) {
+  return rankSupplyPlants(plants, company, q, settings, 1)[0] ?? null;
+}
+
+export const sourcePlantKey = (companyId: string) => `${companyId}:sourcePlant`;
+
+/** Up to five candidate plants for a company and the one the user picked (the cheapest by default). */
+export function useSourcing(company?: Company) {
   const w = useWwtps();
-  const { settings, demandOverride } = useApp();
-  return useMemo(
-    () => (company ? pickSupplyPlant(w.data?.features ?? [], company, demandOverride[company.id] ?? (settings.sectorDemand[company.sector] ?? 0) * 365, settings) : null),
-    [w.data, company, settings, demandOverride],
-  );
+  const { settings, demandOverride, scenarioValues, updateScenario } = useApp();
+  const q = company ? (demandOverride[company.id] ?? (settings.sectorDemand[company.sector] ?? 0) * 365) : 0;
+  const candidates = useMemo(() => (company ? rankSupplyPlants(w.data?.features ?? [], company, q, settings, 5) : []), [w.data, company, q, settings]);
+  const chosen = company ? (scenarioValues[sourcePlantKey(company.id)] as string | undefined) : undefined;
+  const selected = candidates.find((c) => c.p.id === chosen) ?? candidates[0] ?? null;
+  const choose = useCallback((id: string) => company && updateScenario(sourcePlantKey(company.id), id), [company, updateScenario]);
+  return { candidates, selected, choose, q, isLoading: w.isLoading };
+}
+
+/** The plant used for a company everywhere (panel, map, full cost-benefit): the user's pick or the cheapest. */
+export function useSupplyPlant(company?: Company) {
+  return useSourcing(company).selected;
 }
 
 export interface FlipRow {
@@ -245,7 +265,7 @@ export function useFlipTable() {
     if (!c.data || !w.data) return null;
     const t = settings.tariffs[region];
     const plants = w.data.features.filter((p) => p.supply && p.supply.availableReclaimed > 0);
-    const freqs = new Map<DroughtEvent[] | undefined, ReturnType<typeof phaseFrequencies>>();
+    const freqs = new Map<DroughtEvent[] | undefined, ReturnType<typeof historicFrequencies>>();
     const out: FlipRow[] = [];
     for (const co of c.data.features) {
       const q = demandOverride[co.id] ?? (settings.sectorDemand[co.sector] ?? 0) * 365;
@@ -267,7 +287,7 @@ export function useFlipTable() {
         s: settings,
       });
       let freq = freqs.get(events);
-      if (!freq) freqs.set(events, (freq = phaseFrequencies(events, 2008, 2025)));
+      if (!freq) freqs.set(events, (freq = historicFrequencies(events)));
       const f = projectFuture(r.future, GROWTH.mid, freq);
       const useB = !!r.B && (f.payB != null ? f.payC == null || f.payB <= f.payC : f.payC == null && mid(r.B.perM3) < mid(r.C.perM3));
       out.push({

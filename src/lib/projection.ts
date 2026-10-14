@@ -18,6 +18,23 @@ export function phaseFrequencies(events: DroughtEvent[] | undefined, from: numbe
   return acc;
 }
 
+/** Years the drought log actually covers: first to last event year. */
+export function droughtWindow(events: DroughtEvent[] | undefined): [number, number] | null {
+  if (!events?.length) return null;
+  return [Number(events[0]!.date.slice(0, 4)), Number(events.at(-1)!.date.slice(0, 4))];
+}
+
+/** Phase frequencies over the years the log covers, so years before it starts don't count as normal. */
+export function historicFrequencies(events: DroughtEvent[] | undefined) {
+  const w = droughtWindow(events);
+  return w ? phaseFrequencies(events, w[0], w[1]) : phaseFrequencies(undefined, 0, 0);
+}
+
+export const droughtRecordLabel = (events: DroughtEvent[] | undefined) => {
+  const w = droughtWindow(events);
+  return w ? `drought frequency from the ${w[0]}-${w[1]} record, which includes the 2022-24 drought` : "no drought record for this area, so every year counts as normal";
+};
+
 /** Expected supply-cut share per year; non-normal phases scaled by a climate factor, capped at 100%. */
 export function expectedCut(freq: Record<Phase, number>, cuts: Record<Phase, number>, climateFactor: number) {
   return Math.min(1, PHASES.reduce((s, p) => s + freq[p] * (p === "normal" ? 1 : climateFactor) * cuts[p], 0));
@@ -62,7 +79,7 @@ export interface FutureInputs {
 }
 
 /** Cumulative cost of A/B/C from FUTURE_START to FUTURE_END and the first year B or C beats A. */
-export function projectFuture(i: FutureInputs, growth: number, freq = phaseFrequencies(i.events, 2008, 2025)) {
+export function projectFuture(i: FutureInputs, growth: number, freq = historicFrequencies(i.events)) {
   const years = Array.from({ length: FUTURE_END - FUTURE_START + 1 }, (_, k) => FUTURE_START + k);
   const tariffFor = (y: number) => tariffAt(i.tariff0, growth, y - FUTURE_START);
   const cutFor = (y: number) => expectedCut(freq, i.cuts, climateFactor(y));
