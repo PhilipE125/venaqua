@@ -13,12 +13,14 @@ export type Plan = {
   href?: "/explore";
   topic?: string;
   popular?: boolean;
+  slug: "deal-file" | "deal-flow" | "data-api";
 };
 
 // Max three paid options: two deal-flow products and one data product. The free map is a footnote, not a plan.
 export const PLANS: Plan[] = [
   {
     name: "Deal File",
+    slug: "deal-file",
     price: "Scoped per project",
     for: "Teams that need one opportunity worked up for an internal or investor decision",
     features: [
@@ -33,6 +35,7 @@ export const PLANS: Plan[] = [
   },
   {
     name: "Deal Flow",
+    slug: "deal-flow",
     price: "From €12,000/year",
     for: "Advisors, developers and engineering teams sourcing and qualifying reuse opportunities",
     features: [
@@ -48,6 +51,7 @@ export const PLANS: Plan[] = [
   },
   {
     name: "Data & API",
+    slug: "data-api",
     price: "€60,000–100,000/year",
     for: "Operators, agencies and platforms plugging Venaqua data into their own tools",
     features: [
@@ -157,3 +161,97 @@ export const AUDIENCES: { icon: AudienceIcon; title: string; text: string; acces
 
 /** Label for any sample / demo record shown on the site. */
 export const SAMPLE_LABEL = "Sample — illustrative";
+
+// Detail pages for the three pricing options (/solutions/$slug).
+export type SolutionSlug = "deal-file" | "deal-flow" | "data-api";
+export type Solution = {
+  slug: SolutionSlug;
+  name: string;
+  price: string;
+  tagline: string;
+  intro: string;
+  who: string[];
+  includes: { title: string; text: string }[];
+  tiers?: { name: string; price: string; text: string }[];
+  steps: { title: string; text: string }[];
+  limits: string[];
+  cta: string;
+  topic: string;
+};
+
+export const SOLUTIONS: Solution[] = [
+  {
+    slug: "deal-file",
+    name: "Deal File",
+    price: "Scoped per project",
+    tagline: "One reuse opportunity, worked up for a decision.",
+    intro: "A Deal File takes a single opportunity — a treatment plant and the companies around it — and puts the supply, demand, route and money questions into one indicative pack your team or investors can discuss.",
+    who: ["Industrial sites weighing reclaimed water against tariffs or drought risk", "Developers preparing an internal go / no-go", "Advisors who need a neutral first view for a client"],
+    includes: [
+      { title: "Supply and demand", text: "Plant capacity, treatment level and estimated demand of nearby users, each with its evidence label." },
+      { title: "Route and cost ranges", text: "Indicative pipe distance and capital / operating cost ranges for the main water options." },
+      { title: "Drought exposure and payback", text: "Restriction scenarios based on real Spanish drought rules, with avoided-cost and payback ranges." },
+      { title: "Open questions", text: "What an engineer, the plant operator and the water authority still need to confirm." },
+    ],
+    steps: [
+      { title: "Scope call", text: "We agree the site, the question and the timeline." },
+      { title: "Analysis", text: "We assemble public data, your inputs and our models." },
+      { title: "Review", text: "We walk you through the file and the assumptions behind it." },
+    ],
+    limits: ["Indicative screening, not an engineering design", "Figures are ranges, not quotes or guaranteed returns"],
+    cta: "Request a Deal File",
+    topic: "Deal File request",
+  },
+  {
+    slug: "deal-flow",
+    name: "Deal Flow",
+    price: "From €12,000/year",
+    tagline: "A steady pipeline of qualified water-reuse opportunities.",
+    intro: "Deal Flow is the full Venaqua workspace: find opportunities on the map, qualify them with economics and evidence, and move them through your own project pipeline.",
+    who: ["Engineering and water-services firms looking for projects", "Developers building a reuse portfolio", "Advisors tracking several clients or markets"],
+    tiers: [
+      { name: "Market Access", price: "From €12,000/year", text: "One market, up to 10 active opportunities." },
+      { name: "Development Portfolio", price: "€30,000–45,000/year", text: "Reuse pipeline with up to 25 opportunities and alerts." },
+    ],
+    includes: [
+      { title: "Full opportunity cards", text: "Plant, company and stress details with indicative economics for every match." },
+      { title: "Project workspace", text: "Private projects with stages, owners and an evidence log." },
+      { title: "Decision briefs", text: "Exportable briefs that separate screening from engineer review." },
+      { title: "Scenario tools", text: "Drought-cost and reuse-investment comparisons you can edit." },
+    ],
+    steps: [
+      { title: "Demo", text: "We show the workspace on your market." },
+      { title: "Pick a tier", text: "Market Access or Development Portfolio." },
+      { title: "Onboarding", text: "We set up your markets and first opportunities." },
+    ],
+    limits: ["Coverage follows available public data per market", "Economics are indicative until engineer-reviewed"],
+    cta: "Book a demo",
+    topic: "Booking a demo — Deal Flow",
+  },
+  {
+    slug: "data-api",
+    name: "Data & API",
+    price: "€60,000–100,000/year",
+    tagline: "Venaqua's water data inside your own tools.",
+    intro: "Data & API gives your team the normalised layers behind the map — treatment plants, industrial demand and water stress — through exports or an API.",
+    who: ["Water operators and public agencies", "Lenders, insurers and risk teams", "Platforms adding water data to their products"],
+    includes: [
+      { title: "Normalised layers", text: "Plants, demand signals and stress indicators in one consistent format, with source and quality notes." },
+      { title: "Export and API", text: "Bulk exports or programmatic access for your own systems." },
+      { title: "Private layers", text: "Your own asset and demand data combined with ours." },
+      { title: "Custom scoring", text: "Opportunity scoring tuned to your criteria." },
+    ],
+    tiers: [
+      { name: "Data & API", price: "€60,000–100,000/year", text: "Depending on regions, layers and usage." },
+      { name: "Enterprise", price: "Custom pricing", text: "Multi-region, SSO and integrations." },
+    ],
+    steps: [
+      { title: "Discovery", text: "We map the layers and regions you need." },
+      { title: "Trial", text: "Sample export to test with your tools." },
+      { title: "Agreement", text: "Annual licence and access set up." },
+    ],
+    limits: ["Each layer keeps its original source licence and attribution", "Modelled and estimated values stay labelled as such"],
+    cta: "Talk to the team",
+    topic: "Data / API enquiry",
+  },
+];
