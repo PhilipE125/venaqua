@@ -39,8 +39,13 @@ export interface Match {
   score: number; // 0-100
 }
 
-export function effectiveSupply(capacity: number, reuseReady: boolean) {
-  return (capacity || 0) * (reuseReady ? 2 : 1);
+/**
+ * m³/day a site can offer: a treatment plant's available reclaimed water (flow minus what is
+ * already reused, 0 when the reported volume is implausible); a reuse plant's capacity. No
+ * bonus multiplier, so the same water is not counted twice.
+ */
+export function effectiveSupply(s: { kind: string; capacity: number; supply?: { availableReclaimed: number } | undefined }) {
+  return s.kind === "wwtp" && s.supply ? s.supply.availableReclaimed : s.capacity || 0;
 }
 
 export function scorePairs(

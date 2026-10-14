@@ -35,8 +35,7 @@ export const MODE_PRESETS: Record<Mode, Record<LayerKey, boolean>> = {
 
 export interface Settings {
   sectorDemand: Record<SectorId, number>;
-  tariff: number; // €/m3
-  dischargeCharge: number; // €/m3
+  tariffs: Record<Region, Tariff>; // per region, €/m3
   rate: number;
   years: number;
   electricity: { low: number; base: number; high: number }; // €/kWh
@@ -53,11 +52,28 @@ export interface Settings {
   valuePerM3Lost: number;
 }
 
+export interface Tariff {
+  supply: number; // drinking-water supply €/m3
+  discharge: number; // sewerage and treatment €/m3 (charged on the share of water discharged)
+}
+
+// Average household tariffs split into supply and sewerage, used as a proxy for industrial
+// users (industrial tariffs are set per utility and rarely published). Keeping the two parts
+// apart avoids counting sewerage twice.
+// ES/CAT: INE table 01003, 2022 (ES 1.16 + 0.76 = 1.92; Catalonia 1.58 + 1.40 = 2.98).
+// FR: OFB/SISPEA, 1 Jan 2024 (2.32 + 2.37 = 4.69 incl. VAT).
+// DE: Baden-Württemberg statistics office via ZfK, 2024 (2.59 + 2.24 = 4.83); no national figure.
+export const REGION_TARIFFS: Record<Region, Tariff> = {
+  es: { supply: 1.16, discharge: 0.76 },
+  cat: { supply: 1.58, discharge: 1.4 },
+  fr: { supply: 2.32, discharge: 2.37 },
+  de: { supply: 2.59, discharge: 2.24 },
+};
+
 // Defaults: every value is an assumption; sources are listed in the settings dialog.
 export const DEFAULT_SETTINGS: Settings = {
   sectorDemand: DEFAULT_SECTOR_DEMAND,
-  tariff: 1.92,
-  dischargeCharge: 0.8,
+  tariffs: REGION_TARIFFS,
   rate: 0.06,
   years: 20,
   electricity: { low: 0.1, base: 0.15, high: 0.22 },
@@ -74,7 +90,8 @@ export const DEFAULT_SETTINGS: Settings = {
   valuePerM3Lost: 5,
 };
 
-const KEY = "reuse-match:settings:v2";
+// v3: tariffs became per region; older saved settings would keep the double-counted 1.92 + 0.8.
+const KEY = "reuse-match:settings:v3";
 const CONFIRMED_KEY = "reuse-match:confirmed";
 const DEMAND_KEY = "reuse-match:demand";
 
@@ -152,7 +169,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const s = load<Partial<Settings>>(KEY, {});
-    setSettingsState({ ...DEFAULT_SETTINGS, ...s, sectorDemand: { ...DEFAULT_SECTOR_DEMAND, ...s.sectorDemand } });
+    setSettingsState({ ...DEFAULT_SETTINGS, ...s, sectorDemand: { ...DEFAULT_SECTOR_DEMAND, ...s.sectorDemand }, tariffs: { ...REGION_TARIFFS, ...s.tariffs } });
     setConfirmed(new Set(load<string[]>(CONFIRMED_KEY, [])));
     setDemand(load<Record<string, number>>(DEMAND_KEY, {}));
     setTip(!load<boolean>("reuse-match:tip-done", false));

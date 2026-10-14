@@ -108,8 +108,8 @@ function LayersTab() {
           </>
         )}
       </LayerRow>
-      <LayerRow k="tenders" title="Tenders" q={t} count={t.data?.tenders.length}>
-        <span>Reuse and treatment tenders in Spain (TED)</span>
+      <LayerRow k="tenders" title="Water-sector tenders" q={t} count={t.data?.tenders.length}>
+        <span>Wastewater and water-treatment tenders since 2024 (EU TED); few are about reuse itself</span>
       </LayerRow>
       <LayerRow k="projects" title="Reuse projects (tenders)" q={pr.isLoading || !pr.data ? { ...pr, isLoading: !pr.isError } : pr} count={pr.data?.features.length}>
         <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 bg-foreground" />Catalan contracts for reclaimed water</span>
@@ -259,6 +259,7 @@ function LandscapeBox() {
 }
 
 function DataQualityTab() {
+  const { region } = useApp();
   const w = useWwtps();
   const e = useEea();
   const g = useRegen();
@@ -272,7 +273,7 @@ function DataQualityTab() {
   const time = (n: number) => (n > 0 ? new Date(n).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "…");
   const rows: { id: SourceId; fetched: number; latest?: string | undefined; coverage?: string | undefined; error?: boolean }[] = [
     { id: "wwtp", fetched: w.dataUpdatedAt, latest: w.data?.latestDataDate, coverage: w.data ? `${fmt.format(w.data.features.length)} / ${fmt.format(w.data.fetchedCount ?? 0)}` : undefined, error: w.isError },
-    { id: "eea", fetched: e.dataUpdatedAt, latest: "2022", coverage: e.data ? `${fmt.format(e.data.plants.size)} ES plants` : undefined, error: e.isError },
+    { id: "eea", fetched: e.dataUpdatedAt, latest: "2022", coverage: e.data ? `${fmt.format(e.data.plants.size)} plants` : undefined, error: e.isError },
     { id: "regen", fetched: g.dataUpdatedAt, latest: g.data?.latestDataDate, coverage: g.data ? `${fmt.format(g.data.features.length)} / ${fmt.format(g.data.fetchedCount ?? 0)}` : undefined, error: g.isError },
     { id: "companies", fetched: c.dataUpdatedAt, coverage: c.data ? `${fmt.format((c.data.fetchedCount ?? 0) - (c.data.excludedCount ?? 0))} / ${fmt.format(c.data.fetchedCount ?? 0)}` : undefined, error: c.isError },
     { id: "ied", fetched: c.ied.dataUpdatedAt, latest: "2024", coverage: c.mergeStats ? `${fmt.format(c.mergeStats.iedFetched - c.mergeStats.iedExcluded)} / ${fmt.format(c.mergeStats.iedFetched)}` : undefined, error: c.ied.isError },
@@ -333,7 +334,7 @@ function DataQualityTab() {
       <div className="rounded-sm border bg-muted/50 p-3">
         <p className="label-caps mb-1.5">Opportunity score</p>
         <p className="font-mono text-[11px] leading-relaxed">score = min(supply, demand) × (1 + stress) / (1 + distance_km)</p>
-        <p className="mt-1 text-muted-foreground">stress = 1 − volume-weighted reservoir fill. Water options use the cost model in settings.</p>
+        <p className="mt-1 text-muted-foreground">{region === "de" ? "stress = share of federal river gauges at low water (PEGELONLINE)." : region === "fr" ? "stress = mean drought-restriction level across departments (VigiEau)." : "stress = 1 − volume-weighted fill of the Catalan internal-basin reservoirs (also used for the rest of Spain)."} Water options use the cost model in settings.</p>
       </div>
     </div>
   );

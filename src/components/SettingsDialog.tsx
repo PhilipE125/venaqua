@@ -9,8 +9,12 @@ import { PHASES } from "@/lib/sources/drought";
 import { DEFAULT_SETTINGS, useApp, type Settings } from "@/lib/state";
 
 const n = (v: string) => Math.max(0, Number(v) || 0);
+const REGION_NAME = { es: "Spain", cat: "Catalonia", de: "Germany", fr: "France" } as const;
 
 const CITATIONS: { label: string; url: string }[] = [
+  { label: "INE table 01003, 2022: water supply and sewerage €/m³, Spain and Catalonia", url: "https://www.ine.es/jaxi/files/_px/csv_bd/t26/p069/p03/l0/serie/01003.csv" },
+  { label: "OFB/SISPEA 2025: average water price in France, 1 Jan 2024", url: "https://www.ofb.gouv.fr/sites/default/files/Fichiers/Presse/CP_SISPEA_2025_VF.pdf" },
+  { label: "ZfK 2024: water and sewerage charges, Baden-Württemberg", url: "https://www.zfk.de/wasser-abwasser/wasser/ba-wue-wassergebuehren-steigen-staerker-als-die-inflation" },
   { label: "Iglesias et al. 2017, Water Sci. Technol.: MBR and reclamation capex 700–1,250 € per m³/day at 8–15k m³/day (smaller industrial plants cost more)", url: "https://www.thembrsite.com/features/cost-comparison-of-full-scale-water-reclamation-technologies-with-an-emphasis-on-membrane-bioreactors" },
   { label: "Echevarría et al. 2022, Sci. Total Environ.: UF/RO polishing of municipal effluent for industry, Barcelona", url: "https://doi.org/10.1016/j.scitotenv.2021.152842" },
   { label: "Calle et al. 2023, npj Clean Water: reclaimed-water network construction costs, Catalonia", url: "https://www.nature.com/articles/s41545-023-00222-4" },
@@ -18,7 +22,7 @@ const CITATIONS: { label: string; url: string }[] = [
 ];
 
 export function SettingsDialog({ children }: { children: ReactNode }) {
-  const { settings, setSettings } = useApp();
+  const { settings, setSettings, region } = useApp();
   const [draft, setDraft] = useState<Settings>(settings);
   const [open, setOpen] = useState(false);
   const setR = (k: keyof Settings, i: 0 | 1, v: string) => {
@@ -37,8 +41,8 @@ export function SettingsDialog({ children }: { children: ReactNode }) {
 
         <p className="label-caps">Prices and finance</p>
         <div className="grid grid-cols-4 gap-3">
-          <Field label="Tariff €/m³" value={draft.tariff} onChange={(v) => setDraft({ ...draft, tariff: n(v) })} />
-          <Field label="Discharge charge €/m³" value={draft.dischargeCharge} onChange={(v) => setDraft({ ...draft, dischargeCharge: n(v) })} />
+          <Field label={`Supply tariff €/m³ · ${REGION_NAME[region]}`} value={draft.tariffs[region].supply} onChange={(v) => setDraft({ ...draft, tariffs: { ...draft.tariffs, [region]: { ...draft.tariffs[region], supply: n(v) } } })} />
+          <Field label={`Sewerage €/m³ · ${REGION_NAME[region]}`} value={draft.tariffs[region].discharge} onChange={(v) => setDraft({ ...draft, tariffs: { ...draft.tariffs, [region]: { ...draft.tariffs[region], discharge: n(v) } } })} />
           <Field label="Discount rate" value={draft.rate} onChange={(v) => setDraft({ ...draft, rate: n(v) })} />
           <Field label="Lifetime, years" value={draft.years} step={1} onChange={(v) => setDraft({ ...draft, years: Math.max(1, n(v)) })} />
           <Field label="Electricity low €/kWh" value={draft.electricity.low} onChange={(v) => setDraft({ ...draft, electricity: { ...draft.electricity, low: n(v) } })} />

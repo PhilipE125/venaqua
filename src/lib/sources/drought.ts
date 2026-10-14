@@ -12,6 +12,8 @@ export function phaseFromCode(code: string): Phase {
   if (n === 5) return "pre-alert";
   if (n === 6) return "alert";
   if (n === 7) return "exceptional";
+  // 120 is "preemergència", added in the 2023-24 drought between exceptional and emergency.
+  if (n === 120) return "exceptional";
   return "emergency";
 }
 
@@ -29,7 +31,7 @@ export interface DroughtData {
 export async function fetchDrought(): Promise<DroughtData> {
   const rows = await socrata<{ municipi: string; data_canvi_estat_sequera: string; codi_estat_sequera_hidrol: string }>(
     DROUGHT_ID,
-    { $select: "municipi,data_canvi_estat_sequera,codi_estat_sequera_hidrol", $order: "data_canvi_estat_sequera" },
+    { $select: "municipi,data_canvi_estat_sequera,codi_estat_sequera_hidrol", $order: "data_canvi_estat_sequera, :id" },
   );
   const byMuni = new Map<string, DroughtEvent[]>();
   let latest = "";

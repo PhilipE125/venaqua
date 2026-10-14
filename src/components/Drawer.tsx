@@ -346,7 +346,7 @@ function CompanyDetail({ company, view = "overview", onSummary }: { company: Com
       <div className="flex flex-wrap items-center gap-1.5">
         <Badge variant="secondary">{sectorById[company.sector].label}</Badge>
         <StatusChip s={status} />
-        {company.sendsToPlant && <Badge variant="outline" className="h-5 border-primary px-1.5 text-[10px] text-primary">Already sends wastewater to a plant</Badge>}
+        {company.sendsToPlant && <Badge variant="outline" title="Reported to the EU industrial register (2023); the receiving plant is not named." className="h-5 border-primary px-1.5 text-[10px] text-primary">Already sends wastewater to a plant</Badge>}
         {company.sources.map((s) => (
           <Badge key={s} variant="outline" className="h-5 px-1.5 text-[10px] font-normal">{s === "aca" ? "ACA permit" : "EEA IED"}</Badge>
         ))}
@@ -364,7 +364,7 @@ function CompanyDetail({ company, view = "overview", onSummary }: { company: Com
         <Row k="Activity" info={<SourceInfo id={company.sources.includes("aca") ? "companies" : "ied"} />} v={<span className="line-clamp-2 max-w-[220px]">{company.ccae}</span>} />
         <Row k="Type" v={`${company.tipus}${company.subtipus ? ` · ${company.subtipus}` : ""}`} />
         {company.dischargesToWater != null && <Row k="Releases to water (E-PRTR)" info={<SourceInfo id="ied" />} v={company.dischargesToWater ? "Yes" : "No report"} />}
-        {company.sendsToPlant && <Row k="Wastewater to a treatment plant (E-PRTR)" info={<SourceInfo id="ied" />} v="Yes, already connected" />}
+        {company.sendsToPlant && <Row k="Wastewater to a treatment plant (E-PRTR)" info={<SourceInfo id="ied" note="Reported transfer of pollutants in wastewater to an off-site plant (2023). The register does not name the plant, and sites below EU reporting thresholds are missing, so no badge does not mean not connected." />} v="Yes, already connected" />}
         {company.activity && <p className="mt-2 text-xs text-muted-foreground first-letter:uppercase">{company.activity}</p>}
       </Section>
       <Section title="Water demand" note={<span className="flex items-center gap-1">{demandOverride[company.id] != null ? "your figure" : "estimate"} <SourceInfo id="demand" /></span>}>
@@ -437,7 +437,8 @@ function RegionDetail() {
   const { select, maxKm, settings } = useApp();
   const { matches, siteById, companyById } = useMatches();
   const drought = useDrought();
-  const { stress, fill } = useStress();
+  const { stress, fill, lowWater, known } = useStress();
+  const { region } = useApp();
   const clusters = useClusters();
   const w = useWwtps();
   const links = useMemo(() => {
@@ -461,8 +462,17 @@ function RegionDetail() {
       >
         {clusters.length
           ? `${clusters.length} groups of companies could share one pipe from a plant within ${maxKm} km. The best one serves ${clusters[0]!.companyIds.length} companies near ${siteById.get(clusters[0]!.plantId)?.name ?? "a plant"}.`
-          : "Looking for groups of companies that could share one pipe…"}
-        <span className="text-muted-foreground"> Reservoirs are {fill != null ? `${fmt1.format(fill)}% full` : "loading"}.</span>
+          : w.data
+            ? `No group of three or more companies shares a direction from one plant within ${maxKm} km.`
+            : "Looking for groups of companies that could share one pipe…"}
+        <span className="text-muted-foreground">
+          {" "}
+          {region === "de"
+            ? lowWater != null ? `${fmt.format(lowWater * 100)}% of federal river gauges are at low water.` : "River gauges are loading."
+            : region === "fr"
+              ? known ? `Drought restrictions put national water stress at ${fmt.format(stress * 100)}% (VigiEau).` : "Drought restrictions are loading."
+              : fill != null ? `Catalan internal-basin reservoirs are ${fmt1.format(fill)}% full.` : "Reservoirs are loading."}
+        </span>
       </Answer>
 
       <Section title="Shared pipe clusters" note={<span className="flex items-center gap-1">our estimate <SourceInfo id="costs" /></span>}>

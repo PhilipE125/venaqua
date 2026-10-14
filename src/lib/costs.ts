@@ -121,3 +121,19 @@ export function opportunityCost(a: Range, b: Range, c: Range, droughtA: number, 
   const hi = a[1] - best[0] + (droughtA - droughtBest);
   return r(lo, hi);
 }
+
+/**
+ * Rough €/m³ to take reclaimed water from a plant: pipe capex annualised over the delivered
+ * volume, plus polishing when the plant is not reuse-ready. Used only to rank candidate plants;
+ * the full option-B model (pumping, reclaimed price, shortfall) runs on the chosen one.
+ */
+export function supplyCostPerM3(
+  p: { distanceKm: number; reuseReady: boolean; availableM3PerDay: number },
+  demandM3PerYear: number,
+  s: { detourFactor: number; pipeCostPerKm: Range; polishing: Range; rate: number; years: number },
+) {
+  const delivered = Math.min(demandM3PerYear, p.availableM3PerDay * 365);
+  if (delivered <= 0) return Infinity;
+  const pipe = (mid(s.pipeCostPerKm) * p.distanceKm * s.detourFactor * crf(s.rate, s.years)) / delivered;
+  return pipe + (p.reuseReady ? 0 : mid(s.polishing));
+}

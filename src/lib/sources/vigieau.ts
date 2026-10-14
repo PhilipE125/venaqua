@@ -45,7 +45,8 @@ export async function fetchDepartments(): Promise<DepartmentLevel[]> {
   const r = await fetch(`${API}/departements`);
   if (!r.ok) throw new Error(`VigiEau HTTP ${r.status}`);
   const rows = (await r.json()) as { code: string; nom: string; niveauGraviteMax: Gravite | null }[];
-  return rows.map((d) => ({ code: d.code, name: d.nom, level: d.niveauGraviteMax }));
+  // Metropolitan departments only (overseas codes are 971-976), to match the plants on the map.
+  return rows.filter((d) => d.code.length <= 2).map((d) => ({ code: d.code, name: d.nom, level: d.niveauGraviteMax }));
 }
 
 /** National stress 0..1: mean department level (none 0, vigilance 0.25 … crise 1). */

@@ -49,13 +49,13 @@ export const fetchIed = createServerFn({ method: "GET" })
     `SELECT DISTINCT f.localId FROM [IED].[latest].[ProductionFacility] f JOIN [IED].[latest].[ProductionFacilityReport] r ON r.localId=f.localId AND r.namespace=f.namespace AND r.reportingYear=f.reportingYear JOIN [IED].[latest].[PollutantRelease] p ON p.facilityReportId=r.Id WHERE f.countryCode='${country}' AND f.reportingYear=2023 AND p.mediumCode='WATER'`,
   )
     .then((w) => new Set(w.map((x) => x.localId.toUpperCase())))
-    .catch(() => new Set<string>()); // skip the flag if the join is unavailable
+    .catch(() => null); // skip the flag if the join is unavailable
   // Facilities that transfer pollutants in wastewater to an off-site treatment plant: already on a plant's network.
   const toPlantP = sql<{ localId: string }>(
     `SELECT DISTINCT f.localId FROM [IED].[latest].[ProductionFacility] f JOIN [IED].[latest].[ProductionFacilityReport] r ON r.localId=f.localId AND r.namespace=f.namespace AND r.reportingYear=f.reportingYear JOIN [IED].[latest].[OffsitePollutantTransfer] t ON t.facilityReportId=r.Id WHERE f.countryCode='${country}' AND f.reportingYear=2023`,
   )
     .then((w) => new Set(w.map((x) => x.localId.toUpperCase())))
-    .catch(() => new Set<string>());
+    .catch(() => null);
   const rows: Row[] = [];
   let lastId = 0;
   for (let i = 0; i < 6; i++) {
@@ -78,10 +78,11 @@ export const fetchIed = createServerFn({ method: "GET" })
       lon: Number(r.x_4326),
       city: r.city ?? "",
       nuts3: r.NUTS3 ?? "",
-      water: water.has((r.localId ?? "").toUpperCase()),
-      toPlant: toPlant.has((r.localId ?? "").toUpperCase()),
+      water: !!water?.has((r.localId ?? "").toUpperCase()),
+      toPlant: !!toPlant?.has((r.localId ?? "").toUpperCase()),
     }));
   const data = { facilities, fetched: rows.length, fetchedAt: new Date().toISOString() };
-  cache.set(country, { at: Date.now(), data });
+  // A failed flag query would otherwise hide the flags for 24 h: only cache complete results.
+  if (water && toPlant) cache.set(country, { at: Date.now(), data });
   return data;
 });

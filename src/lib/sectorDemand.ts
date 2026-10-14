@@ -11,7 +11,7 @@ export const DEFAULT_SECTOR_DEMAND: Record<SectorId, number> = {
   minerals: 150,
   plastics: 120,
   energy: 600,
-  agriculture: 150,
+  agriculture: 20, // livestock and crop permits: roughly 10-30 m³/day per farm
   services: 20,
   other: 50,
 };

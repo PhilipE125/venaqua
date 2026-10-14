@@ -22,14 +22,17 @@ const body = (country: TedCountry) => ({
   limit: 250,
 });
 
-function pickLang(v: unknown): string {
+// The buyer country's own language first (German tenders were shown in Spanish), then English.
+const LANG: Record<TedCountry, string> = { ESP: "spa", DEU: "deu", FRA: "fra" };
+
+function pickLang(v: unknown, lang = "eng"): string {
   if (v == null) return "";
   if (typeof v === "string") return v;
-  if (Array.isArray(v)) return pickLang(v[0]);
+  if (Array.isArray(v)) return pickLang(v[0], lang);
   if (typeof v === "object") {
     const o = v as Record<string, unknown>;
-    const val = o["spa"] ?? o["deu"] ?? o["fra"] ?? o["eng"] ?? Object.values(o)[0];
-    return pickLang(val);
+    const val = o[lang] ?? o["eng"] ?? Object.values(o)[0];
+    return pickLang(val, lang);
   }
   return String(v);
 }
@@ -62,9 +65,9 @@ export const searchTenders = createServerFn({ method: "GET" })
     return {
       id,
       date: String(n["publication-date"] ?? "").slice(0, 10),
-      title: pickLang(n["notice-title"]),
-      buyer: pickLang(n["buyer-name"]),
-      city: pickLang(n["buyer-city"]),
+      title: pickLang(n["notice-title"], LANG[country]),
+      buyer: pickLang(n["buyer-name"], LANG[country]),
+      city: pickLang(n["buyer-city"], LANG[country]),
       type,
       status: type.startsWith("cn") ? "open" : type.startsWith("can") ? "award" : "other",
       value: Number.isFinite(value) ? value : null,
