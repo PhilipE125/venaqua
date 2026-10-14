@@ -520,16 +520,6 @@ function DroughtNow({ company, events, logEnd }: { company: Company; events: Dro
   const { region } = useApp();
   const restriction = useRestriction(company);
   const { lowWater } = useStress();
-  const rivers = useRiverFlows();
-  // Nearest live river reading within 25 km: local context next to the area-wide stress row.
-  const river = useMemo(() => {
-    let best: { name: string; note?: string | undefined; fill: number; km: number } | null = null;
-    for (const g of rivers.data?.features ?? []) {
-      const km = haversineKm(company.lat, company.lon, g.lat, g.lon);
-      if (km <= 25 && (!best || km < best.km)) best = { name: g.name, note: g.note, fill: g.fill, km };
-    }
-    return best;
-  }, [rivers.data, company.lat, company.lon]);
   if (region === "fr") {
     const lv = restriction.data?.level;
     return <p className="text-xs"><span className="text-muted-foreground">Now (VigiEau): </span>{restriction.isLoading ? "loading…" : restriction.data ? (lv ? GRAVITE_LABEL[lv] : "No restriction in force") : "not available"}</p>;
@@ -715,6 +705,16 @@ function RiskMatrix({ company, cols, bill, events, qDay, plantName, choice }: {
   const res = useReservoirMonthly();
   const restriction = useRestriction(company);
   const { lowWater } = useStress();
+  const rivers = useRiverFlows();
+  // Nearest live river reading within 25 km: local context next to the area-wide stress row.
+  const river = useMemo(() => {
+    let best: { name: string; note?: string | undefined; fill: number; km: number } | null = null;
+    for (const g of rivers.data?.features ?? []) {
+      const km = haversineKm(company.lat, company.lon, g.lat, g.lon);
+      if (km <= 25 && (!best || km < best.km)) best = { name: g.name, note: g.note, fill: g.fill, km };
+    }
+    return best;
+  }, [rivers.data, company.lat, company.lon]);
   const t = { high: settings.riskHighShare, medium: settings.riskMediumShare };
   const tWhy = `High above ${fmt1.format(t.high * 100)}% of your yearly water bill, Medium above ${fmt1.format(t.medium * 100)}% (settings)`;
   const lossWhy = `€${fmt.format(settings.valuePerM3Lost)} lost per m³ cut and cuts per phase are settings; frequency from the drought record`;
